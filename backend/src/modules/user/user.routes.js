@@ -15,10 +15,17 @@ Database
 */
 import express from "express"; // creates a router object 
 import { register, login } from "./user.controller.js";
+import { protect } from "/Users/namra/Project/backend/src/middleware/auth.middleware.js";
 
 const router = express.Router();
 
 router.post("/registerUser", register);
 router.post("/loginUser", login);
+router.get("/profile", protect, (req, res) => {
+  res.json({
+    message: "Current user fetched",
+    user: req.user,
+  });
+});
 
 export default router;
