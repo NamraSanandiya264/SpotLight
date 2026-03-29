@@ -1,15 +1,27 @@
 import express from "express";
-import Room from "../models/Room.js";
+import {
+  createRoom,
+  getRooms,
+  getRoomById,
+  updateRoom,
+  deleteRoom,
+} from "./room.controller.js";
 
 const router = express.Router();
 
-//
-router.post("/addroom", async (req, res) => {
-  try {
-    const newRoom = new Room(req.body);
-    await newRoom.save();
-    res.send("Room added successfully");
-  } catch (error) {
-    return res.status(400).json({ error });
-  }
-});
+// Create room
+router.post("/", createRoom);
+
+// Get all rooms
+router.get("/", getRooms);
+
+// Get single room
+router.get("/:id", getRoomById);
+
+// Update room
+router.put("/:id", updateRoom);
+
+// Delete room
+router.delete("/:id", deleteRoom);
+
+export default router;
