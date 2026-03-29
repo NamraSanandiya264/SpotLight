@@ -9,6 +9,7 @@ Access granted or denied;
 */
 import jwt from "jsonwebtoken";
 
+
 export const protect = async (req, res, next) => {
   try {
     const token = req.headers.authorization;

@@ -15,7 +15,7 @@ Database
 */
 import express from "express"; // creates a router object 
 import { register, login } from "./user.controller.js";
-import { protect } from "/Users/namra/Project/backend/src/middleware/auth.middleware.js";
+import { protect } from "../../middleware/auth.middleware.js";
 
 const router = express.Router();
 
