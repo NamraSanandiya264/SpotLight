@@ -29,8 +29,8 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["SBG Core", "Part of Club/Committee", "None"],
-      default: "None",
+      enum: ["student", "sbg_core"],
+      default: "student",
     },
   },
   { timestamps: true }

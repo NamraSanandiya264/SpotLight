@@ -4,11 +4,11 @@ import {
   getBookings,
   updateBookingStatus,
 } from "./booking.controller.js";
-import { protect } from "../../middleware/auth.middleware.js";
+import { protect , authorize } from "../../middleware/auth.middleware.js";
 const router = express.Router();
 
-router.post("/", protect, createBooking);
+router.post("/", protect, authorize("student"), createBooking);
 router.get("/", protect, getBookings);
-router.patch("/:id", protect, updateBookingStatus);
+router.patch("/:id", protect, authorize("sbg_core"), updateBookingStatus);
 
 export default router;
