@@ -36,11 +36,11 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 // It removes the password when you send user data in API response
-// userSchema.set("toJSON", {
-//   transform: (doc, ret) => {
-//     delete ret.password;
-//     return ret;
-//   },
-// });
+userSchema.set("toJSON", {
+  transform: (doc, ret) => {
+    delete ret.password;
+    return ret;
+  },
+});
 
 export default mongoose.model("User", userSchema);

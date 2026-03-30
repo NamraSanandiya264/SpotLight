@@ -9,6 +9,6 @@ const router = express.Router();
 
 router.post("/", protect, authorize("student"), createBooking);
 router.get("/", protect, getBookings);
-router.patch("/:id", protect, authorize("sbg_core"), updateBookingStatus);
+router.patch("/:id/status", protect, authorize("sbg_core"), updateBookingStatus);
 
 export default router;

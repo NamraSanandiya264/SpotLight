@@ -32,7 +32,7 @@ export const updateBookingStatus = async (req, res) => {
     const booking = await updateBookingStatusService(
       req.params.id,
       req.body.status,
-      req.user.id
+      req.user
     );
 
     res.status(200).json(booking);

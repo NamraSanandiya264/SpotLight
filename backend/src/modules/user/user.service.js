@@ -5,6 +5,10 @@ import jwt from "jsonwebtoken";
 export const registerUser = async (data) => {     //called when user registers
   const { studentID, name, email, password, yearOfStudy, role } = data;
 
+  if (!studentID || !name || !email || !password || !yearOfStudy) {
+    throw new Error("All fields are required");
+  }
+
   // check if user exists
   const existingUser = await User.findOne({ email });
   if (existingUser) {
