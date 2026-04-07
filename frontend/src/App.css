@@ -1,0 +1,110 @@
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: sans-serif;
+}
+
+/* Full page layout */
+body {
+  height: 100vh;
+}
+
+/* Main container */
+.container {
+  display: flex;
+  height: 100vh;
+}
+
+/* LEFT SIDE */
+.left {
+  width: 50%;
+  background: #2563eb; /* blue */
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 40px;
+}
+
+.left h1 {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.left p {
+  font-size: 16px;
+  opacity: 0.9;
+}
+
+/* RIGHT SIDE */
+.right {
+  width: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* FORM */
+.form-box {
+  width: 80%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form-box h2 {
+  margin-bottom: 10px;
+  font-size: 24px;
+}
+
+/* INPUTS */
+.form-box input,
+.form-box select {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+/* BUTTON */
+.form-box button {
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* SIGNUP BUTTON */
+.signup-btn {
+  background: #2563eb;
+  color: white;
+}
+
+.signup-btn:hover {
+  background: #1e40af;
+}
+
+/* GOOGLE BUTTON */
+.google-btn {
+  border: 1px solid #ccc;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.google-btn:hover {
+  background: #f3f4f6;
+}
+
+/* Divider */
+.divider {
+  text-align: center;
+  color: gray;
+  margin: 10px 0;
+}
