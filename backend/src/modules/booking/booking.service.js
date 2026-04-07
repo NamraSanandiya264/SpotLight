@@ -1,7 +1,9 @@
 import Booking from "./booking.model.js";
+import { validateBookingInput } from "../../utils/validators/booking.validator.js";
 
 // Create Booking
 export const createBookingService = async (data, userId) => {
+  validateBookingInput(data);
   const { room_id, date, start_time, end_time, purpose } = data;
 
 if (!room_id || !date || !start_time || !end_time) {
@@ -42,7 +44,7 @@ if (!room_id || !date || !start_time || !end_time) {
   return booking;
 };
 
-// 🔹 Get all bookings
+// Get all bookings
 export const getBookingsService = async () => {
   if (user.role === "sbg_core") {
     return await Booking.find().populate("user_id").populate("room_id");
@@ -65,7 +67,7 @@ export const updateBookingStatusService = async (id, status, user) => {
     throw new Error("Invalid status");
   }
 
-  // ✅ Check if booking exists
+  // Check if booking exists
   const booking = await Booking.findById(id);
   if (!booking) {
     throw new Error("Booking not found");
@@ -74,7 +76,7 @@ export const updateBookingStatusService = async (id, status, user) => {
   throw new Error("Booking already processed");
 }
 
-  // ✅ Update booking
+  // Update booking
   booking.status = status;
   booking.approved_by = user._id;
 

@@ -1,10 +1,16 @@
 import mongoose from "mongoose";
+import { valid } from "semver";
 
 const userSchema = new mongoose.Schema(
   {
     studentID: {
       type: Number,
       required: true,
+      validate: {
+        validator: function (v){
+          return /^\d{9}$/.test(v);
+        }
+      },
       unique: true,
     },
     name: {
@@ -18,14 +24,23 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
+      match: [/^[a-zA-Z0-9._%+-]+@dau\.ac\.in$/, "Use DAU email only"]
     },
     password: {
       type: String,
       required: true,
     },
     yearOfStudy: {
-      type: Number,
+      type: String,
       required: true,
+      enum: [
+        "B.Tech - 1st Year",
+        "B.Tech - 2nd Year",
+        "B.Tech - 3rd Year",
+        "B.Tech - 4th Year",
+        "Masters - 1st Year",
+        "Masters - 2nd Year",
+      ],
     },
     role: {
       type: String,

@@ -4,7 +4,7 @@ import {
   updateBookingStatusService,
 } from "./booking.service.js";
 
-// 🔹 Create Booking
+//Create Booking
 export const createBooking = async (req, res) => {
   try {
     const booking = await createBookingService(req.body, req.user.id);
@@ -15,7 +15,7 @@ export const createBooking = async (req, res) => {
   }
 };
 
-// 🔹 Get all bookings
+// Get all bookings
 export const getBookings = async (req, res) => {
   try {
     const bookings = await getBookingsService();
@@ -26,7 +26,7 @@ export const getBookings = async (req, res) => {
   }
 };
 
-// 🔹 Approve / Reject booking
+// Approve / Reject booking
 export const updateBookingStatus = async (req, res) => {
   try {
     const booking = await updateBookingStatusService(
