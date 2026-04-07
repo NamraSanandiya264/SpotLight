@@ -34,6 +34,9 @@ export const login = async (req, res) => { // Runs when user hits /login API
       ...data,
     });
   } catch (error) {
+    res.status(401).json({
+      message: "Invalid credentials"
+    });
     res.status(400).json({ error: error.message });
   }
 };
