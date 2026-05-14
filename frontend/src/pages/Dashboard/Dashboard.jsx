@@ -1,22 +1,22 @@
-
 import DashboardLayout from "./DashboardLayout";
 import StudentDashboard from "./StudentDashboard";
-import CoreDashboard from "./CoreDashboard";
+//import CoreDashboard from "./CoreDashboard";
 
 const Dashboard = () => {
 
   // TEMP user (later from backend / JWT)
   const user = {
     name: "Ishti",
-    role: "student", // change to "sbg_core" to test
+    role: "student", // or "sbg_core"
   };
 
   return (
     <DashboardLayout user={user}>
-      {user.role === "sbg_core" ? (
-        <CoreDashboard />
-      ) : (
-        <StudentDashboard />
+      {({ collapsed, setCollapsed }) => (
+        <StudentDashboard
+          collapsed={collapsed}
+          setCollapsed={setCollapsed}
+        />
       )}
     </DashboardLayout>
   );

@@ -1,18 +1,45 @@
 /* Layout */
 .dashboard-container {
   display: flex;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* Sidebar */
 .sidebar {
   width: 250px;
-  height: 100vh;
   background: #2563eb;
   color: white;
+  padding: 20px;
+  transition: width 0.3s ease;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  position: fixed;
+  /* ❌ REMOVE position: fixed */
+}
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.toggle-btn {
+  background: white;
+  color: #2563eb;
+  border: none;
+  padding: 8px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.toggle-btn:hover {
+  background: #e0e7ff;
+  transform: scale(1.05);
 }
 
 .sidebar h2 {
@@ -33,45 +60,194 @@
   background: #1e40af;
 }
 
+/* Collapsed Sidebar */
+.dashboard-container.collapsed .sidebar {
+  width: 70px;
+}
+
+.dashboard-container.collapsed .sidebar h2,
+.dashboard-container.collapsed .sidebar ul li,
+.dashboard-container.collapsed .bottom-menu p {
+  display: none;
+}
+
+/* Logo */
+.logo {
+  margin-bottom: 30px;
+}
+
 /* Bottom section */
 .sidebar-bottom {
   margin-bottom: 20px;
 }
 
+.menu {
+  list-style: none;
+  padding: 0;
+}
+
+.menu li {
+  margin: 15px 0;
+  cursor: pointer;
+}
+.menu li.active {
+  background: #1e40af;
+  border-radius: 6px;
+}
+.bottom-menu {
+  margin-top: auto;
+}
+
 /* Main content */
 .main-content {
-  margin-left: 250px;
-  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #f9fafb;
+}
+
+/* Topbar */
+.topbar {
+  height: 60px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0 20px;
+  background: #f3f4f6;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Toggle button */
+.toggle-btn {
+  font-size: 18px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* Content */
+.content-area {
+  padding: 20px;
+  height: calc(100vh - 60px);
+  overflow-y: auto;
 }
 
 /* Header */
-.header {
-  height: 60px;
-  background: white;
+.dashboard-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px;
-  box-shadow: 0px 2px 5px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
 }
 
-/* Content area */
-.content {
-  padding: 20px;
-  background: #f3f4f6;
-  min-height: 100vh;
+.book-btn {
+  background: #2563eb;
+  color: white;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
 }
 
-/* Cards */
-.card-container {
-  display: flex;
-  gap: 20px;
+.book-btn:hover {
+  background: #1d4ed8;
 }
 
-.card {
-  background: white;
-  padding: 20px;
+/* Booking cards */
+.booking-card {
+  border: 1px solid #ddd;
+  padding: 15px;
   border-radius: 10px;
-  flex: 1;
-  box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 10px;
+}
+
+.booking-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.status {
+  padding: 5px 10px;
+  border-radius: 6px;
+}
+
+.status.pending {
+  background: orange;
+}
+
+.status.approved {
+  background: green;
+  color: white;
+}
+
+/* Booking panel (right side) */
+.booking-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 350px;
+  height: 100%;
+  background: white;
+  box-shadow: -4px 0 10px rgba(0,0,0,0.1);
+  padding: 20px;
+  z-index: 1000;
+}
+
+/* Inputs */
+.input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+}
+
+/* Room tiles */
+.room-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.room-tile {
+  padding: 10px;
+  border: 2px solid #ccc;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.room-tile.active {
+  border-color: green;
+}
+
+/* Buttons */
+.check-btn {
+  width: 100%;
+  background: orange;
+  border: none;
+  padding: 10px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+.submit-btn {
+  width: 100%;
+  background: green;
+  color: white;
+  border: none;
+  padding: 10px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  float: right;
+  cursor: pointer;
 }
