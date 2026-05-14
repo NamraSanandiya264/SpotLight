@@ -22,6 +22,7 @@ const StudentDashboard = () => {
   
   const [bookings, setBookings] = useState([]);
   const [availabilityChecked, setAvailabilityChecked] = useState(false);
+  const [statusMessage, setStatusMessage] = useState({ text: "", type: "" });
 
   // Fetch bookings on page load
   useEffect(() => {
@@ -50,8 +51,9 @@ const StudentDashboard = () => {
 
   // Check Availability
   const handleCheckAvailability = async () => {
+    setStatusMessage({ text: "", type: "" });
     if (!date || !startTime || !endTime || !selectedRoom) {
-      alert("Please fill all fields");
+      setStatusMessage({ text: "Please fill all fields", type: "error" });
       return;
     }
 
@@ -64,46 +66,48 @@ const StudentDashboard = () => {
       });
 
       if (res.data.available) {
-        alert("Room available ✅");
+        setStatusMessage({ text: "Room available ✅", type: "success" });
         setAvailabilityChecked(true);
       } else {
-        alert("Room not available ❌");
+        setStatusMessage({ text: "Room not available ❌", type: "error" });
         setAvailabilityChecked(false);
       }
     } catch (err) {
       console.error(err);
-      alert("Server error while checking availability");
+      setStatusMessage({ text: "Server error while checking availability", type: "error" });
     }
   };
 
   // Confirm Booking
   const handleBooking = async () => {
-  if (!availabilityChecked) {
-    alert("Check availability first");
-    return;
-  }
+    setStatusMessage({ text: "", type: "" });
+    if (!availabilityChecked) {
+      setStatusMessage({ text: "Check availability first", type: "error" });
+      return;
+    }
 
-  try {
-    const res = await createBooking({
-      room_id: selectedRoom,
-      date,
-      start_time: startTime,
-      end_time: endTime,
-      purpose: "Meeting",
-    });
+    try {
+      const res = await createBooking({
+        room_id: selectedRoom,
+        date,
+        start_time: startTime,
+        end_time: endTime,
+        purpose: "Meeting",
+      });
 
-    setBookings((prev) => [res.data.booking, ...prev]);
-    setShowPanel(false);
-    setAvailabilityChecked(false);
-    alert("Booking Successful! Pending approval.");
+      setBookings((prev) => [res.data.booking, ...prev]);
+      setShowPanel(false);
+      setAvailabilityChecked(false);
+      setStatusMessage({ text: "", type: "" });
+      alert("Booking Successful! Pending approval.");
 
-  } catch (err) {
-    console.error("Full Error Object:", err);
-    // Display the specific message from the backend
-    const errorMsg = err.response?.data?.message || "Booking failed";
-    alert(errorMsg); 
-  }
-};
+    } catch (err) {
+      console.error("Full Error Object:", err);
+      // Display the specific message from the backend
+      const errorMsg = err.response?.data?.message || "Booking failed";
+      setStatusMessage({ text: errorMsg, type: "error" }); 
+    }
+  };
 
   return (
     <div className="student-dashboard">
@@ -114,7 +118,7 @@ const StudentDashboard = () => {
 
         <button
           className="book-btn"
-          onClick={() => setShowPanel(true)}
+          onClick={() => { setShowPanel(true); setStatusMessage({ text: "", type: "" }); }}
         >
           + Book a Room
         </button>
@@ -136,7 +140,7 @@ const StudentDashboard = () => {
                 </span>
               </div>
 
-              <p><strong>Date:</strong> {b.date}</p>
+              <p><strong>Date:</strong> {b.date ? b.date.split('T')[0] : ""}</p>
               <p><strong>Time:</strong> {b.start_time} - {b.end_time}</p>
             </div>
           ))
@@ -149,7 +153,7 @@ const StudentDashboard = () => {
 
           <button
             className="close-btn"
-            onClick={() => setShowPanel(false)}
+            onClick={() => { setShowPanel(false); setStatusMessage({ text: "", type: "" }); }}
           >
             ✖
           </button>
@@ -201,6 +205,20 @@ const StudentDashboard = () => {
           </div>
 
           {/* Check Availability */}
+          {statusMessage.text && (
+            <div style={{
+              color: statusMessage.type === 'error' ? '#d32f2f' : '#2e7d32',
+              marginBottom: '10px',
+              textAlign: 'center',
+              fontWeight: '500',
+              backgroundColor: statusMessage.type === 'error' ? '#ffebee' : '#e8f5e9',
+              padding: '8px',
+              borderRadius: '4px',
+              fontSize: '14px'
+            }}>
+              {statusMessage.text}
+            </div>
+          )}
           <button
             className="check-btn"
             onClick={handleCheckAvailability}
