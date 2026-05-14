@@ -55,3 +55,4 @@ desktop.ini
 *.pid
 *.seed
 *.pid.lock
+.early.coverage

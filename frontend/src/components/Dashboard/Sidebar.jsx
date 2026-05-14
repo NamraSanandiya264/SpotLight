@@ -1,21 +1,56 @@
+import "../../pages/Dashboard/Dashboard.css";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
-const Sidebar = ({ user }) => {
+const Sidebar = ({ collapsed, setCollapsed, activeMenu, setActiveMenu }) => {
   return (
     <div className="sidebar">
-  <div>
-    <h2>Dashboard</h2>
-    <ul>
-      <li>Room Booking</li>
-       <li>Budget</li>
-      <li>Event Calendar</li>
-    </ul>
-  </div>
 
-  <div className="sidebar-bottom">
-    <li>Profile</li>
-    <li>Logout</li>
-  </div>
-</div>
+      <div className="sidebar-header">
+
+        {/*Toggle Button*/}
+        <button
+          className="toggle-btn"
+          onClick={() => setCollapsed(prev => !prev)}
+        >
+          {collapsed ? <FaChevronRight /> : <FaChevronLeft />}
+        </button>
+
+        {/*Logo text */}
+        {!collapsed && (
+          <h2 className="logo">Room Booking Portal</h2>
+        )}
+
+      </div>
+
+      <ul className="menu">
+        <li
+          className={activeMenu === "booking" ? "active" : ""}
+          onClick={() => setActiveMenu("booking")}
+        >
+          Room Booking
+        </li>
+
+        <li
+          className={activeMenu === "budget" ? "active" : ""}
+          onClick={() => setActiveMenu("budget")}
+        >
+          Budget
+        </li>
+
+        <li
+          className={activeMenu === "events" ? "active" : ""}
+          onClick={() => setActiveMenu("events")}
+        >
+          Event Calendar
+        </li>
+      </ul>
+
+      <div className="bottom-menu">
+        <p>Profile</p>
+        <p>Logout</p>
+      </div>
+
+    </div>
   );
 };
 
