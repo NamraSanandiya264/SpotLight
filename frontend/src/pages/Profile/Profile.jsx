@@ -16,14 +16,12 @@ const YEAR_OPTIONS = [
 ];
 
 const BRANCH_OPTIONS = [
-  "Computer Science & Engineering",
-  "Information & Communication Technology",
-  "Electronics & Communication",
-  "Electrical Engineering",
-  "Mechanical Engineering",
-  "Civil Engineering",
-  "Mathematics & Computing",
-  "Other",
+  "ICT",
+  "ICT-CS",
+  "EVD",
+  "MNC",
+  "MSCIT",
+  "M. Tech"
 ];
 
 const Profile = () => {

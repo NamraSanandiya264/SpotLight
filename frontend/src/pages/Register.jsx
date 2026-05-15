@@ -11,13 +11,15 @@ const Register = () => {
 
   const navigate = useNavigate();
   const [errors, setErrors] = useState({});
-  
+
   const [formData, setFormData] = useState({
     studentID: "",
     name: "",
     email: "",
     password: "",
     yearOfStudy: "",
+    branch: "",
+    phone: "",
     role: "student",
   });
 
@@ -29,38 +31,38 @@ const Register = () => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  let newErrors = {};
+    let newErrors = {};
 
-  // Student ID validation
-  if (!/^\d{9}$/.test(formData.studentID)) {
-    newErrors.studentID = "Student ID must be exactly 9 digits";
-  }
+    // Student ID validation
+    if (!/^\d{9}$/.test(formData.studentID)) {
+      newErrors.studentID = "Student ID must be exactly 9 digits";
+    }
 
-  // Email validation
-  if (!formData.email.includes("@")) {
-    newErrors.email = "Invalid email address";
-  }
+    // Email validation
+    if (!formData.email.includes("@")) {
+      newErrors.email = "Invalid email address";
+    }
 
-  // Password validation
-  if (formData.password.length < 6) {
-    newErrors.password = "Password must be at least 6 characters";
-  }
+    // Password validation
+    if (formData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
 
-  // Year validation
-  if (!formData.yearOfStudy) {
-    newErrors.yearOfStudy = "Please select year of study";
-  }
+    // Year validation
+    if (!formData.yearOfStudy) {
+      newErrors.yearOfStudy = "Please select year of study";
+    }
 
-  // If errors exist → stop API call
-  if (Object.keys(newErrors).length > 0) {
-    setErrors(newErrors);
-    return;
-  }
+    // If errors exist → stop API call
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
 
-  // Clear previous errors
-  setErrors({});
+    // Clear previous errors
+    setErrors({});
 
     try {
       await API.post("/users/registerUser", formData);
@@ -75,28 +77,28 @@ const Register = () => {
         error.response?.data?.message || "Registration failed ❌"
       );
     }
-    
+
   };
 
- const handleBackendErrors = (error) => {
-  const backendErrors = {};
+  const handleBackendErrors = (error) => {
+    const backendErrors = {};
 
-  if (error.response?.data?.errors) {
-    error.response.data.errors.forEach((err) => {
-      backendErrors[err.path || err.param] = err.msg;
-    });
-  } else if (error.response?.data?.message) {
-    backendErrors.general = error.response.data.message;
-  }
+    if (error.response?.data?.errors) {
+      error.response.data.errors.forEach((err) => {
+        backendErrors[err.path || err.param] = err.msg;
+      });
+    } else if (error.response?.data?.message) {
+      backendErrors.general = error.response.data.message;
+    }
 
-  setErrors(backendErrors);
-};
+    setErrors(backendErrors);
+  };
 
 
-const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   return (
     <div className="register-container">
-      
+
       {/* LEFT SIDE */}
       <div className="register-left">
         <div>
@@ -121,9 +123,9 @@ const [showPassword, setShowPassword] = useState(false);
               placeholder="e.g. 202301212"
               value={formData.studentID}
               onChange={(e) => {
-                  const value = e.target.value.replace(/\D/g, ""); // only digits
-                  setFormData({ ...formData, studentID: value });
-                }}
+                const value = e.target.value.replace(/\D/g, ""); // only digits
+                setFormData({ ...formData, studentID: value });
+              }}
               required
               maxlength='9'
             />
@@ -158,6 +160,29 @@ const [showPassword, setShowPassword] = useState(false);
               required
             />
             {errors.email && (<p className="error-text">{errors.email}</p>)}
+          </div>
+          {/* Add Phone Field*/}
+          <div className="form-group">
+            <label>
+              Phone Number
+            </label>
+
+            <input
+              type="text"
+              name="phone"
+              placeholder="Enter phone number"
+              value={formData.phone}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, "");
+                setFormData({ ...formData, phone: value });
+              }}
+              maxLength="10"
+              required
+            />
+
+            {errors.phone && (
+              <p className="error-text">{errors.phone}</p>
+            )}
           </div>
 
           {/* Password */}
@@ -209,6 +234,50 @@ const [showPassword, setShowPassword] = useState(false);
             {errors.yearOfStudy && (<p className="error-text">{errors.yearOfStudy}</p>)}
           </div>
 
+          {/* Branch */}
+          <div className="form-group">
+            <label>
+              Branch <span className="required">*</span>
+            </label>
+
+            <select
+              name="branch"
+              value={formData.branch}
+              onChange={handleChange}
+              required
+            >
+              <option value="">Select Branch</option>
+
+              <option value="ICT">
+                ICT
+              </option>
+
+              <option value="ICT-CS">
+                ICT-CS
+              </option>
+
+              <option value="EVD">
+                EVD
+              </option>
+
+              <option value="MNC">
+                MNC
+              </option>
+
+              <option value="MSCIT">
+                MSCIT
+              </option>
+
+              <option value="M.Tech">
+                M.Tech
+              </option>
+            </select>
+
+            {errors.branch && (
+              <p className="error-text">{errors.branch}</p>
+            )}
+          </div>
+
           {/* Role */}
           <div className="form-group">
             <label>
@@ -240,7 +309,7 @@ const [showPassword, setShowPassword] = useState(false);
             />
             Continue with Google
           </button>
-          
+
           <div className="login-redirect">
             <p>
               Already have an account? <Link to="/login">Login here</Link>
