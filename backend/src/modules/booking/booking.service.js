@@ -45,11 +45,12 @@ if (!room_id || !date || !start_time || !end_time) {
 };
 
 // Get all bookings
-export const getBookingsService = async () => {
+export const getBookingsService = async (user) => {
   if (user.role === "sbg_core") {
     return await Booking.find()
-      .populate("user_id")
-      .populate("room_id");
+      .populate("user_id", "name email") 
+      .populate("room_id", "name")
+      .sort({ createdAt: -1 });
   }
   return await Booking.find({ user_id: user._id })
     .populate("user_id")

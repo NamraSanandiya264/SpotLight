@@ -3,9 +3,13 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
 import 'react-toastify/dist/ReactToastify.css';
+import { AuthProvider } from "./context/AuthContext"; // ✅ Added
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <App />
+    {/* ✅ Wrap the entire application */}
+    <AuthProvider>
+      <App />
+    </AuthProvider>
   </React.StrictMode>
 );

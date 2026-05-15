@@ -25,3 +25,8 @@ export const getMyBookings = () =>
 export default API;
 
 export const getAllRooms = () => API.get("/rooms");
+
+export const updateBookingStatus = (id, status) => 
+  API.patch(`/bookings/${id}/status`, { status });
+
+export const getBookings = () => API.get("/bookings"); //for core

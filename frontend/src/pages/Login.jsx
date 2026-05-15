@@ -1,12 +1,14 @@
 import { useState } from "react";
-import "./Register.css"; // CSS same as register page
+import "./Register.css";
 import API from "../services/api";
 import { useNavigate, Link } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { toast } from "react-toastify";
+import { useAuth } from "../context/AuthContext"; // ✅ Import the hook
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuth(); // ✅ Get the login function from context
 
   const [formData, setFormData] = useState({
     email: "",
@@ -17,60 +19,42 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     let newErrors = {};
 
-    // Email validation
-    if (!formData.email.includes("@")) {
-      newErrors.email = "Invalid email address";
-    }
+    if (!formData.email.includes("@")) newErrors.email = "Invalid email address";
+    if (!formData.password) newErrors.password = "Password is required";
 
-    // Password validation
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    }
-
-    // Stop if errors
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
 
-    setErrors({});
-
     try {
       const res = await API.post("/users/loginUser", formData);
 
-      // Save token
+      // 1. Save token for API calls
       localStorage.setItem("token", res.data.token);
 
-      toast.success("Login successful ✅");
+      // 2. ✅ Update global Auth state with user data (including role)
+      // Your backend returns { user: { name, role, ... }, token: "..." }
+      login(res.data.user); 
 
+      toast.success("Login successful ✅");
       navigate("/dashboard");
 
     } catch (error) {
-        const message =
-          error.response?.data?.message || "Invalid credentials";
-
-        setErrors({
-          general: message,
-        });
-
-      }
+      const message = error.response?.data?.message || "Invalid credentials";
+      setErrors({ general: message });
+    }
   };
 
   return (
     <div className="register-container">
-      
-      {/* LEFT SIDE (same as register) */}
       <div className="register-left">
         <div>
           <h1>Welcome Back 😊</h1>
@@ -78,12 +62,10 @@ const Login = () => {
         </div>
       </div>
 
-      {/* RIGHT SIDE */}
       <div className="register-right">
         <form onSubmit={handleSubmit} className="register-form" noValidate>
           <h2>Login to your account</h2>
 
-          {/* Email */}
           <div className="form-group">
             <label>Email <span className="required">*</span></label>
             <input
@@ -93,15 +75,11 @@ const Login = () => {
               value={formData.email}
               onChange={handleChange}
             />
-            {errors.email && (
-              <p className="error-text">{errors.email}</p>
-            )}
+            {errors.email && <p className="error-text">{errors.email}</p>}
           </div>
 
-          {/* Password */}
           <div className="form-group">
             <label>Password <span className="required">*</span></label>
-
             <div className="password-wrapper">
               <input
                 type={showPassword ? "text" : "password"}
@@ -109,35 +87,19 @@ const Login = () => {
                 value={formData.password}
                 onChange={handleChange}
               />
-
-              <span
-                className="toggle-password"
-                onClick={() => setShowPassword(!showPassword)}
-              >
+              <span className="toggle-password" onClick={() => setShowPassword(!showPassword)}>
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </span>
             </div>
-
-            {errors.password && (
-              <p className="error-text">{errors.password}</p>
-            )}
+            {errors.password && <p className="error-text">{errors.password}</p>}
           </div>
 
-          {/* General Error */}
-          {errors.general && (
-            <p className="error-text">{errors.general}</p>
-          )}
+          {errors.general && <p className="error-text">{errors.general}</p>}
 
-          {/* Submit */}
-          <button type="submit" className="signup-btn">
-            Login
-          </button>
+          <button type="submit" className="signup-btn">Login</button>
 
-          {/* Redirect */}
           <div className="login-redirect">
-            <p>
-              Don't have an account? <Link to="/">Register here</Link>
-            </p>
+            <p>Don't have an account? <Link to="/">Register here</Link></p>
           </div>
         </form>
       </div>

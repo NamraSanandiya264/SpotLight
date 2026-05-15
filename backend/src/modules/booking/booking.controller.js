@@ -33,15 +33,21 @@ export const getBookings = async (req, res) => {
 // Approve / Reject booking
 export const updateBookingStatus = async (req, res) => {
   try {
-    const booking = await updateBookingStatusService(
-      req.params.id,
-      req.body.status,
-      req.user
-    );
+    const { status } = req.body;
+    const { id } = req.params;
 
-    res.status(200).json(booking);
+    const updatedBooking = await updateBookingStatusService(id, status, req.user);
+
+    // Populate room info before sending back to keep UI from crashing
+    const result = await updatedBooking.populate("room_id", "name");
+
+    res.status(200).json({
+      success: true,
+      message: `Booking ${status} successfully`,
+      booking: result
+    });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ success: false, message: error.message });
   }
 };
 

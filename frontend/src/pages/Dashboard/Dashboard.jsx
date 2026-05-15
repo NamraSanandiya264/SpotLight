@@ -1,22 +1,24 @@
 import DashboardLayout from "./DashboardLayout";
 import StudentDashboard from "./StudentDashboard";
-//import CoreDashboard from "./CoreDashboard";
+import CoreDashboard from "./CoreDashboard";
+import { useAuth } from "../../context/AuthContext"; 
 
 const Dashboard = () => {
+  const { user } = useAuth(); 
 
-  // TEMP user (later from backend / JWT)
-  const user = {
-    name: "Ishti",
-    role: "student", // or "sbg_core"
-  };
+  if (!user) return <p>Please log in</p>;
 
   return (
     <DashboardLayout user={user}>
       {({ collapsed, setCollapsed }) => (
-        <StudentDashboard
-          collapsed={collapsed}
-          setCollapsed={setCollapsed}
-        />
+        <>
+          {/* ✅ Automatic Switching based on database role */}
+          {user.role === "sbg_core" ? (
+            <CoreDashboard collapsed={collapsed} setCollapsed={setCollapsed} />
+          ) : (
+            <StudentDashboard collapsed={collapsed} setCollapsed={setCollapsed} />
+          )}
+        </>
       )}
     </DashboardLayout>
   );
