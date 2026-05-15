@@ -8,9 +8,9 @@ import { useAuth } from "./context/AuthContext"; // ✅ Added
 // ✅ PrivateRoute helper component
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
-  
+
   if (loading) return <div>Loading...</div>; // Prevent flash of login page
-  
+
   return user ? children : <Navigate to="/login" />;
 };
 
@@ -22,15 +22,15 @@ function App() {
       <Routes>
         <Route path="/" element={<Register />} />
         <Route path="/login" element={<Login />} />
-        
+
         {/* ✅ Protected Dashboard Route */}
-        <Route 
-          path="/dashboard" 
+        <Route
+          path="/dashboard"
           element={
             <PrivateRoute>
               <Dashboard />
             </PrivateRoute>
-          } 
+          }
         />
       </Routes>
     </BrowserRouter>

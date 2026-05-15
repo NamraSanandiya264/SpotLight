@@ -7,29 +7,36 @@ const userSchema = new mongoose.Schema(
       type: Number,
       required: true,
       validate: {
-        validator: function (v){
+        validator: function (v) {
           return /^\d{9}$/.test(v);
-        }
+        },
       },
       unique: true,
     },
+
     name: {
       type: String,
       required: true,
       trim: true,
     },
+
     email: {
       type: String,
       required: true,
       unique: true,
       lowercase: true,
       trim: true,
-      match: [/^[a-zA-Z0-9._%+-]+@dau\.ac\.in$/, "Use DAU email only"]
+      match: [
+        /^[a-zA-Z0-9._%+-]+@dau\.ac\.in$/,
+        "Use DAU email only",
+      ],
     },
+
     password: {
       type: String,
       required: true,
     },
+
     yearOfStudy: {
       type: String,
       required: true,
@@ -42,15 +49,40 @@ const userSchema = new mongoose.Schema(
         "Masters - 2nd Year",
       ],
     },
+
+    branch: {
+      type: String,
+      enum: [
+        "ICT",
+        "ICT-CS",
+        "EVD",
+        "MNC",
+        "MSCIT",
+        "M. Tech"
+      ],
+    },
+
+    phone: {
+      type: String,
+      trim: true,
+    },
+
+    avatar: {
+      type: String,
+      default: "",
+    },
+
     role: {
       type: String,
       enum: ["student", "sbg_core"],
       default: "student",
     },
   },
+
   { timestamps: true }
 );
-// It removes the password when you send user data in API response
+
+// Removes password from API response
 userSchema.set("toJSON", {
   transform: (doc, ret) => {
     delete ret.password;
