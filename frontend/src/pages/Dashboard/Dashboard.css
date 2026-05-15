@@ -1,253 +1,309 @@
-/* Layout */
+/* =========================================
+   1. CORE LAYOUT & VARIABLES
+   ========================================= */
+:root {
+  --primary: #2563eb;
+  --primary-light: #eff6ff;
+  --primary-dark: #1d4ed8;
+  --bg-main: #ffffff;
+  /* Distinct background color for sidebar */
+  --sidebar-bg: #f8fafc; 
+  --border: #e2e8f0;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  
+  /* Status Colors */
+  --status-pending: #fbbf24;
+  --status-approved: #10b981;
+  --status-rejected: #ef4444;
+  
+  /* Standard Transitions */
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .dashboard-container {
   display: flex;
   height: 100vh;
+  background-color: var(--bg-main);
   overflow: hidden;
 }
 
-/* Sidebar */
+/* =========================================
+   2. SIDEBAR STYLING
+   ========================================= */
 .sidebar {
-  width: 250px;
-  background: #2563eb;
-  color: white;
-  padding: 20px;
-  transition: width 0.3s ease;
+  width: 260px;
+  /* Apply the slate background here */
+  /* background: var(--sidebar-bg) !important;  */
+  background-color: #2563eb;
+  border-right: 1px solid var(--border);
+  padding: 24px 12px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  /* ❌ REMOVE position: fixed */
+  transition: var(--transition);
+  z-index: 50;
 }
+
+/* Logic for collapsed width */
+.sidebar.collapsed {
+  width: 80px;
+  padding: 24px 10px;
+  align-items: center;
+}
+
+/* Sidebar Logo/Header area */
 .sidebar-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 40px;
+  padding: 0 8px;
 }
 
-.toggle-btn {
-  background: white;
-  color: #2563eb;
-  border: none;
-  padding: 8px;
-  border-radius: 50%;
-  cursor: pointer;
+.logo {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary);
+  white-space: nowrap;
+}
+
+/* Menu items and sidebar links */
+.menu li, .menu-item {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  transition: all 0.2s ease;
-}
-
-.toggle-btn:hover {
-  background: #e0e7ff;
-  transform: scale(1.05);
-}
-
-.sidebar h2 {
-  padding: 20px;
-}
-
-.sidebar ul {
-  list-style: none;
-  padding: 0;
-}
-
-.sidebar li {
-  padding: 15px 20px;
+  gap: 15px;
+  padding: 12px 15px;
+  margin: 4px 0;
+  border-radius: 10px;
+  /* color: var(--text-muted); */
+  color: white;
+  font-weight: 500;
   cursor: pointer;
+  transition: var(--transition);
 }
 
-.sidebar li:hover {
-  background: #1e40af;
-}
-
-/* Collapsed Sidebar */
-.dashboard-container.collapsed .sidebar {
-  width: 70px;
-}
-
-.dashboard-container.collapsed .sidebar h2,
-.dashboard-container.collapsed .sidebar ul li,
-.dashboard-container.collapsed .bottom-menu p {
+/* Hide text when sidebar is collapsed */
+.sidebar.collapsed span {
   display: none;
 }
 
-/* Logo */
-.logo {
-  margin-bottom: 30px;
+/* Hover and Active states for links */
+.menu li:hover, .menu-item:hover {
+  background: #f1f5f9;
+  color: var(--text-main);
 }
 
-/* Bottom section */
-.sidebar-bottom {
-  margin-bottom: 20px;
-}
-
-.menu {
-  list-style: none;
-  padding: 0;
-}
-
-.menu li {
-  margin: 15px 0;
-  cursor: pointer;
-}
 .menu li.active {
-  background: #1e40af;
-  border-radius: 6px;
-}
-.bottom-menu {
-  margin-top: auto;
+  background: var(--primary-light);
+  color: var(--primary);
 }
 
-/* Main content */
+/* Toggle button styling */
+.toggle-btn {
+  background: white;
+  color: var(--primary);
+  border: 1.5px solid var(--border);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* =========================================
+   3. BOTTOM MENU (Profile & Logout)
+   ========================================= */
+.bottom-menu {
+  /* Pushes this section to the bottom */
+  margin-top: auto; 
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.logout {
+  /* Red text for logout actions */
+  color: var(--status-rejected) !important;
+}
+
+.logout:hover {
+  background: #fef2f2 !important;
+}
+
+/* =========================================
+   4. MAIN CONTENT AREA
+   ========================================= */
 .main-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: #f9fafb;
-}
-
-/* Topbar */
-.topbar {
-  height: 60px;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  padding: 0 20px;
-  background: #f3f4f6;
-  border-bottom: 1px solid #ddd;
-}
-
-/* Toggle button */
-.toggle-btn {
-  font-size: 18px;
-  background: #2563eb;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-/* Content */
-.content-area {
-  padding: 20px;
-  height: calc(100vh - 60px);
   overflow-y: auto;
 }
 
-/* Header */
+.content-area {
+  padding: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
 .dashboard-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 32px;
 }
 
-.book-btn {
-  background: #2563eb;
-  color: white;
-  padding: 10px 18px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.book-btn:hover {
-  background: #1d4ed8;
-}
-
-/* Booking cards */
-.booking-card {
-  border: 1px solid #ddd;
-  padding: 15px;
-  border-radius: 10px;
-  margin-bottom: 10px;
-}
-
-.booking-row {
+/* =========================================
+   5. TAB NAVIGATION
+   ========================================= */
+.tab-navigation {
   display: flex;
-  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
 }
 
-.status {
-  padding: 5px 10px;
-  border-radius: 6px;
+.tab-btn {
+  background: none;
+  border: none;
+  padding: 12px 20px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 2px solid transparent;
+  transition: var(--transition);
 }
 
-.status.pending {
-  background: orange;
+.tab-btn.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
 }
 
-.status.approved {
-  background: green;
-  color: white;
+/* =========================================
+   6. BOOKING CARDS
+   ========================================= */
+.booking-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
 }
 
-/* Booking panel (right side) */
+.booking-card {
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.booking-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+}
+
+/* Visual status indicator on left of card */
+.booking-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 5px;
+}
+
+.booking-card:has(.pending)::before { background: var(--status-pending); }
+.booking-card:has(.approved)::before { background: var(--status-approved); }
+.booking-card:has(.rejected)::before { background: var(--status-rejected); }
+
+.card-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.status-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.status-badge.pending { background: #fffbeb; color: #b45309; }
+.status-badge.approved { background: #ecfdf5; color: #047857; }
+
+/* =========================================
+   7. SLIDE-OUT BOOKING PANEL
+   ========================================= */
 .booking-panel {
   position: fixed;
   top: 0;
   right: 0;
-  width: 350px;
+  width: 400px;
   height: 100%;
   background: white;
-  box-shadow: -4px 0 10px rgba(0,0,0,0.1);
-  padding: 20px;
+  box-shadow: -15px 0 35px rgba(0,0,0,0.08);
+  padding: 40px;
   z-index: 1000;
+  border-left: 1px solid var(--border);
 }
 
-/* Inputs */
 .input {
   width: 100%;
-  padding: 8px;
-  margin-bottom: 10px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: 8px 0 16px 0;
+  font-size: 0.9rem;
 }
 
-/* Room tiles */
-.room-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  margin: 10px 0;
+.input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* =========================================
+   8. BUTTONS & UI UTILITIES
+   ========================================= */
+.book-btn {
+  background: var(--primary);
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
 }
 
 .room-tile {
-  padding: 10px;
-  border: 2px solid #ccc;
+  padding: 14px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
   text-align: center;
+  font-weight: 600;
   cursor: pointer;
-  border-radius: 6px;
 }
 
 .room-tile.active {
-  border-color: green;
+  border-color: var(--primary);
+  background: var(--primary-light);
+  color: var(--primary);
 }
 
-/* Buttons */
-.check-btn {
-  width: 100%;
-  background: orange;
-  border: none;
-  padding: 10px;
-  margin-top: 10px;
-  cursor: pointer;
-}
-
-.submit-btn {
-  width: 100%;
-  background: green;
-  color: white;
-  border: none;
-  padding: 10px;
-  margin-top: 10px;
-  cursor: pointer;
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 18px;
-  float: right;
-  cursor: pointer;
+.icon {
+  margin-right: 10px;
+  color: var(--text-muted);
 }
