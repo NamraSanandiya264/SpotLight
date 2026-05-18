@@ -3,13 +3,13 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import { ToastContainer } from "react-toastify";
 import Dashboard from "./pages/Dashboard/Dashboard";
-import { useAuth } from "./context/AuthContext"; // ✅ Added
+import { useAuth } from "./context/AuthContext"; 
+import Profile from "./pages/Profile/Profile";
 
-// ✅ PrivateRoute helper component
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
 
-  if (loading) return <div>Loading...</div>; // Prevent flash of login page
+  if (loading) return <div className="loading-container"><div>Loading...</div></div>;
 
   return user ? children : <Navigate to="/login" />;
 };
@@ -23,7 +23,7 @@ function App() {
         <Route path="/" element={<Register />} />
         <Route path="/login" element={<Login />} />
 
-        {/* ✅ Protected Dashboard Route */}
+        {/* Protected Dashboard Route Container */}
         <Route
           path="/dashboard"
           element={
@@ -32,6 +32,18 @@ function App() {
             </PrivateRoute>
           }
         />
+
+        <Route
+          path="/profile"
+          element={
+            <PrivateRoute>
+              <Profile />
+            </PrivateRoute>
+          }
+        />
+
+        {/* Fallback Catch and Route Redirect to Main Core Application hub */}
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>
   );
