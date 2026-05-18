@@ -188,6 +188,10 @@
 /* =========================================
    6. BOOKING CARDS
    ========================================= */
+.tab-content h3 {
+  margin-bottom: 24px;
+}
+
 .booking-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -225,9 +229,10 @@
 .booking-card:has(.rejected)::before { background: var(--status-rejected); }
 
 .card-header {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 12px;
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  margin-bottom: 0;
 }
 
 .status-badge {
@@ -307,7 +312,7 @@
   border-radius: 8px;
   border: none;
   font-weight: 700;
-  margin-top: 24px; /* More space before the button */
+  margin-top: 10px; 
   cursor: pointer;
   transition: var(--transition);
 }
@@ -361,13 +366,21 @@
   cursor: pointer;
 }
 
+.room-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 8px;
+}
+
 .room-tile {
-  padding: 14px;
+  padding: 10px;
   border: 2px solid var(--border);
   border-radius: 8px;
   text-align: center;
   font-weight: 600;
   cursor: pointer;
+  font-size: 0.9rem;
 }
 
 .room-tile.active {
@@ -442,6 +455,7 @@
   border-radius: 8px;
   font-size: 0.9rem;
   font-weight: 500;
+  margin-top: 16px;
   margin-bottom: 20px;
   display: flex;
   align-items: center;

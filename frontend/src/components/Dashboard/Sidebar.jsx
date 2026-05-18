@@ -4,25 +4,39 @@ import {
   FaLayerGroup, FaCalendarAlt,
   FaUserCircle, FaSignOutAlt, FaChevronLeft, FaChevronRight, FaBuilding
 } from "react-icons/fa";
+import Swal from "sweetalert2"; // Implemented SweetAlert2 for cleaner session dialogs
 
 const Sidebar = ({ collapsed, setCollapsed, activeMenu, setActiveMenu }) => {
   const navigate = useNavigate();
   const { logout } = useAuth(); 
 
-  // Direct internal view swapper without page refresh redirects
+  /* Direct internal view swapper without page refresh redirects */
   const handleTabChange = (menuName) => {
     setActiveMenu(menuName);
-    // If the user was on /profile, return them to the dashboard home workspace view
+    /* If the user was on /profile, return them to the dashboard home workspace view */
     if (window.location.pathname !== "/dashboard") {
       navigate("/dashboard");
     }
   };
 
+  /* Enhanced Logout Alert using clean SweetAlert2 layout instead of native browser box */
   const handleLogout = () => {
-    if (window.confirm("Are you sure you want to logout?")) {
-      logout();
-      navigate("/login");
-    }
+    Swal.fire({
+      title: "Logout?",
+      text: "Are you sure you want to log out of your session?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444", /* Matches the theme's red logout style */
+      cancelButtonColor: "#64748b",
+      confirmButtonText: "Yes, logout",
+      cancelButtonText: "Cancel",
+      background: "#ffffff"
+    }).then((result) => {
+      if (result.isConfirmed) {
+        logout();
+        navigate("/login");
+      }
+    });
   };
 
   return (

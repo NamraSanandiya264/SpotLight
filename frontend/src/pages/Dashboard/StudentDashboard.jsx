@@ -16,6 +16,7 @@ import {
   FaClock
 } from "react-icons/fa";
 import { MdOutlineNotes } from "react-icons/md"; 
+import Swal from "sweetalert2"; 
 
 const StudentDashboard = () => {
   const [showPanel, setShowPanel] = useState(false);
@@ -46,8 +47,7 @@ const StudentDashboard = () => {
     loadDashboardData();
   }, []);
 
-  // --- FILTERING LOGIC ---
-  // Using UTC date to avoid timezone shifts during comparison
+  /* --- FILTERING LOGIC --- */
   const today = new Date().toISOString().split('T')[0];
 
   const pendingRequests = bookings.filter(b => b.status === "pending");
@@ -60,12 +60,26 @@ const StudentDashboard = () => {
     (b.status === "approved" && b.date?.split('T')[0] < today) || b.status === "rejected"
   );
 
+  /* Helper function to reset availability validation on input mutations */
+  const handleInputMutation = (setter, value) => {
+    setter(value);
+    setAvailabilityChecked(false);
+    setStatusMessage({ text: "", type: "" });
+  };
+
   const handleCheckAvailability = async () => {
     setStatusMessage({ text: "", type: "" });
     if (!date || !startTime || !endTime || !selectedRoom) {
       setStatusMessage({ text: "Please fill all fields", type: "error" });
       return;
     }
+
+    /* ✅ Check 2: Client-side Chronological Time Window Check */
+    if (startTime >= endTime) {
+      setStatusMessage({ text: "Start time must be strictly before end time ❌", type: "error" });
+      return;
+    }
+
     try {
       const res = await checkAvailability({
         room_id: selectedRoom,
@@ -104,7 +118,13 @@ const StudentDashboard = () => {
       setShowPanel(false);
       setAvailabilityChecked(false);
       setPurpose("");
-      alert("Booking Successful! Pending approval.");
+      
+      Swal.fire({
+        title: "Booking Submitted! 🎉",
+        text: "Your reservation request has been sent to the SBG Core team for approval.",
+        icon: "success",
+        confirmButtonColor: "#2563eb",
+      });
     } catch (err) {
       const errorMsg = err.response?.data?.message || "Booking failed";
       setStatusMessage({ text: errorMsg, type: "error" }); 
@@ -146,7 +166,6 @@ const StudentDashboard = () => {
         </button>
       </div>
 
-      {/* --- NEW TAB NAVIGATION --- */}
       <div className="tab-navigation">
         <button 
           className={`tab-btn ${activeTab === "pending" ? "active" : ""}`}
@@ -168,7 +187,6 @@ const StudentDashboard = () => {
         </button>
       </div>
 
-      {/* --- CONDITIONAL CONTENT AREA --- */}
       <div className="sections-container">
         {activeTab === "pending" && (
           <div className="tab-content">
@@ -198,16 +216,33 @@ const StudentDashboard = () => {
           <h3>New Reservation</h3>
 
           <label>Date</label>
-          <input type="date" className="input" value={date} onChange={(e) => setDate(e.target.value)} />
+          {/* ✅ Check 2: past reservation block via min restriction */}
+          <input 
+            type="date" 
+            className="input" 
+            min={today} 
+            value={date} 
+            onChange={(e) => handleInputMutation(setDate, e.target.value)} 
+          />
 
           <div className="time-row">
             <div>
               <label>Start</label>
-              <input type="time" className="input" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
+              <input 
+                type="time" 
+                className="input" 
+                value={startTime} 
+                onChange={(e) => handleInputMutation(setStartTime, e.target.value)} 
+              />
             </div>
             <div>
               <label>End</label>
-              <input type="time" className="input" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+              <input 
+                type="time" 
+                className="input" 
+                value={endTime} 
+                onChange={(e) => handleInputMutation(setEndTime, e.target.value)} 
+              />
             </div>
           </div>
 
@@ -226,7 +261,8 @@ const StudentDashboard = () => {
               <div
                 key={room._id}
                 className={`room-tile ${selectedRoom === room._id ? "active" : ""}`}
-                onClick={() => setSelectedRoom(room._id)}
+                /* ✅ Check 1: Mutating selected tile safely clears old validation signatures */
+                onClick={() => handleInputMutation(setSelectedRoom, room._id)}
               >
                 {room.name}
               </div>
@@ -236,6 +272,7 @@ const StudentDashboard = () => {
           {statusMessage.text && <div className={`status-alert ${statusMessage.type}`}>{statusMessage.text}</div>}
 
           <button className="check-btn" onClick={handleCheckAvailability}>Check Availability</button>
+
           {availabilityChecked && <button className="submit-btn" onClick={handleBooking}>Confirm Booking</button>}
         </div>
       )}

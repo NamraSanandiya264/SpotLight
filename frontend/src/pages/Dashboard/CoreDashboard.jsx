@@ -15,6 +15,7 @@ import {
   FaUser
 } from "react-icons/fa";
 import { MdOutlineNotes } from "react-icons/md"; 
+import Swal from "sweetalert2"; // ✅ Confirmed
 
 const CoreDashboard = () => {
   const [bookings, setBookings] = useState([]);
@@ -44,21 +45,48 @@ const CoreDashboard = () => {
   const rejectedRequests = bookings.filter(b => b.status === "rejected");
 
   const handleStatusUpdate = async (id, newStatus) => {
-    if (!window.confirm(`Are you sure you want to ${newStatus} this booking?`)) return;
+    /* ✅ Premium Confirmation Modal */
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: `Do you want to ${newStatus} this booking request?`,
+      icon: newStatus === "approved" ? "question" : "warning",
+      showCancelButton: true,
+      confirmButtonColor: newStatus === "approved" ? "#10b981" : "#ef4444",
+      cancelButtonColor: "#64748b",
+      confirmButtonText: `Yes, ${newStatus}!`,
+      cancelButtonText: "Cancel",
+      background: "#ffffff"
+    });
+
+    if (!result.isConfirmed) return;
     
     setLoading(true);
     try {
-      const res = await updateBookingStatus(id, newStatus);
+      await updateBookingStatus(id, newStatus);
       
       // Update local state so the UI reflects the change immediately
       setBookings((prev) => 
         prev.map((b) => (b._id === id ? { ...b, status: newStatus } : b))
       );
       
-      alert(`Booking ${newStatus} successfully!`);
+      /* ✅ Premium Success Toast Message */
+      Swal.fire({
+        title: "Success!",
+        text: `Booking has been ${newStatus}.`,
+        icon: "success",
+        timer: 2000,
+        showConfirmButton: false
+      });
     } catch (err) {
       const errorMsg = err.response?.data?.message || "Action failed";
-      alert(errorMsg);
+      
+      /* ✅ Premium Error Dialog */
+      Swal.fire({
+        title: "Error!",
+        text: errorMsg,
+        icon: "error",
+        confirmButtonColor: "#2563eb"
+      });
     } finally {
       setLoading(false);
     }
