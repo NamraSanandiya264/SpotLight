@@ -3,15 +3,7 @@ import {
   FaUserCircle, FaSignOutAlt, FaChevronLeft, FaChevronRight
 } from "react-icons/fa";
 
-const Sidebar = ({ collapsed, setCollapsed, activeMenu, setActiveMenu }) => {
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/login");
-  };
-
+  const Sidebar = ({ collapsed, setCollapsed, activeMenu, setActiveMenu }) => {
   return (
     <div className={`sidebar ${collapsed ? "collapsed" : ""}`}>
       <div className="sidebar-header">
