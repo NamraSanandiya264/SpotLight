@@ -125,10 +125,11 @@
 
 .logout {
   /* Red text for logout actions */
-  color: var(--status-rejected) !important;
+  color: white ;
 }
 
 .logout:hover {
+  color: var(--status-rejected) !important;
   background: #fef2f2 !important;
 }
 

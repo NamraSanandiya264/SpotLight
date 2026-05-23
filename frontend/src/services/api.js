@@ -30,3 +30,9 @@ export const updateBookingStatus = (id, status) =>
   API.patch(`/bookings/${id}/status`, { status });
 
 export const getBookings = () => API.get("/bookings"); //for core
+
+export const getMonthlyCalendar = (month, year) => 
+  API.get(`/events/calendar?month=${month}&year=${year}`);
+
+export const createEvent = (eventData) => 
+  API.post("/events", eventData);

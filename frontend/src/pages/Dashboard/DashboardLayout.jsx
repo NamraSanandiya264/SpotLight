@@ -2,11 +2,15 @@ import { useState } from "react";
 import Sidebar from "../../components/Dashboard/Sidebar";
 import Organizations from "../../pages/Organizations";
 import OrganizationDetails from "../../pages/OrganizationDetails";
+import EventCalendar from "../../pages/EventCalendar";
+import Home from "../../pages/Dashboard/Home"; 
 import "./Dashboard.css";
 
 const DashboardLayout = ({ children, user }) => {
   const [collapsed, setCollapsed] = useState(false);
-  const [activeMenu, setActiveMenu] = useState("booking");
+  
+  // Set default active menu tab to "home" 
+  const [activeMenu, setActiveMenu] = useState("home"); 
   
   // High-level wrapper state to handle specific club view details safely inside the parent template frame
   const [selectedOrgId, setSelectedOrgId] = useState(null);
@@ -37,12 +41,17 @@ const DashboardLayout = ({ children, user }) => {
 
         <div className="content-area">
           {/* Conditional Layout Routing Stage */}
-          {activeMenu === "organizations" ? (
+          {/* Handle the Home Dashboard tab natively inline */}
+          {activeMenu === "home" ? (
+            <Home />
+          ) : activeMenu === "organizations" ? (
             !selectedOrgId ? (
               <Organizations onSelectOrg={handleOrgViewSelection} />
             ) : (
               <OrganizationDetails orgId={selectedOrgId} onBack={() => setSelectedOrgId(null)} />
             )
+          ) : activeMenu === "events" ? (
+            <EventCalendar />
           ) : (
             /* Fallback to default rendering (e.g. Booking systems / lists) passed as kids routes */
             typeof children === "function"

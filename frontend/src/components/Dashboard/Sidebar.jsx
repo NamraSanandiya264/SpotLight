@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext"; 
 import {
   FaLayerGroup, FaCalendarAlt,
-  FaUserCircle, FaSignOutAlt, FaChevronLeft, FaChevronRight, FaBuilding
+  FaUserCircle, FaSignOutAlt, FaChevronLeft, FaChevronRight, FaBuilding, FaHome
 } from "react-icons/fa";
 import Swal from "sweetalert2"; // Implemented SweetAlert2 for cleaner session dialogs
 
@@ -49,6 +49,14 @@ const Sidebar = ({ collapsed, setCollapsed, activeMenu, setActiveMenu }) => {
       </div>
 
       <ul className="menu">
+        <li
+        className={activeMenu === "home" ? "active" : ""}
+        onClick={() => handleTabChange("home")}
+        title="Dashboard Home"
+      >
+        <FaHome /> {!collapsed && <span>Home</span>}
+      </li>
+
         <li
           className={activeMenu === "booking" ? "active" : ""}
           onClick={() => handleTabChange("booking")}

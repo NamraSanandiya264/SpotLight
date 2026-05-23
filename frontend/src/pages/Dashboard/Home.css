@@ -1,0 +1,321 @@
+/* =========================================
+   CORE CONTAINER LAYOUT STYLES
+   ========================================= */
+.home-dashboard-viewport {
+  height: calc(100vh - 64px); /* Restrict view bounds exactly like the event calendar */
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow: hidden; /* Lock viewport scrolling */
+  padding: 10px 10px 20px 10px;
+}
+
+/* =========================================
+   1. GLOBAL NAVIGATION HEADER PANEL
+   ========================================= */
+.home-viewport-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.header-context h1 {
+  font-size: 1.5rem;
+  color: var(--text-main);
+  margin: 0 0 4px 0;
+  font-weight: 700;
+}
+
+.header-context p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.header-widgets-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.notification-bell-badge {
+  position: relative;
+  font-size: 1.3rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+}
+
+.notification-bell-badge:hover {
+  color: var(--primary);
+}
+
+.badge-count {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background: var(--status-rejected); /* Red alert tag color */
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+}
+
+.user-avatar-widget {
+  width: 38px;
+  height: 38px;
+  background: var(--primary-light, #dbeafe);
+  color: var(--primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  transition: var(--transition);
+}
+
+.user-avatar-widget:hover {
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* =========================================
+   2. FLAGSHIP EVENT SPOTLIGHT BANNER
+   ========================================= */
+.spotlight-banner-card {
+  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); /* Radiant blue corporate gradient */
+  color: #ffffff;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+  flex-shrink: 0;
+}
+
+.live-pill-tag {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+
+.spotlight-banner-card h2 {
+  font-size: 1.6rem;
+  margin: 0 0 8px 0;
+  font-weight: 800;
+}
+
+.banner-tagline-text {
+  opacity: 0.9;
+  font-size: 0.95rem;
+  max-width: 700px;
+  margin: 0 0 16px 0;
+  line-height: 1.4;
+}
+
+.banner-metadata-row {
+  display: flex;
+  gap: 12px;
+}
+
+.meta-pill-item {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.meta-icon {
+  opacity: 0.8;
+}
+
+/* =========================================
+   3. SPLIT COMPONENT LAYOUT GRID
+   ========================================= */
+.home-workspace-split-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr; /* Asymmetric grid splits space cleanly */
+  gap: 20px;
+  flex-grow: 1;
+  min-height: 0; /* Important: lets columns scale internal feeds cleanly */
+}
+
+.workspace-panel-card {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  min-height: 0;
+}
+
+.workspace-panel-card h3 {
+  font-size: 1.1rem;
+  color: var(--text-main);
+  margin: 0 0 16px 0;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel-heading-icon {
+  color: var(--primary);
+}
+
+.empty-panel-text {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-style: italic;
+  text-align: center;
+  padding: 40px 0;
+}
+
+/* --- COLUMN A: TIMELINE ITINERARY NODES --- */
+.timeline-vertical-feed {
+  overflow-y: auto;
+  flex-grow: 1;
+  padding-right: 4px;
+}
+
+.timeline-itinerary-node {
+  display: flex;
+  margin-bottom: 2px;
+}
+
+.timeline-time-anchor {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-main);
+  width: 75px;
+  padding-top: 10px;
+  flex-shrink: 0;
+}
+
+.timeline-connector-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 30px;
+  flex-shrink: 0;
+}
+
+.timeline-indicator-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  border: 2px solid white;
+  box-shadow: 0 0 0 2px #cbd5e1;
+  margin-top: 14px;
+  z-index: 2;
+}
+
+.timeline-indicator-dot.event { background: var(--primary); box-shadow: 0 0 0 2px var(--primary); }
+.timeline-indicator-dot.booking { background: #f59e0b; box-shadow: 0 0 0 2px #f59e0b; }
+
+.timeline-itinerary-node:not(:last-child) .timeline-connector-bar::after {
+  content: "";
+  width: 2px;
+  flex-grow: 1;
+  background: #e2e8f0;
+  margin-top: 8px;
+}
+
+.timeline-content-bubble {
+  background: var(--sidebar-bg);
+  padding: 12px 16px;
+  border-radius: 8px;
+  flex-grow: 1;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+}
+
+.timeline-content-bubble h4 {
+  margin: 0 0 4px 0;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.timeline-content-bubble p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* --- COLUMN B: NOTIFICATION SYSTEM TILES --- */
+.notifications-vertical-stack {
+  overflow-y: auto;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notification-alert-tile {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+}
+
+.notification-alert-tile.success {
+  background-color: #f0fdf4; /* Light green token bg tint */
+  border-color: #bbf7d0;
+  color: #166534;
+}
+
+.notification-alert-tile.warning {
+  background-color: #fffbeb; /* Light amber/yellow token bg tint */
+  border-color: #fef3c7;
+  color: #92400e;
+}
+
+.alert-icon-wrapper {
+  font-size: 1.1rem;
+  margin-top: 2px;
+}
+
+.alert-text-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.alert-main-text {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.alert-meta-timestamp {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}

@@ -1,0 +1,183 @@
+/* =========================================
+   CAMPUS CALENDAR WORKSPACE STYLES
+   ========================================= */
+.campus-calendar-container {
+  background: #ffffff;
+  padding: 16px 20px; /* Reduced vertical padding */
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  
+  /* Calculate total height: viewport height minus top navbar/layout offsets */
+  height: calc(100vh - 64px); 
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Prevent container level scrolling */
+}
+
+.calendar-control-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px; /* Reduced from 24px */
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+  flex-shrink: 0; /* Guard header from shrinking */
+}
+
+.calendar-control-header h2 {
+  font-size: 1.3rem; /* Marginally scaled down */
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 2px 0;
+}
+
+.calendar-control-header p {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.navigation-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--sidebar-bg);
+  padding: 4px 10px;
+  border-radius: 30px;
+  border: 1px solid var(--border);
+}
+
+.current-date-label {
+  font-weight: 700;
+  color: var(--text-main);
+  min-width: 120px;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.nav-arrow-btn {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.nav-arrow-btn:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+/* =========================================
+   CALENDAR GRID CALCULATIONS
+   ========================================= */
+.calendar-grid-workspace {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  /* ✅ Sets headers dynamically, and forces ALL generated rows to scale identically */
+  grid-template-rows: auto;
+  grid-auto-rows: 1fr; 
+  gap: 6px;
+  flex-grow: 1; /* Maximizes remaining window layout space */
+  overflow: hidden;
+}
+
+.weekday-header-tile {
+  text-align: center;
+  font-weight: 700;
+  color: var(--text-muted);
+  padding: 4px 0; 
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.calendar-day-tile {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  min-height: 0; /* Allows rows to shrink uniformly below browser defaults */
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  transition: var(--transition);
+  overflow: hidden;
+}
+
+.calendar-day-tile:hover:not(.empty-day) {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.empty-day {
+  background: var(--sidebar-bg);
+  border-style: dashed;
+  opacity: 0.5;
+}
+
+.day-number-label {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.day-events-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto; /* Scroll individual date box if events overflow */
+  flex: 1;
+}
+
+/* =========================================
+   SWEETALERT MODAL CUSTOM WRAPPERS
+   ========================================= */
+.swal-evt-title {
+  margin: 0;
+  font-size: 1.4rem;
+  color: var(--text-main);
+  text-align: left;
+}
+
+.swal-evt-body {
+  text-align: left;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  margin-top: 16px;
+}
+
+.swal-evt-body p {
+  margin: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.swal-icon {
+  font-size: 1.1rem;
+}
+
+.swal-divider {
+  border: 0;
+  border-top: 1px dashed var(--border);
+  margin: 16px 0;
+}
+
+.swal-evt-desc {
+  background: var(--sidebar-bg);
+  padding: 12px;
+  border-radius: 8px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  font-style: italic;
+}
