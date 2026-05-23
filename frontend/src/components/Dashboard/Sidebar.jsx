@@ -6,7 +6,9 @@ import {
 } from "react-icons/fa";
 import Swal from "sweetalert2"; // Implemented SweetAlert2 for cleaner session dialogs
 
-const Sidebar = ({ collapsed, setCollapsed, activeMenu, setActiveMenu }) => {
+import { FiPlus } from "react-icons/fi";
+
+const Sidebar = ({ collapsed, setCollapsed, activeMenu, setActiveMenu, isCoreOrLeader }) => {
   const navigate = useNavigate();
   const { logout } = useAuth(); 
 
@@ -80,6 +82,17 @@ const Sidebar = ({ collapsed, setCollapsed, activeMenu, setActiveMenu }) => {
         >
           <FaCalendarAlt /> {!collapsed && <span>Event Calendar</span>}
         </li>
+
+        {/* 🌟 MOVED: Create Event is now perfectly nested inside the main menu beneath Event Calendar */}
+        {isCoreOrLeader && (
+          <li
+            className={activeMenu === "manage-events" ? "active" : ""}
+            onClick={() => handleTabChange("manage-events")}
+            title="Create Event"
+          >
+            <FiPlus /> {!collapsed && <span>Create Event</span>}
+          </li>
+        )}
       </ul>
 
       <div className="bottom-menu">
