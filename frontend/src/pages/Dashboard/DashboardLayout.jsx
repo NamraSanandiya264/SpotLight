@@ -2,9 +2,10 @@ import { useState } from "react";
 import Sidebar from "../../components/Dashboard/Sidebar";
 import Organizations from "../../pages/Organizations";
 import OrganizationDetails from "../../pages/OrganizationDetails";
+import ManageEvents from "../../pages/ManageEvents"; // 🌟 Just adding the new import
 import "./Dashboard.css";
 
-const DashboardLayout = ({ children, user }) => {
+const DashboardLayout = ({ children, user ,currentView, setCurrentView, isCoreOrLeader}) => {
   const [collapsed, setCollapsed] = useState(false);
   const [activeMenu, setActiveMenu] = useState("booking");
   
@@ -25,11 +26,15 @@ const DashboardLayout = ({ children, user }) => {
         setCollapsed={setCollapsed}
         activeMenu={activeMenu}
         setActiveMenu={(menu) => {
-          // Reset child view states when changing sidebar selection
+          // Reset child view states when changing sidebar selection    
           if (menu !== "organizations") setSelectedOrgId(null);
           setActiveMenu(menu);
         }}
         user={user}
+        // 🌟 Adding these temporary prop links so Sidebar.jsx line 79 doesn't crash 
+        currentView={activeMenu}
+        setCurrentView={setActiveMenu}
+        isCoreOrLeader={isCoreOrLeader}
       />
       
       {/* Main Content Area Panel Viewport */}
@@ -43,6 +48,9 @@ const DashboardLayout = ({ children, user }) => {
             ) : (
               <OrganizationDetails orgId={selectedOrgId} onBack={() => setSelectedOrgId(null)} />
             )
+          ) : activeMenu === "manage-events" ? (
+            /* 🌟 JUST ADDED: If the user clicks the manage-events tab, render this new page */
+            <ManageEvents />
           ) : (
             /* Fallback to default rendering (e.g. Booking systems / lists) passed as kids routes */
             typeof children === "function"

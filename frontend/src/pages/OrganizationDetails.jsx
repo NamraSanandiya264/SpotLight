@@ -320,15 +320,15 @@ const OrganizationDetails = ({ orgId, onBack }) => {
         {/* Convenors and Deputies */}
         {(convenors.length > 0 || deputies.length > 0) && (
           <div style={{ marginBottom: "32px" }}>
-            <h4 className="section-label" style={{ fontSize: "12px", fontWeight: "700", color: "#9ca3af", textTransform: "uppercase", marginBottom: "14px" }}>Leadership Structure</h4>
+            <h4 className="section-label" style={{ fontSize: "12px", fontWeight: "700", color: "#9ca3af", textTransform: "uppercase", marginBottom: "14px" }}>Leaders</h4>
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               {convenors.map((m) => ( 
                 <MemberItemCard 
                     key={m.userId} 
                     member={m} 
-                    badgeColor="#f3e8ff" 
-                    textColor="#6b21a8" 
-                    label="Core" 
+                    badgeColor="#FEF3C7" 
+                    textColor="#92400e" 
+                    label="Convenor" 
                     showActions={isCurrentlyConvenor} 
                     onRoleChange={handleRoleChange} 
                     isProcessing={updatingMemberId === m.userId}
@@ -359,7 +359,7 @@ const OrganizationDetails = ({ orgId, onBack }) => {
         {/* Core Committee */}
         {coreMembers.length > 0 && (
           <div style={{ marginBottom: "32px" }}>
-            <h4 className="section-label" style={{ fontSize: "12px", fontWeight: "700", color: "#9ca3af", textTransform: "uppercase", marginBottom: "14px" }}>Core Committee ({coreMembers.length})</h4>
+            <h4 className="section-label" style={{ fontSize: "12px", fontWeight: "700", color: "#9ca3af", textTransform: "uppercase", marginBottom: "14px" }}>Core Members({coreMembers.length})</h4>
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               {coreMembers.map((m) => ( 
                 <MemberItemCard 
