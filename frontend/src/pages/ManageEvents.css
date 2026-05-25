@@ -1,0 +1,413 @@
+/* Container Layout */
+.manage-events-container {
+  padding: 24px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.manage-events-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.manage-events-subtitle {
+  color: #6b7280;
+  margin-bottom: 24px;
+}
+
+.manage-events-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;;
+  gap: 32px;
+  align-items: start;
+}
+
+/* Loading & Restricted Fallbacks */
+.manage-events-loading {
+  padding: 24px;
+}
+
+.restricted-access-container {
+  padding: 32px;
+  text-align: center;
+}
+
+.restricted-access-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 40px;
+  background-color: #ffffff;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.restricted-access-card h2 {
+  color: #1f2937;
+  margin-bottom: 12px;
+  fontWeight: 700;
+}
+
+.restricted-access-card p {
+  color: #6b7280;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* Forms Blocks */
+.event-form-block {
+  background-color: #ffffff;
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.form-block-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 16px;
+}
+
+.form-error-alert {
+  padding: 12px 16px;
+  background-color: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+  color: #991b1b;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.event-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #374151;
+}
+
+.form-field input, 
+.form-field select, 
+.form-field textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.form-time-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.form-actions-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* Action Buttons for Form submission */
+.btn-primary-submit {
+  flex: 1;
+  padding: 10px;
+  background-color: #3b82f6;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.btn-primary-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btn-secondary-cancel {
+  padding: 10px;
+  background-color: #f3f4f6;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #4b5563;
+}
+
+/* Scheduled Cards Container Right Column */
+.events-list-block {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.list-block-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.event-roster-card {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Card Row Elements Header Layout */
+
+/* Container alignment for the buttons in the top right */
+.card-controls-cluster {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+}
+
+.card-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.card-badge-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.org-badge-tag {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.status-badge-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.status-badge-tag.draft {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.status-badge-tag.live {
+  background-color: #f0fdf4;
+  color: #16a34a;
+}
+
+/* Card Action Control Buttons */
+.card-action-group {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-action-publish {
+  padding: 5px 10px;
+  border: 1px solid #bbf7d0;
+  border-radius: 6px;
+  background-color: #f0fdf4;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  color: #16a34a;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+.btn-action-publish:hover {
+  background-color: #dcfce7;
+  border-color: #86efac;
+}
+
+/* 3-Dots Interactive Button Trigger */
+.dropdown-menu-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.btn-three-dots {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: background 0.15s ease;
+}
+
+.btn-three-dots:hover {
+  background-color: #f3f4f6;
+  color: #111827;
+}
+
+/* Absolute Floating Action Box Popover */
+.dropdown-actions-box {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  z-index: 50; /* Ensures it sits above event cards below it */
+  min-width: 130px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Dropdown Menu Option Actions Elements */
+.dropdown-item-btn {
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.dropdown-item-btn.edit {
+  color: #374151;
+}
+
+.dropdown-item-btn.edit:hover {
+  background-color: #f9fafb;
+}
+
+.dropdown-item-btn.delete {
+  color: #991b1b;
+  border-top: 1px solid #f3f4f6;
+}
+
+.dropdown-item-btn.delete:hover {
+  background-color: #fff5f5;
+}
+
+
+/* Meta Labels Details Typography Layout */
+.card-details-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.event-name-heading {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.event-metadata-list {
+  font-size: 14px;
+  color: #4b5563;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+/* Bottom Description Custom Box */
+.card-description-box {
+  margin-top: 4px;
+  padding: 10px 14px;
+  background-color: #f9fafb;
+  border-radius: 6px;
+  border-left: 4px solid #d1d5db;
+}
+
+.card-description-box p {
+  margin: 0;
+  font-size: 13px;
+  color: #4b5563;
+  font-style: italic;
+  white-space: pre-wrap;
+  line-height: 1.4;
+}
+
+.no-events-fallback {
+  font-style: italic;
+  color: #9ca3af;
+  margin: 0;
+}
+
+/* Simple Fade In Entry */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Fix double semi-colon typos discovered in your source mapping */
+.manage-events-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+/* =========================================
+   SWEETALERT POPUP CUSTOM DESIGN REVISIONS
+   ========================================= */
+.swal2-popup {
+  font-family: inherit !important;
+  border-radius: 14px !important;
+  padding: 24px !important;
+}
+
+.swal2-title {
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  color: #111827 !important;
+}
+
+.swal2-html-container {
+  font-size: 14px !important;
+  color: #4b5563 !important;
+  line-height: 1.5 !important;
+}
+
+.swal2-styled {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  padding: 10px 24px !important;
+  border-radius: 6px !important;
+}

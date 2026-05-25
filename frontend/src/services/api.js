@@ -4,7 +4,7 @@ const API = axios.create({
   baseURL: "http://localhost:5001/api", // backend URL
 });
 
-// Add token 
+// Add token interceptor
 API.interceptors.request.use((req) => {
   const token = localStorage.getItem("token");
   if (token) {
@@ -13,7 +13,12 @@ API.interceptors.request.use((req) => {
   return req;
 });
 
-//APIs
+// ==========================================
+// 🏢 ROOMS & BOOKINGS APIs
+// ==========================================
+export const getAllRooms = () => 
+  API.get("/rooms");
+
 export const checkAvailability = (data) =>
   API.post("/bookings/check", data);
 
@@ -22,17 +27,21 @@ export const createBooking = (data) =>
 
 export const getMyBookings = () =>
   API.get("/bookings/my");
-export default API;
 
-export const getAllRooms = () => API.get("/rooms");
+export const getBookings = () => 
+  API.get("/bookings"); // for core committee view
 
 export const updateBookingStatus = (id, status) => 
   API.patch(`/bookings/${id}/status`, { status });
 
-export const getBookings = () => API.get("/bookings"); //for core
-
+// ==========================================
+// 📅 EVENTS & CALENDAR APIs
+// ==========================================
 export const getMonthlyCalendar = (month, year) => 
   API.get(`/events/calendar?month=${month}&year=${year}`);
 
 export const createEvent = (eventData) => 
-  API.post("/events", eventData);
+  API.post("/events/create", eventData);
+
+// 🚀 Default export of the axios instance
+export default API;

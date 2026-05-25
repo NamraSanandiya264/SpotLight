@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { getMonthlyCalendar } from "../services/api";
-import { FaCalendarAlt, FaChevronLeft, FaChevronRight, FaMapMarkerAlt, FaClock, FaUsers } from "react-icons/fa";
+import { FaCalendarAlt, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import Swal from "sweetalert2";
 import "./EventCalendar.css";
 
@@ -11,7 +11,7 @@ const MONTHS = [
 
 const EventCalendar = () => {
   const today = new Date();
-  const [currentMonth, setCurrentMonth] = useState(today.getMonth() + 1); /* 1-12 */
+  const [currentMonth, setCurrentMonth] = useState(today.getMonth() + 1);
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [calendarData, setCalendarData] = useState({});
   const [loading, setLoading] = useState(false);
@@ -21,7 +21,6 @@ const EventCalendar = () => {
       setLoading(true);
       try {
         const res = await getMonthlyCalendar(currentMonth, currentYear);
-        /* Handles grouping by date keys (YYYY-MM-DD) returned from service */
         setCalendarData(res.data.events || {});
       } catch (err) {
         console.error("Failed to load campus calendar:", err);
@@ -32,7 +31,19 @@ const EventCalendar = () => {
     fetchCalendar();
   }, [currentMonth, currentYear]);
 
-  /* Core Math for Calendar Grid Layout */
+  // 🌟 Global Event Bridge Handler initialized properly on mount/update context
+  useEffect(() => {
+    window.dispatchSwalEvent = (encodedEvent) => {
+      const event = JSON.parse(decodeURIComponent(encodedEvent));
+      Swal.close();
+      setTimeout(() => showEventDetails(event), 200);
+    };
+
+    return () => {
+      delete window.dispatchSwalEvent;
+    };
+  }, []);
+
   const firstDayOfMonth = new Date(currentYear, currentMonth - 1, 1).getDay();
   const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
   const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
@@ -58,20 +69,42 @@ const EventCalendar = () => {
 
   const showEventDetails = (event) => {
     Swal.fire({
-      title: `<h3 class="swal-evt-title">${event.event_name}</h3>`,
+      title: `<h3 class="swal-evt-title">${event.eventName}</h3>`,
       html: `
         <div class="swal-evt-body">
-          <p><span class="swal-icon">🏢</span> <strong>Club/Org:</strong> ${event.organization?.name || "Campus Club"}</p>
-          <p><span class="swal-icon">📍</span> <strong>Venue:</strong> ${event.venue}</p>
-          <p><span class="swal-icon">⏰</span> <strong>Time:</strong> ${event.startTime} - ${event.endTime}</p>
+          <p><span>🏢</span> <strong>Club/Org:</strong> ${event.organization?.name || "Campus Club"}</p>
+          <p><span>📍</span> <strong>Venue:</strong> ${event.venue}</p>
+          <p><span>⏰</span> <strong>Time:</strong> ${event.startTime} - ${event.endTime}</p>
           <hr class="swal-divider"/>
           <p class="swal-evt-desc">${event.description || "No description provided for this campus event."}</p>
         </div>
       `,
       confirmButtonText: "Awesome!",
       confirmButtonColor: "#2563eb",
-      background: "#ffffff",
-      buttonsStyling: true
+      background: "#ffffff"
+    });
+  };
+
+  const showFullDayView = (e, dateLabel, allEvents) => {
+    e.stopPropagation();
+    
+    const eventsListHtml = allEvents.map(event => `
+      <div class="swal-day-list-item" onclick="window.dispatchSwalEvent('${encodeURIComponent(JSON.stringify(event))}')">
+        <div class="swal-day-list-meta">
+          <span class="swal-day-list-time">⏰ ${event.startTime} - ${event.endTime}</span>
+          <span class="swal-day-list-org">🏢 ${event.organization?.name || "Club"}</span>
+        </div>
+        <div class="swal-day-list-title">📍 ${event.venue} | <strong>${event.eventName}</strong></div>
+      </div>
+    `).join("");
+
+    Swal.fire({
+      title: `<h3 class="swal-evt-title">Schedule for ${dateLabel}</h3>`,
+      html: `<div class="swal-day-list-container">${eventsListHtml}</div>`,
+      showConfirmButton: true,
+      confirmButtonText: "Close",
+      confirmButtonColor: "#2563eb",
+      width: "500px"
     });
   };
 
@@ -79,7 +112,7 @@ const EventCalendar = () => {
     <div className="campus-calendar-container">
       <div className="calendar-control-header">
         <div className="title-section">
-          <h2><FaCalendarAlt className="heading-icon" /> Campus Events Timeline</h2>
+          <h2><FaCalendarAlt className="heading-icon" /> Event Calendar</h2>
           <p>Explore cultural, sports, and club activities across campus</p>
         </div>
         <div className="navigation-actions">
@@ -93,39 +126,59 @@ const EventCalendar = () => {
         <div className="calendar-loader">Loading Campus Grid...</div>
       ) : (
         <div className="calendar-grid-workspace">
-          {/* Weekday Headers */}
           {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => (
             <div key={day} className="weekday-header-tile">{day}</div>
           ))}
 
-          {/* Padding Spaces for Week Offset */}
           {blankSpaces.map(blank => (
             <div key={`blank-${blank}`} className="calendar-day-tile empty-day"></div>
           ))}
 
-          {/* Actual Calendar Days */}
           {daysArray.map(day => {
-            /* Construct standard database lookup key formatted as YYYY-MM-DD */
             const dayString = String(day).padStart(2, "0");
             const monthString = String(currentMonth).padStart(2, "0");
             const dateKey = `${currentYear}-${monthString}-${dayString}`;
             const dayEvents = calendarData[dateKey] || [];
 
+            const isToday = 
+              today.getDate() === day && 
+              today.getMonth() + 1 === currentMonth && 
+              today.getFullYear() === currentYear;
+
+            const formattedDate = `${dayString}/${monthString}/${currentYear}`;
+
             return (
-              <div key={day} className="calendar-day-tile">
+              <div 
+                key={day} 
+                className={`calendar-day-tile ${isToday ? 'is-today' : ''} ${dayEvents.length > 0 ? 'has-events' : ''}`}
+                onClick={(e) => dayEvents.length > 0 && showFullDayView(e, formattedDate, dayEvents)}
+              >
                 <span className="day-number-label">{day}</span>
+                
                 <div className="day-events-wrapper">
-                  {dayEvents.map(event => (
+                  {dayEvents.slice(0, 2).map(event => (
                     <div 
                       key={event._id} 
                       className="event-strip-item"
-                      onClick={() => showEventDetails(event)}
-                      title={event.event_name}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        showEventDetails(event);
+                      }}
+                      title={event.eventName}
                     >
                       <span className="event-strip-dot"></span>
-                      <span className="event-strip-text">{event.event_name}</span>
+                      <span className="event-strip-text">{event.eventName}</span>
                     </div>
                   ))}
+
+                  {dayEvents.length >= 3 && (
+                    <div 
+                      className="event-overflow-badge"
+                      onClick={(e) => showFullDayView(e, formattedDate, dayEvents)}
+                    >
+                      + {dayEvents.length - 2}
+                    </div>
+                  )}
                 </div>
               </div>
             );

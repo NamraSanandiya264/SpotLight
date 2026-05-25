@@ -2,24 +2,51 @@ import Event from "./event.model.js";
 import OrganizationMember from "../organizations/orgMember.model.js";
 import Organization from "../organizations/organization.model.js";
 
-
+// Helper function to validate authorization roles
 const verifyEventAccess = async (userId, orgId) => {
   const member = await OrganizationMember.findOne({ user: userId, organization: orgId });
   
-  // Now allows Convenors, Deputies, and Core Members to pass through
   if (!member || !["convenor", "deputy", "core"].includes(member.role)) {
     throw new Error("Unauthorized: Only Leaders and Core Committee members can manage events.");
   }
   return true;
 };
 
-// 📅 1. Create Event (Convenor, Deputy, & Core)
+// 🌟 HELPER: Convert "HH:MM" string to total minutes for absolute arithmetic comparison
+const parseTimeToMinutes = (timeString) => {
+  const [hours, minutes] = timeString.split(":").map(Number);
+  return hours * 60 + minutes;
+};
+
+// 🔒 1. Create Event with Server-Side Validation
 export const createEvent = async (req, res) => {
   try {
     const { eventName, date, startTime, endTime, venue, organizationId, description } = req.body;
     
-    // Check against updated access permissions
+    // A. Check authority alignment permissions
     await verifyEventAccess(req.user._id, organizationId);
+
+    // B. VALIDATION: Check for empty mandatory fields
+    if (!eventName?.trim() || !date || !startTime || !endTime || !venue?.trim() || !organizationId) {
+      return res.status(400).json({ success: false, message: "All fields except description are mandatory to fill." });
+    }
+
+    // C. VALIDATION: Block scheduling events in the past
+    const inputDate = new Date(date);
+    const todayMidnight = new Date();
+    todayMidnight.setHours(0, 0, 0, 0); // Normalize to current day midnight local clock boundary
+
+    if (inputDate < todayMidnight) {
+      return res.status(400).json({ success: false, message: "Invalid Date: Cannot schedule events in the past." });
+    }
+
+    // D. VALIDATION: Enforce Chronological Logical Ordering
+    const startMinutes = parseTimeToMinutes(startTime);
+    const endMinutes = parseTimeToMinutes(endTime);
+
+    if (startMinutes >= endMinutes) {
+      return res.status(400).json({ success: false, message: "Invalid Timing: The Event End Time must occur after the scheduled Start Time." });
+    }
 
     const event = await Event.create({
       eventName,
@@ -38,7 +65,7 @@ export const createEvent = async (req, res) => {
   }
 };
 
-// 📝 2. Update/Edit Event (Convenor, Deputy, & Core)
+// 🔒 2. Update/Edit Event with Server-Side Validation
 export const updateEvent = async (req, res) => {
   try {
     const { id } = req.params;
@@ -47,8 +74,25 @@ export const updateEvent = async (req, res) => {
     const event = await Event.findById(id);
     if (!event) return res.status(404).json({ success: false, message: "Event not found" });
 
-    // Verify authorized core/leader alignment before allowing modifications
     await verifyEventAccess(req.user._id, event.organization);
+
+    // If updating time parameters, perform cross-field evaluation validation
+    const absoluteStartTime = startTime || event.startTime;
+    const absoluteEndTime = endTime || event.endTime;
+    
+    if (parseTimeToMinutes(absoluteStartTime) >= parseTimeToMinutes(absoluteEndTime)) {
+      return res.status(400).json({ success: false, message: "Invalid Timing: The Event End Time must occur after the scheduled Start Time." });
+    }
+
+    // If updating the date parameter, ensure it isn't shifted into a past date history
+    if (date) {
+      const inputDate = new Date(date);
+      const todayMidnight = new Date();
+      todayMidnight.setHours(0, 0, 0, 0);
+      if (inputDate < todayMidnight) {
+        return res.status(400).json({ success: false, message: "Invalid Date: Cannot shift scheduled events into the past." });
+      }
+    }
 
     event.eventName = eventName || event.eventName;
     event.date = date || event.date;
@@ -104,7 +148,6 @@ export const deleteEvent = async (req, res) => {
     const event = await Event.findById(id);
     if (!event) return res.status(404).json({ success: false, message: "Event not found" });
 
-    // Re-use your helper check to make sure they have rights to this club's events
     const member = await OrganizationMember.findOne({ user: req.user._id, organization: event.organization });
     if (!member || !["convenor", "deputy", "core"].includes(member.role)) {
       return res.status(403).json({ success: false, message: "Unauthorized to delete this event." });
@@ -113,6 +156,70 @@ export const deleteEvent = async (req, res) => {
     await Event.findByIdAndDelete(id);
     res.status(200).json({ success: true, message: "Event removed successfully!" });
   } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const publishEvent = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const event = await Event.findById(id);
+    if (!event) return res.status(404).json({ success: false, message: "Event not found" });
+
+    const member = await OrganizationMember.findOne({ user: req.user._id, organization: event.organization });
+    if (!member || !["convenor", "deputy", "core"].includes(member.role)) {
+      return res.status(403).json({ success: false, message: "Unauthorized to publish this event." });
+    }
+
+    event.isPublished = true;
+    await event.save();
+
+    res.status(200).json({ success: true, message: "Event published to the Campus Calendar successfully!", event });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+export const getMonthlyCalendarData = async (req, res) => {
+  try {
+    const { month, year } = req.query;
+
+    if (!month || !year) {
+      return res.status(400).json({ success: false, message: "Month and Year are required queries." });
+    }
+
+    const paddedMonth = String(month).padStart(2, "0");
+    const totalDaysInMonth = new Date(year, month, 0).getDate();
+
+    const startOfMonth = new Date(`${year}-${paddedMonth}-01T00:00:00+05:30`);
+    const endOfMonth = new Date(`${year}-${paddedMonth}-${totalDaysInMonth}T23:59:59+05:30`);
+
+    const events = await Event.find({
+      isPublished: true,
+      date: { $gte: startOfMonth, $lte: endOfMonth }
+    }).populate("organization", "name");
+
+    const groupedEvents = {};
+    
+    events.forEach(event => {
+      const localDateStr = event.date.toLocaleDateString("en-CA", {
+        timeZone: "Asia/Kolkata" 
+      });
+      
+      if (!groupedEvents[localDateStr]) {
+        groupedEvents[localDateStr] = [];
+      }
+      groupedEvents[localDateStr].push(event);
+    });
+
+    res.status(200).json({
+      success: true,
+      events: groupedEvents 
+    });
+
+  } catch (err) {
+    console.error("Error fetching calendar data:", err);
     res.status(500).json({ success: false, message: err.message });
   }
 };

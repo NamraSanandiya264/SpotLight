@@ -13,7 +13,8 @@ const eventSchema = new mongoose.Schema(
       required: true 
     },
     description: { type: String },
-    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    isPublished: { type: Boolean, default: false }
   },
   { timestamps: true }
 );
