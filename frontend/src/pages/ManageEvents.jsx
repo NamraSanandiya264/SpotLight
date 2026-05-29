@@ -229,25 +229,27 @@ const ManageEvents = () => {
   }
 
   return (
-    <div className="manage-events-container">
-      <h1 className="manage-events-title">Manage Events</h1>
-      <p className="manage-events-subtitle">Schedule, edit, and organize events for your clubs.</p>
+  <div className="manage-events-container">
+    <h1 className="manage-events-title">Manage Events</h1>
+    <p className="manage-events-subtitle">Schedule, edit, and organize events for your clubs.</p>
 
-      <div className="manage-events-grid">
-        
-        {/* Creation Form Block */}
-        <div className="event-form-block">
-          <h3 className="form-block-title">
-            {isEditing ? "✏️ Edit Event Details" : "📅 Create New Event"}
-          </h3>
+    {/* 🌟 FORM SECTION BLOCK */}
+    <div className="event-form-block">
+      <h3 className="form-block-title">
+        {isEditing ? "✏️ Edit Event Details" : "📅 Create New Event"}
+      </h3>
 
-          {formError && (
-            <div className="form-error-alert">
-              ⚠️ {formError}
-            </div>
-          )}
+      {formError && (
+        <div className="form-error-alert">
+          ⚠️ {formError}
+        </div>
+      )}
 
-          <form onSubmit={handleSubmit} className="event-form">
+      <form onSubmit={handleSubmit} className="event-form">
+        <div className="event-form-columns-wrapper">
+          
+          {/* Left Column */}
+          <div className="form-column-left">
             <div className="form-field">
               <label>Event Name</label>
               <input type="text" value={form.eventName} onChange={e => setForm({...form, eventName: e.target.value})} required />
@@ -260,6 +262,14 @@ const ManageEvents = () => {
               </select>
             </div>
 
+            <div className="form-field dynamic-textarea-field">
+              <label>Description (Optional)</label>
+              <textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} />
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div className="form-column-right">
             <div className="form-field">
               <label>Date</label>
               <input type="date" value={form.date} onChange={e => setForm({...form, date: e.target.value})} required />
@@ -280,112 +290,95 @@ const ManageEvents = () => {
               <label>Venue Location</label>
               <input type="text" value={form.venue} onChange={e => setForm({...form, venue: e.target.value})} required />
             </div>
+          </div>
 
-            <div className="form-field">
-              <label>Description (Optional)</label>
-              <textarea rows={3} value={form.description} onChange={e => setForm({...form, description: e.target.value})} />
-            </div>
-
-            <div className="form-actions-row">
-              <button type="submit" disabled={isSubmitting} className="btn-primary-submit">
-                {isEditing ? "Save Changes" : "Create Event"}
-              </button>
-              {isEditing && (
-                <button type="button" onClick={resetForm} className="btn-secondary-cancel">
-                  Cancel
-                </button>
-              )}
-            </div>
-          </form>
         </div>
 
-        {/* Scheduled Events Roster List */}
-        <div className="events-list-block">
-          <h3 className="list-block-title">Your Scheduled Events ({events.length})</h3>
-          {events.length > 0 ? (
-            events.map(event => (
-              <div key={event._id} className="event-roster-card">
-                
-                {/* Row 1: Tags & Top Action Controls */}
-                <div className="card-header-row">
-                  <div className="card-badge-group">
-                    <span className="org-badge-tag">
-                      {event.organization?.name}
-                    </span>
-                    <span className={`status-badge-tag ${event.isPublished ? "live" : "draft"}`}>
-                      {event.isPublished ? "● Live on Calendar" : "📝 Draft"}
-                    </span>
-                  </div>
-
-                  {/* Right-Side Control Cluster */}
-                  <div className="card-controls-cluster">
-                    {!event.isPublished && (
-                      <button 
-                        onClick={() => handlePublish(event._id)} 
-                        className="btn-action-publish"
-                      >
-                        🚀 Publish
-                      </button>
-                    )}
-
-                    <div className="dropdown-menu-wrapper">
-                      <button 
-                        className="btn-three-dots"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveMenuId(activeMenuId === event._id ? null : event._id);
-                        }}
-                      >
-                        ⋮
-                      </button>
-
-                      {activeMenuId === event._id && (
-                        <div className="dropdown-actions-box">
-                          <button 
-                            onClick={() => { startEdit(event); setActiveMenuId(null); }} 
-                            className="dropdown-item-btn edit"
-                          >
-                            ✏️ Edit Event
-                          </button>
-                          <button 
-                            onClick={() => { handleDelete(event._id); setActiveMenuId(null); }} 
-                            className="dropdown-item-btn delete"
-                          >
-                            🗑️ Delete Event
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Row 2: Content Stack */}
-                <div className="card-details-stack">
-                  <h4 className="event-name-heading">{event.eventName}</h4>
-                  <div className="event-metadata-list">
-                    <div>📍 <strong>Venue:</strong> {event.venue}</div>
-                    <div>📅 <strong>Date:</strong> {new Date(event.date).toLocaleDateString("en-GB")}</div>
-                    <div>⏰ <strong>Time:</strong> {event.startTime} - {event.endTime}</div>
-                  </div>
-                </div>
-
-                {/* Row 3: Description Block */}
-                {event.description && (
-                  <div className="card-description-box">
-                    <p>{event.description}</p>
-                  </div>
-                )}
-                
-              </div>
-            ))
-          ) : (
-            <p className="no-events-fallback">No events registered yet under your leadership.</p>
+        <div className="form-actions-row">
+          <button type="submit" disabled={isSubmitting} className="btn-primary-submit">
+            {isEditing ? "Save Changes" : "Create Event"}
+          </button>
+          {isEditing && (
+            <button type="button" onClick={resetForm} className="btn-secondary-cancel">
+              Cancel
+            </button>
           )}
         </div>
-
-      </div>
+      </form>
     </div>
-  );
+
+    {/* 🌟 SCHEDULED EVENTS BLOCK (Moved completely outside form block to stack below) */}
+    <div className="events-list-block">
+      <h3 className="list-block-title">Your Scheduled Events ({events.length})</h3>
+      {events.length > 0 ? (
+        <div className="events-cards-grid-wrapper">
+          {events.map(event => (
+            <div key={event._id} className="event-roster-card">
+              
+              <div className="card-header-row">
+                <div className="card-badge-group">
+                  <span className="org-badge-tag">{event.organization?.name}</span>
+                  <span className={`status-badge-tag ${event.isPublished ? "live" : "draft"}`}>
+                    {event.isPublished ? "● Live on Calendar" : "📝 Draft"}
+                  </span>
+                </div>
+
+                <div className="card-controls-cluster">
+                  {!event.isPublished && (
+                    <button onClick={() => handlePublish(event._id)} className="btn-action-publish">
+                      🚀 Publish
+                    </button>
+                  )}
+
+                  <div className="dropdown-menu-wrapper">
+                    <button 
+                      className="btn-three-dots"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setActiveMenuId(activeMenuId === event._id ? null : event._id);
+                      }}
+                    >
+                      ⋮
+                    </button>
+
+                    {activeMenuId === event._id && (
+                      <div className="dropdown-actions-box">
+                        <button onClick={() => { startEdit(event); setActiveMenuId(null); }} className="dropdown-item-btn edit">
+                          ✏️ Edit Event
+                        </button>
+                        <button onClick={() => { handleDelete(event._id); setActiveMenuId(null); }} className="dropdown-item-btn delete">
+                          🗑️ Delete Event
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="card-details-stack">
+                <h4 className="event-name-heading">{event.eventName}</h4>
+                <div className="event-metadata-list">
+                  <div>📍 <strong>Venue:</strong> {event.venue}</div>
+                  <div>📅 <strong>Date:</strong> {new Date(event.date).toLocaleDateString("en-GB")}</div>
+                  <div>⏰ <strong>Time:</strong> {event.startTime} - {event.endTime}</div>
+                </div>
+              </div>
+
+              {event.description && (
+                <div className="card-description-box">
+                  <p>{event.description}</p>
+                </div>
+              )}
+              
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="no-events-fallback">No events registered yet under your leadership.</p>
+      )}
+    </div>
+  </div>
+);
 };
 
 export default ManageEvents;

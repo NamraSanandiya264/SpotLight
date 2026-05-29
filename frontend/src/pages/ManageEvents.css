@@ -20,7 +20,7 @@
   display: grid;
   grid-template-columns: 1.5fr 1fr;;
   gap: 32px;
-  align-items: start;
+  align-items: stretch;
 }
 
 /* Loading & Restricted Fallbacks */
@@ -61,6 +61,22 @@
   border-radius: 12px;
   border: 1px solid #e5e7eb;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  width: 100%;
+}
+
+/*  Two-Column Flex Layout for Form Content */
+.event-form-columns-wrapper {
+  display: flex;
+  gap: 32px;
+  width: 100%;
+}
+
+.form-column-left,
+.form-column-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .form-block-title {
@@ -101,14 +117,22 @@
 }
 
 .form-field input, 
-.form-field select, 
-.form-field textarea {
+.form-field select {
   width: 100%;
-  padding: 8px 12px;
+  padding: 10px 12px; /* Marginally increased for better full-width text entry */
   border: 1px solid #cbd5e1;
   border-radius: 6px;
-  font-family: inherit;
   box-sizing: border-box;
+}
+
+.form-field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  box-sizing: border-box;
+  flex-grow: 1; /* Automatically extends vertically to match the right column's height lines */
+  resize: none; /* Disables manual sizing handles to preserve form symmetry */
 }
 
 .form-time-row {
@@ -155,6 +179,15 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  width: 100%;
+  border-top: 1px solid #e5e7eb; 
+  padding-top: 24px;
+}
+/* Display cards side-by-side across the row space below the form */
+.events-cards-grid-wrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* Automatically tiles cards depending on width */
+  gap: 20px;
 }
 
 .list-block-title {
