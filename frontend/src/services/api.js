@@ -43,5 +43,7 @@ export const getMonthlyCalendar = (month, year) =>
 export const createEvent = (eventData) => 
   API.post("/events/create", eventData);
 
+export const getEventsByDay = (dateString) => api.get(`/events/day?date=${dateString}`);
+
 // 🚀 Default export of the axios instance
 export default API;

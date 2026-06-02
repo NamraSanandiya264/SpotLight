@@ -1,120 +1,149 @@
-import { useState, useEffect } from "react";
-import { FaCalendarDay, FaMapMarkerAlt, FaClock, FaBell, FaCheckCircle, FaExclamationTriangle } from "react-icons/fa";
-import { useAuth } from "../../context/AuthContext";
+import { useEffect, useState } from "react";
+import { FaClock, FaMapMarkerAlt, FaBullhorn, FaCalendarDay } from "react-icons/fa";
+import api from "../../services/api";
+import { getEventsByDay } from "../../services/api";
 import "./Home.css";
 
 const Home = () => {
-  const { user } = useAuth();
+  const [userName, setUserName] = useState("Ishti"); // Defaulting to your profile name
+  const [greeting, setGreeting] = useState("");
+  const [quote, setQuote] = useState("");
+  const [todayEvents, setTodayEvents] = useState([]);
+  const [notices, setNotices] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data representing structural items from your combined collections
-  const [timeline, setTimeline] = useState([
-    { id: 1, type: "event", time: "10:30 AM", title: "Peer Review Session", location: "Conference Room A" },
-    { id: 2, type: "booking", time: "03:00 PM", title: "Core Team Sync Sync", location: "CEP107" }
-  ]);
+  // Hardcoded quotes for instant local rotation, can easily be tied to an AI endpoint later!
+  const quotes = [
+    "The beautiful thing about learning is that no one can take it away from you. – B.B. King",
+    "Your focus determines your reality. Make today count on campus!",
+    "Excellence is not a skill. It is an attitude. Approach your labs today with fire.",
+    "Don't compromise your career path for temporary comfort. Stay aligned to your tech goals!"
+  ];
 
-  const [notifications, setNotifications] = useState([
-    { id: 1, type: "success", text: "Room Reservation Approved", meta: "10m ago" },
-    { id: 2, type: "warning", text: "Review Starts Soon", meta: "12m ago" }
-  ]);
+  useEffect(() => {
+    // 1. Determine time-of-day greeting context
+    const hrs = new Date().getHours();
+    if (hrs < 12) setGreeting("Good Morning");
+    else if (hrs < 17) setGreeting("Good Afternoon");
+    else setGreeting("Good Evening");
 
-  // Featured Banner spotlight state matching your active university database entries
-  const [featuredEvent, setFeaturedEvent] = useState({
-    title: "Garba Night 2026",
-    tagline: "Dust off your chaniya cholis and kediyus for the biggest cultural celebration of the semester!",
-    startTime: "10:30 AM",
-    endTime: "12:00 PM",
-    venue: "Conference Room A"
-  });
+    // 2. Select a random quote for the day rotation
+    const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+    setQuote(randomQuote);
+
+    // 3. Fetch data dashboard payload for Today
+    fetchDashboardContent();
+  }, []);
+
+  const fetchDashboardContent = async () => {
+    try {
+      setLoading(true);
+      
+      // Calculate today's localized exact ISO formatting date anchor string (YYYY-MM-DD)
+      const todayIST = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+      
+      // Hit our simultaneous database endpoints smoothly
+      const [eventsRes, noticesRes] = await Promise.all([
+        getEventsByDay(todayIST), // 🌟 Now hitting the real calendar controller!
+        api.get("/notices/active").catch(() => ({ data: { success: true, notices: [] } })) // Fallback guard if notice collection is still empty
+      ]);
+
+      if (eventsRes.data.success) {
+        setTodayEvents(eventsRes.data.events || []);
+      }
+      if (noticesRes.data.notices) {
+        setNotices(noticesRes.data.notices || []);
+      }
+      
+    } catch (err) {
+      console.error("Failed loading live calendar syncing elements:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="home-dashboard-viewport">
+    <div className="home-dashboard-workspace">
       
-      {/* 1. TOP GLOBAL NAVIGATION HEADER */}
-      <header className="home-viewport-header">
-        <div className="header-context">
-          <h1>Welcome Back, {user?.name || "Student"} 👋</h1>
-          <p>Here is what's happening on campus today.</p>
-        </div>
-        <div className="header-widgets-wrapper">
-          <div className="notification-bell-badge" title="Notifications">
-            <FaBell />
-            <span className="badge-count">3</span>
-          </div>
-          <div className="user-avatar-widget" title="View Profile">
-            {user?.name ? user.name.split(" ").map(n => n[0]).join("") : "U"}
-          </div>
+      {/* SECTION 1: Dynamic Personalized Welcoming Header */}
+      <header className="dashboard-welcome-hero">
+        <h1 className="welcome-greeting-title">
+          {greeting}, <span className="highlight-username">{userName}</span>! 👋
+        </h1>
+        <div className="daily-quote-card">
+          <p className="quote-text">“ {quote} ”</p>
         </div>
       </header>
 
-      {/* 2. FLAGSHIP EVENT SPOTLIGHT BANNER */}
-      {featuredEvent && (
-        <section className="spotlight-banner-card">
-          <div className="banner-overlay-content">
-            <span className="live-pill-tag">Happening Today</span>
-            <h2>{featuredEvent.title}</h2>
-            <p className="banner-tagline-text">{featuredEvent.tagline}</p>
-            
-            <div className="banner-metadata-row">
-              <span className="meta-pill-item">
-                <FaClock className="meta-icon" /> {featuredEvent.startTime} - {featuredEvent.endTime}
-              </span>
-              <span className="meta-pill-item">
-                <FaMapMarkerAlt className="meta-icon" /> {featuredEvent.venue}
-              </span>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* 3. SPLIT COMPONENT LAYOUT GRID */}
-      <div className="home-workspace-split-grid">
+      {/* SECTION 2: Split Informational Activity Feed Layout */}
+      <div className="dashboard-split-feed-grid">
         
-        {/* Column A: Today's Itinerary Hub */}
-        <section className="workspace-panel-card grid-column-main">
-          <h3><FaCalendarDay className="panel-heading-icon" /> Today's Timeline</h3>
-          <div className="timeline-vertical-feed">
-            {timeline.length === 0 ? (
-              <p className="empty-panel-text">No activities scheduled for today.</p>
-            ) : (
-              timeline.map((item) => (
-                <div className="timeline-itinerary-node" key={item.id}>
-                  <div className="timeline-time-anchor">{item.time}</div>
-                  <div className="timeline-connector-bar">
-                    <div className={`timeline-indicator-dot ${item.type}`}></div>
-                  </div>
-                  <div className="timeline-content-bubble">
-                    <h4>{item.title}</h4>
-                    <p><FaMapMarkerAlt /> {item.location}</p>
-                  </div>
-                </div>
-              ))
-            )}
+        {/* LEFT COLUMN: Today's Interactive Timelines */}
+        <div className="feed-column events-today-card-block">
+          <div className="column-header-row">
+            <h3><FaCalendarDay className="icon-accent blue" /> Happening Today</h3>
+            <span className="live-pill-badge">Live Counter ({todayEvents.length})</span>
           </div>
-        </section>
 
-        {/* Column B: Recent Activity Panel */}
-        <section className="workspace-panel-card grid-column-side">
-          <h3>Recent Notifications</h3>
-          <div className="notifications-vertical-stack">
-            {notifications.length === 0 ? (
-              <p className="empty-panel-text">No recent updates to display.</p>
-            ) : (
-              notifications.map((notif) => (
-                <div className={`notification-alert-tile ${notif.type}`} key={notif.id}>
-                  <div className="alert-icon-wrapper">
-                    {notif.type === "success" ? <FaCheckCircle /> : <FaExclamationTriangle />}
+          <div className="feed-scroll-container">
+            {todayEvents.length > 0 ? (
+              todayEvents.map(event => (
+                <div key={event._id} className="live-event-ticker-row">
+                  <div className="ticker-time-pill">
+                    <FaClock /> {event.startTime}
                   </div>
-                  <div className="alert-text-body">
-                    <p className="alert-main-text">{notif.text}</p>
-                    <span className="alert-meta-timestamp">{notif.meta}</span>
+                  <div className="ticker-details-stack">
+                    <h4 className="ticker-event-title">{event.eventName}</h4>
+                    <div className="ticker-meta-line">
+                      <span className="ticker-venue"><FaMapMarkerAlt /> {event.venue}</span>
+                      <span className="ticker-org">🏢 {event.organization?.name}</span>
+                    </div>
                   </div>
                 </div>
               ))
+            ) : (
+              <div className="empty-feed-fallback">
+                <p>No major events scheduled on the public calendar for today.</p>
+                <span className="sub-fallback">Enjoy a peaceful day or catch up on coding templates!</span>
+              </div>
             )}
           </div>
-        </section>
+        </div>
+
+        {/* RIGHT COLUMN: SBG Official Board Notices */}
+        <div className="feed-column sbg-notice-board-block">
+          <div className="column-header-row">
+            <h3><FaBullhorn className="icon-accent amber" /> SBG Notice Board</h3>
+            <span className="official-tag">Official Desk</span>
+          </div>
+
+          <div className="feed-scroll-container">
+            {notices.length > 0 ? (
+              notices.map(notice => (
+                <div key={notice._id} className="notice-sticky-card">
+                  <div className="notice-card-header">
+                    <h4 className="notice-subject-heading">{notice.title}</h4>
+                    <span className="notice-timestamp">
+                      {new Date(notice.createdAt).toLocaleDateString("en-IN", { day: 'numeric', month: 'short' })}
+                    </span>
+                  </div>
+                  <p className="notice-body-text">{notice.content}</p>
+                  <div className="notice-footer-signature">
+                    — Issued by <strong>{notice.postedBy || "Student Representative Body"}</strong>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="empty-feed-fallback">
+                <p>The notice board is currently clear.</p>
+                <span className="sub-fallback">Check back later for official announcements regarding club elections or events.</span>
+              </div>
+            )}
+          </div>
+        </div>
 
       </div>
+
     </div>
   );
 };

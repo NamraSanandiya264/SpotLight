@@ -223,3 +223,29 @@ export const getMonthlyCalendarData = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
+// 🌟 ADD TO THE BOTTOM OF YOUR EXISTING event.controller.js
+export const getEventsByDay = async (req, res) => {
+  try {
+    const { date } = req.query; // Expecting 'YYYY-MM-DD' from the frontend call
+
+    if (!date) {
+      return res.status(400).json({ success: false, message: "Target lookup date parameter is missing." });
+    }
+
+    // Set a explicit timezone boundary window for the target day in Indian Standard Time (IST)
+    const startOfDay = new Date(`${date}T00:00:00+05:30`);
+    const endOfDay = new Date(`${date}T23:59:59+05:30`);
+
+    const events = await Event.find({
+      isPublished: true,
+      date: { $gte: startOfDay, $lte: endOfDay }
+    })
+    .populate("organization", "name")
+    .sort({ startTime: 1 }); // Sort chronologically throughout the day
+
+    res.status(200).json({ success: true, events });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
