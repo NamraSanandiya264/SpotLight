@@ -367,27 +367,19 @@
   cursor: pointer;
 }
 
-.room-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-top: 8px;
-}
-
-.room-tile {
-  padding: 10px;
-  border: 2px solid var(--border);
-  border-radius: 8px;
-  text-align: center;
-  font-weight: 600;
+/* Dropdown Select Styling Override */
+.dropdown-select {
+  background-color: #ffffff;
   cursor: pointer;
-  font-size: 0.9rem;
+  appearance: none; 
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 40px; /* Leaves room for custom arrow */
 }
 
-.room-tile.active {
-  border-color: var(--primary);
-  background: var(--primary-light);
-  color: var(--primary);
+.dropdown-select:invalid, .dropdown-select option[value=""] {
+  color: var(--text-muted);
 }
 
 .icon {
