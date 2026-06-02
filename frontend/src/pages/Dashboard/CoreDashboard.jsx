@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import "./Dashboard.css";
 import {
-  getBookings, // This will fetch all bookings since user role is sbg_core
+  getBookings, 
   updateBookingStatus,
   getAllRooms
 } from "../../services/api";
@@ -12,10 +12,10 @@ import {
   FaDoorOpen,
   FaCalendarAlt,
   FaClock,
-  FaUser
+  FaUser,
+  FaRegFileAlt
 } from "react-icons/fa";
-import { MdOutlineNotes } from "react-icons/md"; 
-import Swal from "sweetalert2"; // ✅ Confirmed
+import Swal from "sweetalert2";
 
 const CoreDashboard = () => {
   const [bookings, setBookings] = useState([]);
@@ -27,7 +27,7 @@ const CoreDashboard = () => {
     const loadCoreData = async () => {
       try {
         const [bookingRes, roomsRes] = await Promise.all([
-          getBookings(), // Admin fetch
+          getBookings(),
           getAllRooms()
         ]);
         setBookings(bookingRes.data.data || bookingRes.data.bookings || []);
@@ -39,21 +39,21 @@ const CoreDashboard = () => {
     loadCoreData();
   }, []);
 
-  // --- FILTERING LOGIC ---
   const pendingRequests = bookings.filter(b => b.status === "pending");
   const approvedRequests = bookings.filter(b => b.status === "approved");
   const rejectedRequests = bookings.filter(b => b.status === "rejected");
 
   const handleStatusUpdate = async (id, newStatus) => {
-    /* ✅ Premium Confirmation Modal */
+    const statusVerb = newStatus === "approved" ? "approve" : "reject";
+    
     const result = await Swal.fire({
       title: "Are you sure?",
-      text: `Do you want to ${newStatus} this booking request?`,
+      text: `Do you want to ${statusVerb} this booking request?`,
       icon: newStatus === "approved" ? "question" : "warning",
       showCancelButton: true,
       confirmButtonColor: newStatus === "approved" ? "#10b981" : "#ef4444",
       cancelButtonColor: "#64748b",
-      confirmButtonText: `Yes, ${newStatus}!`,
+      confirmButtonText: `Yes, ${statusVerb}!`,
       cancelButtonText: "Cancel",
       background: "#ffffff"
     });
@@ -64,15 +64,13 @@ const CoreDashboard = () => {
     try {
       await updateBookingStatus(id, newStatus);
       
-      // Update local state so the UI reflects the change immediately
       setBookings((prev) => 
         prev.map((b) => (b._id === id ? { ...b, status: newStatus } : b))
       );
       
-      /* ✅ Premium Success Toast Message */
       Swal.fire({
         title: "Success!",
-        text: `Booking has been ${newStatus}.`,
+        text: `Booking has been ${newStatus} successfully.`,
         icon: "success",
         timer: 2000,
         showConfirmButton: false
@@ -80,7 +78,6 @@ const CoreDashboard = () => {
     } catch (err) {
       const errorMsg = err.response?.data?.message || "Action failed";
       
-      /* ✅ Premium Error Dialog */
       Swal.fire({
         title: "Error!",
         text: errorMsg,
@@ -104,7 +101,7 @@ const CoreDashboard = () => {
             </div>
             
             <p><FaUser className="icon" /> <strong>Student:</strong> {b.user_id?.name || "Unknown"}</p>
-            <p><MdOutlineNotes className="icon" /> <strong>Purpose:</strong> {b.purpose}</p>
+            <p><FaRegFileAlt className="icon" /> <strong>Purpose:</strong> {b.purpose}</p>
             
             <div className="booking-row">
               <span><FaDoorOpen className="icon" /> <strong>Room:</strong> {b.room_id?.name || "N/A"}</span>
@@ -113,7 +110,6 @@ const CoreDashboard = () => {
             <p><FaCalendarAlt className="icon" /> <strong>Date:</strong> {b.date ? b.date.split('T')[0] : "N/A"}</p>
             <p><FaClock className="icon" /> <strong>Time:</strong> {b.start_time} - {b.end_time}</p>
 
-            {/* Admin Actions: Only show if pending */}
             {b.status === "pending" && (
               <div className="admin-actions">
                 <button 

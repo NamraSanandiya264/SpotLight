@@ -1,47 +1,69 @@
 import Booking from "./booking.model.js";
 import { validateBookingInput } from "../../utils/validators/booking.validator.js";
 
-// Create Booking
-export const createBookingService = async (data, userId) => {
-  validateBookingInput(data);
-  const { room_id, date, start_time, end_time, purpose } = data;
+//Shared utility to check if a room is already reserved for a given slot 
+export const checkRoomConflict = async (roomId, date, startTime, endTime) => {
+  const normalizedDate = new Date(date);
+  normalizedDate.setUTCHours(0, 0, 0, 0);
 
-if (!room_id || !date || !start_time || !end_time) {
-  throw new Error("All fields required");
-}
-  // 1. Check time validity
-  if (start_time >= end_time) {
-    throw new Error("Start time must be before end time");
-  }
-
-  // 2. Check for conflict (same room, same date, overlapping time)
-  const existing = await Booking.findOne({
-    room_id,
-    date,
+  return await Booking.findOne({
+    room_id: roomId,
+    date: normalizedDate,
     status: { $in: ["pending", "approved"] },
     $or: [
       {
-        start_time: { $lt: end_time },
-        end_time: { $gt: start_time },
+        start_time: { $lt: endTime },
+        end_time: { $gt: startTime },
       },
     ],
   });
+};
 
-  if (existing) {
-    throw new Error("Room already booked for this time");
+// Create Booking
+export const createBookingService = async (data, userId) => {
+  validateBookingInput(data);
+  
+  const { room_id, date, start_time, end_time, purpose } = data;
+
+  if (start_time >= end_time) {
+    throw new Error("Start time must be strictly before end time.");
   }
 
-  // 3. Create booking
-  const booking = await Booking.create({
-    room_id,
-    user_id: userId,
-    date,
-    start_time,
-    end_time,
-    purpose,
-  });
+  //Max 3-hour duration enforcement
+  const [startHrs, startMins] = start_time.split(":").map(Number);
+  const [endHrs, endMins] = end_time.split(":").map(Number);
+  const totalDurationMinutes = (endHrs * 60 + endMins) - (startHrs * 60 + startMins);
 
-  return booking;
+  if (totalDurationMinutes > 180) {
+    throw new Error("Operational Policy Violation: Single reservations cannot exceed 3 hours.");
+  }
+
+  // Re-use centralized conflict check utility
+  const isConflicted = await checkRoomConflict(room_id, date, start_time, end_time);
+  if (isConflicted) {
+    throw new Error("This room is already reserved for the selected time window.");
+  }
+
+  try {
+    const normalizedDate = new Date(date);
+    normalizedDate.setUTCHours(0, 0, 0, 0);
+    
+    const booking = await Booking.create({
+      room_id,
+      user_id: userId,
+      date: normalizedDate,
+      start_time,
+      end_time,
+      purpose,
+    });
+
+    return booking;
+  } catch (dbError) {
+    if (dbError.code === 11000) {
+      throw new Error("Concurrency Conflict: This slot was just reserved by another user. Please re-check availability.");
+    }
+    throw dbError;
+  }
 };
 
 // Get all bookings
@@ -54,16 +76,14 @@ export const getBookingsService = async (user) => {
   }
   return await Booking.find({ user_id: user._id })
     .populate("user_id")
-    .populate("room_id");
+    .populate("room_id")
+    .sort({ createdAt: -1 });
 };
 
-// 🔹 Update booking status
+//Update booking status  -- only for sbg_core
 export const updateBookingStatusService = async (id, status, user) => {
 
-  if (user.role !== "sbg_core") {
-  throw new Error("Only sbg_core can update booking status");
-  }
-  // ✅ Validate status
+  // Validate status
   if (!["approved", "rejected"].includes(status)) {
     throw new Error("Invalid status");
   }
