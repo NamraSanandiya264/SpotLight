@@ -9,6 +9,7 @@ import {
   getPendingRequestsService, 
   processJoinRequestService,
   removeMemberService,
+  leaveOrganizationService
 } from "./organization.service.js";
 
 import Organization from "./organization.model.js"; 
@@ -67,41 +68,24 @@ export const getOrganizationById = async (req, res) => {
     const orgId = req.params.id;
     const userId = req.user._id;
 
-    const organization = await Organization.findById(orgId);
-    if (!organization) {
-      return res.status(404).json({ success: false, message: "Organization record not found." });
-    }
-
-    // 🌟 THE FIX: Populate the associated User data fields (name and studentID) right out of the DB reference link
-    const membersRaw = await OrganizationMember.find({ organization: orgId }).populate("user", "name studentID");
-
-    // Map the populated array fields cleanly to the data keys expected by your frontend file model loop
-    const members = membersRaw.map(m => ({
-      userId: m.user?._id || m.user,
-      name: m.user?.name || "Unknown User",       // Falls back to "Unknown" if user document was deleted
-      studentID: m.user?.studentID || "No ID",    // Maps user collection student ID field accurately
-      role: m.role
-    }));
+    // Call the service instead of doing raw DB queries here
+    const detailData = await getOrganizationByIdService(orgId);
 
     // Check if the current user has an active pending request
     let hasPendingRequest = false;
-    try {
-      if (JoinRequest) {
-        const pendingRecord = await JoinRequest.findOne({
-          organization: orgId,
-          user: userId,
-          status: "pending"
-        });
-        hasPendingRequest = !!pendingRecord;
-      }
-    } catch (qErr) {
-      hasPendingRequest = false; 
+    if (JoinRequest) {
+      const pendingRecord = await JoinRequest.findOne({
+        organization: orgId,
+        user: userId,
+        status: "pending"
+      });
+      hasPendingRequest = !!pendingRecord;
     }
 
     res.status(200).json({
       success: true,
-      organization,
-      members,
+      organization: detailData.organization,
+      members: detailData.members,
       hasPendingRequest
     });
 
@@ -266,5 +250,20 @@ export const removeMember = async (req, res) => {
       success: false,
       message: err.message
     });
+  }
+};
+
+// =============================
+// Leave Organization
+// =============================
+export const leaveOrganization = async (req, res) => {
+  try {
+    const result = await leaveOrganizationService(req.params.id, req.user._id);
+    res.status(200).json({
+      success: true,
+      message: "You have successfully left the organization configuration."
+    });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
   }
 };

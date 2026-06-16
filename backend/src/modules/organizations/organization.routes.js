@@ -11,6 +11,7 @@ import {
   getPendingRequests,
   processJoinRequest, 
   removeMember,
+  leaveOrganization
 } from "./organization.controller.js";
 
 import { uploadImage } from "../../middleware/upload.middleware.js";
@@ -69,5 +70,5 @@ router.get("/:id/pending-requests", protect, getPendingRequests);
 router.put("/requests/:requestId", protect, processJoinRequest);
 
 router.delete("/:id/members", protect, removeMember);
-
+router.post("/:id/leave", protect, leaveOrganization);
 export default router;

@@ -35,7 +35,6 @@ const DashboardLayout = ({ children, user ,currentView, setCurrentView, isCoreOr
           setActiveMenu(menu);
         }}
         user={user}
-        // 🌟 Adding these temporary prop links so Sidebar.jsx line 79 doesn't crash 
         currentView={activeMenu}
         setCurrentView={setActiveMenu}
         isCoreOrLeader={isCoreOrLeader}
@@ -46,7 +45,6 @@ const DashboardLayout = ({ children, user ,currentView, setCurrentView, isCoreOr
 
         <div className="content-area">
           {/* Conditional Layout Routing Stage */}
-          {/* Handle the Home Dashboard tab natively inline */}
           {activeMenu === "home" ? (
             <Home />
           ) : activeMenu === "organizations" ? (
@@ -58,10 +56,8 @@ const DashboardLayout = ({ children, user ,currentView, setCurrentView, isCoreOr
           ) : activeMenu === "events" ? (
             <EventCalendar />
           ) : activeMenu === "manage-events" ? (
-            /* 🌟 JUST ADDED: If the user clicks the manage-events tab, render this new page */
             <ManageEvents />
           ) : (
-            /* Fallback to default rendering (e.g. Booking systems / lists) passed as kids routes */
             typeof children === "function"
               ? children({ collapsed, setCollapsed, activeMenu })
               : children

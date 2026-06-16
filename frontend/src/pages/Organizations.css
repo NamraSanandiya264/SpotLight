@@ -9,6 +9,7 @@
   --radius-md: 8px;
 }
 
+/* Base Wrapper Animation */
 .organization-page {
   max-w: 1200px;
   margin: 0 auto;
@@ -19,7 +20,7 @@
 /* Header Typography Styles */
 .organization-header {
   margin-bottom: 24px;
-  border-b: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: 20px;
 }
 
@@ -114,21 +115,21 @@
 /* Main Cards Grid */
 .organization-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+  grid-template-columns: 1fr; 
   gap: 24px;
-  max-w: 1200px; /* Keeps the container bounds tidy */
+  max-w: 1200px;
   width: 100%;
 }
 
 @media (min-width: 640px) {
   .organization-grid {
-    grid-template-cols: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (min-width: 1024px) {
   .organization-grid {
-    grid-template-cols: repeat(3, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
@@ -159,7 +160,7 @@
 .card-image-wrapper img {
   width: 100%;
   height: 100%;
-  object-cover: cover;
+  object-fit: cover;
 }
 
 /* Badge types styles */
@@ -208,7 +209,7 @@
   margin: 0 0 20px 0;
   line-height: 1.5;
   display: -webkit-box;
-  -webkit-line-clamp: 3; /* Crops abstract to 3 readable lines max */
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   flex-grow: 1;
@@ -335,90 +336,413 @@
   border-radius: 50%;
 }
 
-@keyframes popIn {
-  0% { opacity: 0; transform: scale(0.92) translateY(-4px); }
-  100% { opacity: 1; transform: scale(1) translateY(0); }
+/* Section Labels for Team View */
+.section-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #9ca3af;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  letter-spacing: 0.05em;
 }
 
-/* Custom Action Trigger Styles */
-.role-action-wrapper {
-  position: relative;
-  display: inline-block;
+/* ==========================================================================
+   Organization Details & Member Management Layouts
+   ========================================================================== */
+
+.page-padding {
+  padding: 24px;
 }
 
-.manage-role-trigger {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  color: #64748b;
-  padding: 8px;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
+.back-btn-margin {
+  margin-bottom: 24px;
+}
+
+.back-btn-layout {
+  margin-bottom: 24px;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  gap: 8px;
 }
 
-.manage-role-trigger:hover {
-  background: #f1f5f9;
-  color: #1e293b;
-  border-color: #cbd5e1;
+.error-text-color {
+  color: #ef4444;
 }
 
-/* Floating Dropdown Context Box */
-.role-dropdown-portal {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
-  z-index: 50;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-  padding: 6px;
-  min-width: 160px;
+.detail-view-animate {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Detailed Profile Custom Extensions */
+.detail-profile-card {
+  cursor: default;
+  padding: 28px;
+  width: 100%;
+  margin-bottom: 32px;
+}
+
+.card-column-layout {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  transform-origin: top right;
-  animation: popIn 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+  gap: 16px;
 }
 
-/* Custom Styled Option Rows */
-.role-option-item {
+.card-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   width: 100%;
-  text-align: left;
-  background: none;
-  border: none;
-  padding: 8px 12px;
-  font-size: 13px;
-  font-weight: 500;
-  color: #475569;
+}
+
+.detail-profile-card .badge {
+  position: static;
+  box-shadow: none;
+}
+
+.edit-profile-btn {
+  font-size: 12px;
+  padding: 4px 12px;
+  margin-left: auto;
+}
+
+.detail-title {
+  font-size: 32px;
+  fontWeight: 800;
+  color: #111827;
+  margin: 0;
+}
+
+.detail-desc-text {
+  font-size: 15px;
+  color: #4b5563;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Edit Textarea Block */
+.textarea-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.edit-desc-textarea {
+  width: 100%;
+  padding: 12px;
   border-radius: 8px;
-  cursor: pointer;
+  border: 1px solid #cbd5e1;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.action-btn-gap {
+  display: flex;
+  gap: 8px;
+}
+
+.small-btn-padding {
+  padding: 6px 16px;
+  font-size: 13px;
+}
+
+.long-btn-padding {
+  padding: 10px 24px;
+  font-size: 14px;
+}
+
+/* Member Action Interfaces */
+.membership-action-container {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 16px;
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.leave-club-btn {
+  padding: 10px 24px;
+  font-size: 14px;
+  color: #dc2626;
+  border-color: #fca5a5;
+  background-color: #fff5f5;
+}
+
+.leave-club-btn:hover {
+  background-color: #fee2e2;
+}
+
+.requested-btn {
+  padding: 10px 24px;
+  font-size: 14px;
+  color: #64748b;
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+  cursor: not-allowed;
+}
+
+/* Pending Requests Portal Box */
+.pending-queue-card {
+  padding: 24px;
+  width: 100%;
+  margin-bottom: 32px;
+  border-color: #3b82f6;
+  background-color: #f8fafc;
+  cursor: default;
+}
+
+.pending-queue-card:hover {
+  transform: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.pending-queue-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e3a8a;
+  margin: 0 0 16px 0;
+}
+
+.card-column-gap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pending-request-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  transition: all 0.15s ease;
+  background: #ffffff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
 }
 
-.role-option-item:hover {
-  background: #f1f5f9;
-  color: #0f172a;
-}
-
-.role-option-item.active {
-  background: #f0fdf4;
-  color: #166534;
+.applicant-name {
+  margin: 0;
+  font-size: 14px;
   font-weight: 600;
+  color: #111827;
 }
 
-/* Dot indicators inside custom options */
-.active-dot {
-  width: 6px;
-  height: 6px;
-  background-color: #22c55e;
+.applicant-id {
+  margin: 0;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.approve-btn {
+  padding: 6px 14px;
+  font-size: 12px;
+  background-color: #10b981;
+  border-color: #10b981;
+}
+
+.approve-btn:hover {
+  background-color: #059669;
+  border-color: #059669;
+}
+
+.reject-btn {
+  padding: 6px 14px;
+  font-size: 12px;
+  color: #ef4444;
+  border-color: #fca5a5;
+}
+
+.reject-btn:hover {
+  background-color: #fef2f2;
+}
+
+/* Spotlights Gallery Grid Context */
+.gallery-section-margin {
+  margin-bottom: 36px;
+}
+
+.gallery-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.section-heading {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.upload-lbl-btn {
+  padding: 8px 16px;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.hidden-file-input {
+  display: none;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.gallery-img-frame {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  aspect-ratio: 16/10;
+}
+
+.gallery-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.empty-gallery-text {
+  font-size: 14px;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+/* Team Component Grid Lists */
+.team-section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 10px;
+}
+
+.team-tier-container {
+  margin-bottom: 32px;
+}
+
+.group-label-style {
+  font-size: 12px;
+  font-weight: 700;
+  color: #9ca3af;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+/* Refactored Individual Team Cards */
+.member-item-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  width: 100%;
+  position: relative;
+  transition: opacity 0.15s ease;
+}
+
+.processing-fade {
+  opacity: 0.6;
+}
+
+.member-info-block {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.member-avatar {
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
+  background-color: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: #4b5563;
+  font-size: 16px;
+  border: 1px solid #e5e7eb;
+}
+
+.member-card-name {
+  margin: 0 0 2px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.member-card-id {
+  margin: 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.member-action-block {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.role-tier-badge {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 9999px;
+}
+
+.gear-icon-svg {
+  width: 16px;
+  height: 16px;
+}
+
+.kick-out-option {
+  border-top: 1px solid #f1f5f9;
+  margin-top: 4px;
+  color: #dc2626;
+}
+
+.kick-out-option:hover {
+  background-color: #fff5f5;
+  color: #b91c1c;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+
+/* ==========================================================================
+   Existing Layout Bug Fixes
+   ========================================================================== */
+@media (min-width: 640px) {
+  .organization-grid {
+    grid-template-columns: repeat(2, 1fr) !important; 
+  }
+}
+
+@media (min-width: 1024px) {
+  .organization-grid {
+    grid-template-columns: repeat(3, 1fr) !important; 
+  }
+}
+
+.card-image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover !important; 
 }
 
 @keyframes popIn {

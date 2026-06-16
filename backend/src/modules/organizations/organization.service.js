@@ -339,17 +339,54 @@ export const removeMemberService = async (orgId, targetUserId, currentUserId) =>
   }
 
   // 2. Prevent the Convenor from accidentally deleting themselves
-  if (targetUserId === currentUserId) {
+  if (targetUserId.toString() === currentUserId.toString()) {
     throw new Error("Action denied: You cannot remove yourself. Transfer your Convenor role first.");
   }
 
-  // 3. Remove the target user entry
+  // 3. Atomic operational extraction
   const result = await OrganizationMember.findOneAndDelete({
     user: targetUserId,
     organization: orgId
   });
 
-  if (!result) throw new Error("Target member record not found in this organization.");
+  if (!result) {
+    throw new Error("Target member record not found in this organization.");
+  }
+
+  //Clear historic membership join records to prevent stale application lockouts
+  await JoinRequest.deleteMany({
+    user: targetUserId,
+    organization: orgId
+  });
+
   return result;
+};
+
+export const leaveOrganizationService = async (orgId, userId) => {
+  const membership = await OrganizationMember.findOne({ user: userId, organization: orgId });
+  if (!membership) {
+    throw new Error("You are not a registered member of this organization.");
+  }
+
+  // Business Constraint: If they are the convenor, prevent them from abandoning the club without a leader
+  if (membership.role === "convenor") {
+    // Check if there is another core member who can be promoted, or force a role transfer first
+    const alternativeLeader = await OrganizationMember.findOne({
+      organization: orgId,
+      user: { $ne: userId },
+      role: { $in: ["deputy", "core"] }
+    });
+
+    if (!alternativeLeader) {
+      throw new Error("Action Denied: As the sole Convenor, you cannot leave until you add or appoint a new leader.");
+    }
+  }
+
+  // Remove the member
+  await OrganizationMember.deleteOne({ _id: membership._id });
+
+  await JoinRequest.deleteMany({ user: userId, organization: orgId });
+
+  return { success: true };
 };
 
