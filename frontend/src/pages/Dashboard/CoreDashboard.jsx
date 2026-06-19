@@ -98,6 +98,11 @@ const CoreDashboard = () => {
           <div className="booking-card admin-card" key={b._id}>
             <div className="card-header">
               <span className={`status-badge ${b.status}`}>{b.status}</span>
+              {b.isEdited && (
+              <span className="status-badge" style={{ backgroundColor: "#e0e7ff", color: "#1e40af", marginLeft: "8px" }}>
+                ✏️ Edited
+              </span>
+              )}
             </div>
             
             <p><FaUser className="icon" /> <strong>Student:</strong> {b.user_id?.name || "Unknown"}</p>

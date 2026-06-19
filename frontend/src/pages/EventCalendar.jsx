@@ -68,12 +68,16 @@ const EventCalendar = () => {
   };
 
   const showEventDetails = (event) => {
+    const editedBadge = event.isEdited 
+      ? `<span style="color:#1d4ed8; font-size:11px; background:#dbeafe; padding: 2px 6px; border-radius: 4px; margin-left: 6px;">✏️ Edited</span>` 
+      : "";
+
     Swal.fire({
-      title: `<h3 class="swal-evt-title">${event.eventName}</h3>`,
+      title: `<h3 class="swal-evt-title">${event.eventName}${editedBadge}</h3>`,
       html: `
         <div class="swal-evt-body">
           <p><span>🏢</span> <strong>Club/Org:</strong> ${event.organization?.name || "Campus Club"}</p>
-          <p><span>📍</span> <strong>Venue:</strong> ${event.venue}</p>
+          <p><span>📍</span> <strong>Venue:</strong> ${event.venue?.name || "Campus Venue"}</p>
           <p><span>⏰</span> <strong>Time:</strong> ${event.startTime} - ${event.endTime}</p>
           <hr class="swal-divider"/>
           <p class="swal-evt-desc">${event.description || "No description provided for this campus event."}</p>
@@ -94,7 +98,7 @@ const EventCalendar = () => {
           <span class="swal-day-list-time">⏰ ${event.startTime} - ${event.endTime}</span>
           <span class="swal-day-list-org">🏢 ${event.organization?.name || "Club"}</span>
         </div>
-        <div class="swal-day-list-title">📍 ${event.venue} | <strong>${event.eventName}</strong></div>
+        <div class="swal-day-list-title">📍 ${event.venue?.name || "Campus Venue"} | <strong>${event.eventName}</strong></div>
       </div>
     `).join("");
 

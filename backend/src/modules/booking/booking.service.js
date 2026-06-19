@@ -16,7 +16,7 @@ export const checkRoomConflict = async (roomId, date, startTime, endTime) => {
         end_time: { $gt: startTime },
       },
     ],
-  });
+  }).populate("user_id", "name");
 };
 
 // Create Booking

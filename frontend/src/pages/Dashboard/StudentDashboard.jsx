@@ -137,8 +137,9 @@ const StudentDashboard = () => {
         setAvailabilityChecked(false);
       }
     } catch (err) {
+      console.error('Availability check failed:', err);
       setStatusMessage({ 
-        text: "Server error during availability verification", 
+        text: `Server error during availability verification${err && err.message ? `: ${err.message}` : ''}`, 
         type: "error",
         icon: <FaTimesCircle style={{ color: "#ef4444" }} />
       });
@@ -187,6 +188,11 @@ const StudentDashboard = () => {
           <div className="booking-card" key={b._id || index}>
             <div className="card-header">
               <span className={`status-badge ${b.status}`}>{b.status}</span>
+              {b.isEdited && (
+                <span className="status-badge" style={{ backgroundColor: "#e0e7ff", color: "#1e40af", marginLeft: "8px" }}>
+                  ✏️ Edited
+                </span>
+              )}
             </div>
             
             <p><FaRegFileAlt className="icon" /> <strong>Purpose:</strong> {b.purpose}</p>
@@ -205,7 +211,6 @@ const StudentDashboard = () => {
 
   return (
     <div className="student-dashboard">
-      {/* 🌟 HEADING UPDATED: Standardized to Room Booking Portal */}
       <div className="dashboard-header">
         <h2>Room Booking Portal</h2>
         <button className="book-btn" onClick={() => setShowPanel(true)}>
