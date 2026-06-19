@@ -9,16 +9,14 @@ import {
   getPendingRequestsService, 
   processJoinRequestService,
   removeMemberService,
-  leaveOrganizationService
+  leaveOrganizationService,
+  getMyOrganizationsService
 } from "./organization.service.js";
 
 import Organization from "./organization.model.js"; 
 import OrganizationMember from "./orgMember.model.js"; 
 import JoinRequest from "./joinRequest.model.js";
 
-// =============================
-// Create Organization
-// =============================
 export const createOrganization = async (req, res) => {
   try {
     const organization =
@@ -265,5 +263,22 @@ export const leaveOrganization = async (req, res) => {
     });
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
+  }
+};
+
+
+export const getMyOrganizations = async (req, res) => {
+  try {
+    const organizations = await getMyOrganizationsService(req.user._id);
+    
+    res.status(200).json({
+      success: true,
+      organizations,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
   }
 };

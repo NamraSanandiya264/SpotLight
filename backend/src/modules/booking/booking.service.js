@@ -23,7 +23,7 @@ export const checkRoomConflict = async (roomId, date, startTime, endTime) => {
 export const createBookingService = async (data, userId) => {
   validateBookingInput(data);
   
-  const { room_id, date, start_time, end_time, purpose } = data;
+  const { room_id, date, start_time, end_time, purpose, contact_number , organization } = data;
 
   if (start_time >= end_time) {
     throw new Error("Start time must be strictly before end time.");
@@ -55,6 +55,8 @@ export const createBookingService = async (data, userId) => {
       start_time,
       end_time,
       purpose,
+      contact_number,
+      organization: organization || "None",
     });
 
     return booking;
@@ -101,6 +103,37 @@ export const updateBookingStatusService = async (id, status, user) => {
   booking.status = status;
   booking.approved_by = user._id;
 
+  await booking.save();
+
+  return booking;
+};
+
+// Add this at the bottom of booking.service.js
+export const cancelBookingService = async (id, user) => {
+  const booking = await Booking.findById(id);
+  
+  if (!booking) {
+    throw new Error("Booking not found");
+  }
+
+  if (booking.status !== "approved") {
+    throw new Error("Only approved bookings can be canceled");
+  }
+
+  const hoursPassed = (new Date() - new Date(booking.createdAt)) / (1000 * 60 * 60);
+  if (hoursPassed > 24) {
+    throw new Error("Time limit exceeded: Bookings can only be canceled within 24 hours of creation.");
+  }
+
+  // Authorization: Allow if user is sbg_core OR if the user owns the booking
+  const isOwner = booking.user_id.toString() === user._id.toString();
+  const isCoreAdmin = user.role === "sbg_core";
+
+  if (!isOwner && !isCoreAdmin) {
+    throw new Error("You are not authorized to cancel this booking");
+  }
+
+  booking.status = "cancelled";
   await booking.save();
 
   return booking;

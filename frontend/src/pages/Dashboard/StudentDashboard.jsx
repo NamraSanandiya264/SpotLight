@@ -4,7 +4,9 @@ import {
   checkAvailability,
   createBooking,
   getMyBookings,
-  getAllRooms
+  getAllRooms,
+  cancelBooking,
+  getMyOrganizations // Combined the imports for cleanliness
 } from "../../services/api";
 import { 
   FaHourglassHalf, 
@@ -15,11 +17,12 @@ import {
   FaCalendarAlt,
   FaClock,
   FaRegFileAlt,
-  FaTimesCircle
+  FaTimesCircle,
+  FaPhone
 } from "react-icons/fa";
 import Swal from "sweetalert2"; 
 
-const StudentDashboard = () => {
+const StudentDashboard = ({user}) => {
   const [showPanel, setShowPanel] = useState(false);
   const [rooms, setRooms] = useState([]);
   const [date, setDate] = useState("");
@@ -31,7 +34,10 @@ const StudentDashboard = () => {
   const [availabilityChecked, setAvailabilityChecked] = useState(false);
   const [statusMessage, setStatusMessage] = useState({ text: "", type: "", icon: null });
   const [activeTab, setActiveTab] = useState("pending");
-
+  const [contactNumber, setContactNumber] = useState(user?.phone || "");
+  const [organization, setOrganization] = useState("");
+  const [userOrgs, setUserOrgs] = useState([]); // ✅ ADDED: State to hold the fetched organizations
+  
   const closeBookingPanel = () => {
     setShowPanel(false);
     setDate("");
@@ -41,6 +47,7 @@ const StudentDashboard = () => {
     setPurpose("");
     setAvailabilityChecked(false);
     setStatusMessage({ text: "", type: "", icon: null });
+    setOrganization(""); // Resetting to empty string instead of "None"
   };
 
   useEffect(() => {
@@ -68,7 +75,7 @@ const StudentDashboard = () => {
   );
 
   const pastBookings = bookings.filter(b => 
-    b.status === "rejected" || (b.status === "approved" && b.date?.split('T')[0] < today)
+    b.status === "rejected" || b.status === "canceled" || (b.status === "approved" && b.date?.split('T')[0] < today)
   );
 
   const handleInputMutation = (setter, value) => {
@@ -79,7 +86,9 @@ const StudentDashboard = () => {
 
   const handleCheckAvailability = async () => {
     setStatusMessage({ text: "", type: "", icon: null });
-    if (!date || !startTime || !endTime || !selectedRoom) {
+    
+    // ✅ FIXED: Typo "organiztion" changed to "organization"
+    if (!date || !startTime || !endTime || !selectedRoom || !contactNumber || !organization) {
       setStatusMessage({ 
         text: "Please fill all fields", 
         type: "error",
@@ -87,7 +96,14 @@ const StudentDashboard = () => {
       });
       return;
     }
-
+    if (contactNumber.length !== 10) {
+      setStatusMessage({ 
+        text: "Please enter a valid 10-digit contact number", 
+        type: "error",
+        icon: <FaTimesCircle style={{ color: "#ef4444" }} />
+      });
+      return;
+    }
     if (startTime >= endTime) {
       setStatusMessage({ 
         text: "Start time must be strictly before end time", 
@@ -155,6 +171,8 @@ const StudentDashboard = () => {
         start_time: startTime,
         end_time: endTime,
         purpose: purpose || "General Meeting",
+        contact_number: contactNumber,
+        organization: organization,
       });
 
       const newBooking = res.data.booking || res.data;
@@ -178,6 +196,37 @@ const StudentDashboard = () => {
     }
   };
 
+  const handleCancelBooking = async (id) => {
+    const result = await Swal.fire({
+      title: "Cancel Booking?",
+      text: "Are you sure you want to cancel this approved booking? This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#64748b",
+      confirmButtonText: "Yes, cancel it"
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await cancelBooking(id);
+      setBookings((prev) => 
+        prev.map((b) => (b._id === id ? { ...b, status: "canceled" } : b))
+      );
+      Swal.fire("Canceled!", "Your booking has been canceled.", "success");
+    } catch (err) {
+      Swal.fire("Error", err.response?.data?.message || "Could not cancel booking", "error");
+    }
+  };
+
+  const isCancelable = (createdAt) => {
+    if (!createdAt) return false;
+    const timeDiff = new Date() - new Date(createdAt);
+    const hoursPassed = timeDiff / (1000 * 60 * 60);
+    return hoursPassed <= 24;
+  };
+
   const renderBookingCards = (list) => (
     <div className="booking-grid">
       {list.length === 0 ? (
@@ -197,18 +246,45 @@ const StudentDashboard = () => {
             
             <p><FaCalendarAlt className="icon" /> <strong>Date:</strong> {b.date ? b.date.split('T')[0] : "N/A"}</p>
             <p><FaClock className="icon" /> <strong>Time:</strong> {b.start_time} - {b.end_time}</p>
+            {b.status === "approved" && activeTab === "approved" && isCancelable(b.createdAt) &&(
+                <button 
+                  className="cancel-btn" 
+                  onClick={() => handleCancelBooking(b._id)}
+                >
+                  <FaTimesCircle /> Cancel Booking
+                </button>
+              )}
           </div>
         ))
       )}
     </div>
   );
 
+  const openBookingPanel = async () => {
+    const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+    setContactNumber(storedUser?.phone || storedUser?.contact_number || "");
+    
+    try {
+      const res = await getMyOrganizations(); 
+      console.log("API Response:", res.data); 
+      
+      const fetchedOrgs = Array.isArray(res.data) 
+        ? res.data 
+        : (res.data.data || res.data.organizations || res.data.clubs || []);
+        
+      setUserOrgs(fetchedOrgs);
+    } catch (err) {
+      console.error("Error fetching organizations", err);
+    }
+    
+    setShowPanel(true);
+  };
+
   return (
     <div className="student-dashboard">
-      {/* 🌟 HEADING UPDATED: Standardized to Room Booking Portal */}
       <div className="dashboard-header">
         <h2>Room Booking Portal</h2>
-        <button className="book-btn" onClick={() => setShowPanel(true)}>
+        <button className="book-btn" onClick={openBookingPanel}>
           <FaPlus /> Book a Room
         </button>
       </div>
@@ -300,6 +376,32 @@ const StudentDashboard = () => {
             value={purpose}
             onChange={(e) => setPurpose(e.target.value)}
           />
+
+          <label>Contact Number</label>
+          <input 
+            type="tel" 
+            className="input" 
+            placeholder="e.g., 9876543210"
+            value={contactNumber}
+            maxLength="10"
+            onChange={(e) => handleInputMutation(setContactNumber, e.target.value.replace(/\D/g, ''))} 
+          />
+
+          <label htmlFor="org-select">Organization</label>
+          <select
+            id="org-select"
+            className="input dropdown-select"
+            value={organization}
+            onChange={(e) => handleInputMutation(setOrganization, e.target.value)}
+          >
+            <option value="" disabled>-- Select Organization --</option>
+            <option value="None">None</option>
+            {userOrgs.map((org, index) => (
+              <option key={index} value={org.name || org.title || org}>
+                {org.name || org.title || org}
+              </option>
+            ))}
+          </select>
 
           <label htmlFor="room-select">Select Room</label>
           <select
