@@ -33,15 +33,16 @@ export const getBookings = () =>
 
 export const updateBookingStatus = (id, status) => 
   API.patch(`/bookings/${id}/status`, { status });
-
-// ==========================================
-// 📅 EVENTS & CALENDAR APIs
-// ==========================================
 export const getMonthlyCalendar = (month, year) => 
   API.get(`/events/calendar?month=${month}&year=${year}`);
 
 export const createEvent = (eventData) => 
   API.post("/events/create", eventData);
 
+export const cancelBooking = (id) => API.patch(`/bookings/${id}/cancel`);
+export const getMyOrganizations = () => API.get("/organizations/my");
+
 // 🚀 Default export of the axios instance
 export default API;
+
+

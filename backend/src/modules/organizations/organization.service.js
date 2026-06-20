@@ -153,11 +153,6 @@ export const updateMemberRoleService = async (
   return targetUser;
 };
 
-
-// // =====================================================
-// // GET ALL ORGANIZATIONS
-// // =====================================================
-
 export const getAllOrganizationsService =
 async()=>{
 
@@ -169,13 +164,6 @@ async()=>{
 
   return organizations;
 };
-
-
-
-
-// =====================================================
-// GET ORGANIZATION DETAILS
-// =====================================================
 
 export const getOrganizationByIdService =
 async(orgId)=>{
@@ -390,3 +378,11 @@ export const leaveOrganizationService = async (orgId, userId) => {
   return { success: true };
 };
 
+export const getMyOrganizationsService = async (userId) => {
+  // Find all memberships for this user and populate the organization details
+  const memberships = await OrganizationMember.find({ user: userId })
+    .populate("organization", "name type");
+  
+  // Map over the results to just return the organization objects
+  return memberships.map(m => m.organization);
+};

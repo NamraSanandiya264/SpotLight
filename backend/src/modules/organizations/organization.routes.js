@@ -11,7 +11,8 @@ import {
   getPendingRequests,
   processJoinRequest, 
   removeMember,
-  leaveOrganization
+  leaveOrganization,
+  getMyOrganizations
 } from "./organization.controller.js";
 
 import { uploadImage } from "../../middleware/upload.middleware.js";
@@ -38,7 +39,7 @@ router.get(
   protect,
   getAllOrganizations
 );
-
+router.get("/my", protect, getMyOrganizations);
 // organization detail
 router.get(
   "/:id",

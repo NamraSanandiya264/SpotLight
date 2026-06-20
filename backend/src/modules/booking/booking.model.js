@@ -31,21 +31,31 @@ const bookingSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "approved", "rejected"],
+      enum: ["pending", "approved", "rejected", "cancelled"],
       default: "pending",
     },
     approved_by: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
-    isEdited: { type: Boolean, default: false }
+    isEdited: {
+      type: Boolean,
+      default: false
+    },
+    contact_number: {
+      type: String,
+      required: [true, "Contact number is mandatory."],
+    },
+    organization: {
+      type: String,
+      default: "None",
+    },
   },
   { 
     timestamps: true
   }
 );
 
-// Unique Compound Partial Index to completely eliminate race conditions
 bookingSchema.index(
   { room_id: 1, date: 1, start_time: 1, end_time: 1 },
   {
