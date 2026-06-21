@@ -10,11 +10,13 @@ import {
   processJoinRequestService,
   removeMemberService,
   leaveOrganizationService,
-  getMyOrganizationsService
+  getMyOrganizationsService,
+  setCoverPhotoService,
+  removePhotoService,
+  updateOrganizationAdminService,
+  deleteOrganizationService
 } from "./organization.service.js";
 
-import Organization from "./organization.model.js"; 
-import OrganizationMember from "./orgMember.model.js"; 
 import JoinRequest from "./joinRequest.model.js";
 
 export const createOrganization = async (req, res) => {
@@ -38,10 +40,6 @@ export const createOrganization = async (req, res) => {
   }
 };
 
-
-// =============================
-// Get All Organizations
-// =============================
 export const getAllOrganizations = async (req, res) => {
   try {
     const organizations =
@@ -66,10 +64,8 @@ export const getOrganizationById = async (req, res) => {
     const orgId = req.params.id;
     const userId = req.user._id;
 
-    // Call the service instead of doing raw DB queries here
     const detailData = await getOrganizationByIdService(orgId);
 
-    // Check if the current user has an active pending request
     let hasPendingRequest = false;
     if (JoinRequest) {
       const pendingRecord = await JoinRequest.findOne({
@@ -94,14 +90,11 @@ export const getOrganizationById = async (req, res) => {
 };
 
 
-// =============================
-// Join Organization (NEW)
-// =============================
 export const joinOrganization = async (req, res) => {
   try {
     const membership = await joinOrganizationService(
-      req.params.id,   // organization ID from URL
-      req.user._id     // logged-in user ID from protect middleware
+      req.params.id,   
+      req.user._id     
     );
 
     res.status(201).json({
@@ -113,7 +106,7 @@ export const joinOrganization = async (req, res) => {
   } catch (err) {
     res.status(400).json({
       success: false,
-      message: err.message, // Catches "Already a member" or "Organization not found"
+      message: err.message, 
     });
   }
 };
@@ -121,7 +114,10 @@ export const joinOrganization = async (req, res) => {
 
 export const updateOrganizationProfile = async (req, res) => {
   try {
-    const updateData = { description: req.body.description };
+    const updateData = { 
+      description: req.body.description,
+      name: req.body.name
+    };
 
     if (!req.file && !req.body.description) {
       throw new Error("No image file received by the server. Check your Form Data keys.");
@@ -161,10 +157,10 @@ export const updateMemberRole = async (req, res) => {
     }
 
     const updatedMember = await updateMemberRoleService(
-      req.params.id,       // Organization ID from URL parameter
-      targetUserId,        // Target user ID to alter
-      newRole,             // New role string assignment
-      req.user._id         // Logged-in user's ID from auth token
+      req.params.id,       
+      targetUserId,        
+      newRole,             
+      req.user._id         
     );
 
     res.status(200).json({
@@ -180,9 +176,7 @@ export const updateMemberRole = async (req, res) => {
     });
   }
 };
-// =============================
-// Submit a Join Request
-// =============================
+
 export const createJoinRequest = async (req, res) => {
   try {
     const request = await createJoinRequestService(req.params.id, req.user._id);
@@ -196,9 +190,7 @@ export const createJoinRequest = async (req, res) => {
   }
 };
 
-// =============================
-// Get All Pending Requests (Deputy/Convenor)
-// =============================
+
 export const getPendingRequests = async (req, res) => {
   try {
     const requests = await getPendingRequestsService(req.params.id, req.user._id);
@@ -208,12 +200,9 @@ export const getPendingRequests = async (req, res) => {
   }
 };
 
-// =============================
-// Approve/Reject a Request (Deputy/Convenor)
-// =============================
 export const processJoinRequest = async (req, res) => {
   try {
-    const { action } = req.body; // Expects "approved" or "rejected"
+    const { action } = req.body; 
 
     const result = await processJoinRequestService(
       req.params.requestId, 
@@ -234,9 +223,9 @@ export const processJoinRequest = async (req, res) => {
 export const removeMember = async (req, res) => {
   try {
     await removeMemberService(
-      req.params.id,        // Organization ID
-      req.body.targetUserId, // Member to remove
-      req.user._id          // Caller authenticated user ID
+      req.params.id,        
+      req.body.targetUserId, 
+      req.user._id   
     );
 
     res.status(200).json({
@@ -251,9 +240,7 @@ export const removeMember = async (req, res) => {
   }
 };
 
-// =============================
-// Leave Organization
-// =============================
+
 export const leaveOrganization = async (req, res) => {
   try {
     const result = await leaveOrganizationService(req.params.id, req.user._id);
@@ -280,5 +267,57 @@ export const getMyOrganizations = async (req, res) => {
       success: false,
       message: err.message,
     });
+  }
+};
+
+export const setCoverPhoto = async (req, res) => {
+  try {
+    const { photoUrl } = req.body;
+    if (!photoUrl) throw new Error("No photo URL provided.");
+
+    const updatedOrg = await setCoverPhotoService(req.params.id, req.user._id, photoUrl);
+
+    res.status(200).json({
+      success: true,
+      message: "Cover photo updated successfully",
+      organization: updatedOrg
+    });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
+
+export const removePhoto = async (req, res) => {
+  try {
+    const { photoUrl } = req.body;
+    if (!photoUrl) throw new Error("No photo URL provided.");
+
+    const updatedOrg = await removePhotoService(req.params.id, req.user._id, photoUrl);
+
+    res.status(200).json({
+      success: true,
+      message: "Photo removed successfully",
+      organization: updatedOrg
+    });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
+
+export const updateOrganizationAdmin = async (req, res) => {
+  try {
+    const updatedOrg = await updateOrganizationAdminService(req.params.id, req.body);
+    res.status(200).json({ success: true, organization: updatedOrg });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
+
+export const deleteOrganization = async (req, res) => {
+  try {
+    await deleteOrganizationService(req.params.id);
+    res.status(200).json({ success: true, message: "Organization deleted successfully." });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
   }
 };

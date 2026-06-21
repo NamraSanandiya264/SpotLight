@@ -277,6 +277,7 @@ const Register = () => {
             )}
           </div>
 
+          <button type="submit" className="signup-btn">Register</button>
           <div className="login-redirect">
             <p>
               Already have an account? <Link to="/login">Login here</Link>

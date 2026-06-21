@@ -11,7 +11,7 @@
 
 /* Base Wrapper Animation */
 .organization-page {
-  max-w: 1200px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 24px;
   font-family: system-ui, -apple-system, sans-serif;
@@ -117,7 +117,7 @@
   display: grid;
   grid-template-columns: 1fr; 
   gap: 24px;
-  max-w: 1200px;
+  max-width: 1200px;
   width: 100%;
 }
 
@@ -407,7 +407,7 @@
 
 .detail-title {
   font-size: 32px;
-  fontWeight: 800;
+  font-weight: 800;
   color: #111827;
   margin: 0;
 }
@@ -748,4 +748,65 @@
 @keyframes popIn {
   0% { opacity: 0; transform: scale(0.92) translateY(-4px); }
   100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* --- Spotlight Gallery Refinements --- */
+.gallery-img-frame {
+  position: relative;
+  overflow: hidden; 
+}
+
+/* Hide controls by default, fade in on hover */
+.photo-controls-overlay {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.gallery-img-frame:hover .photo-controls-overlay {
+  opacity: 1;
+}
+
+/* Keep menu visible if the dropdown is open, even if mouse leaves */
+.photo-controls-overlay.menu-open {
+  opacity: 1;
+}
+
+/* Clean kebab button with modern blur effect */
+.kebab-btn {
+  background: rgba(0, 0, 0, 0.4);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  backdrop-filter: blur(4px);
+  transition: background 0.2s;
+}
+
+.kebab-btn:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+/* Small, subtle cover indicator */
+.cover-badge {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  background: rgba(16, 185, 129, 0.85); /* Slightly transparent green */
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  pointer-events: none; 
 }
