@@ -19,14 +19,15 @@ const parseTimeToMinutes = (timeString) => {
   return hours * 60 + minutes;
 };
 
-// Create Event
+// 1. Create Event
 export const createEvent = async (req, res) => {
   try {
-    const { eventName, date, startTime, endTime, venue, organizationId, description } = req.body;
+    const { eventName, date, startTime, endTime, venue, customVenue, organizationId, contact_number, description } = req.body;
     
     await verifyEventAccess(req.user._id, organizationId);
 
-    if (!eventName?.trim() || !date || !startTime || !endTime || !venue || !organizationId) {
+    // Require either a venue ID OR a custom venue string
+    if (!eventName?.trim() || !date || !startTime || !endTime || (!venue && !customVenue) || !organizationId || !contact_number) {
       return res.status(400).json({ success: false, message: "All fields except description are mandatory." });
     }
 
@@ -36,58 +37,62 @@ export const createEvent = async (req, res) => {
     inputDate.setUTCHours(0, 0, 0, 0);
 
     if (inputDate < todayMidnight) {
-      return res.status(400).json({ success: false, message: "Invalid Date: Cannot schedule events in the past." });
+      return res.status(400).json({ success: false, message: "Cannot schedule events in the past." });
     }
 
     if (parseTimeToMinutes(startTime) >= parseTimeToMinutes(endTime)) {
-      return res.status(400).json({ success: false, message: "Invalid Timing: End Time must occur after Start Time." });
+      return res.status(400).json({ success: false, message: "End Time must occur after Start Time." });
     }
 
-    // Check room availability
-    const isConflicted = await checkRoomConflict(venue, inputDate, startTime, endTime);
-    if (isConflicted) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Venue Conflict: This room is already requested or booked during this time." 
+    let automatedBookingId = null;
+
+    // Only process SBG Room Booking if it is NOT a custom venue
+    if (!customVenue && venue) {
+      const isConflicted = await checkRoomConflict(venue, inputDate, startTime, endTime);
+      if (isConflicted) {
+        return res.status(400).json({ success: false, message: "Venue Conflict: Room already reserved." });
+      }
+
+      const automatedBooking = await Booking.create({
+        room_id: venue,
+        user_id: req.user._id,
+        date: inputDate,
+        start_time: startTime,
+        end_time: endTime,
+        purpose: `Event: ${eventName}`,
+        status: "pending", 
+        contact_number
       });
+      automatedBookingId = automatedBooking._id;
     }
 
-    // Generate a pending room booking ticket
-    const automatedBooking = await Booking.create({
-      room_id: venue,
-      user_id: req.user._id,
-      date: inputDate,
-      start_time: startTime,
-      end_time: endTime,
-      purpose: `Event: ${eventName}`,
-      status: "pending" 
-    });
-
-    // Create the event as a draft linked to the booking
     const event = await Event.create({
       eventName,
       date: inputDate,
       startTime,
       endTime,
-      venue,
+      venue: customVenue ? null : venue, 
+      customVenue: customVenue || null,
       organization: organizationId,
-      bookingRef: automatedBooking._id,
+      contact_number,
+      bookingRef: automatedBookingId, 
       description,
       createdBy: req.user._id,
       isPublished: false
     });
 
-    res.status(201).json({ success: true, message: "Event created and room requested successfully!", event });
+    res.status(201).json({ success: true, message: "Event created successfully!", event });
   } catch (err) {
     res.status(403).json({ success: false, message: err.message });
   }
 };
 
-// Update Event
+
+// 2. Update Event
 export const updateEvent = async (req, res) => {
   try {
     const { id } = req.params;
-    const { eventName, date, startTime, endTime, venue, description } = req.body;
+    const { eventName, date, startTime, endTime, venue, customVenue, contact_number, description } = req.body;
 
     const event = await Event.findById(id);
     if (!event) return res.status(404).json({ success: false, message: "Event not found." });
@@ -98,73 +103,101 @@ export const updateEvent = async (req, res) => {
     finalDate.setUTCHours(0, 0, 0, 0);
     const finalStartTime = startTime || event.startTime;
     const finalEndTime = endTime || event.endTime;
-    const finalVenue = venue || event.venue;
+    
+    // Determine the active venue choice
+    const isNowCustom = !!customVenue;
+    const finalVenueId = isNowCustom ? null : (venue || event.venue);
+    const finalCustomVenue = isNowCustom ? customVenue : null;
 
-    // 1. Detect if logistics (Time, Date, Venue) actually changed
+    // Detect changes
     const dateChanged = date && new Date(date).getTime() !== new Date(event.date).getTime();
     const timeChanged = (startTime && startTime !== event.startTime) || (endTime && endTime !== event.endTime);
-    const venueChanged = venue && venue.toString() !== event.venue.toString();
-    const logisticsChanged = dateChanged || timeChanged || venueChanged;
+    const venueSwitchedToCustom = isNowCustom && event.venue;
+    const venueSwitchedToOfficial = !isNowCustom && event.customVenue;
+    const officialVenueChanged = !isNowCustom && venue && venue.toString() !== event.venue?.toString();
+    
+    const logisticsChanged = dateChanged || timeChanged || venueSwitchedToCustom || venueSwitchedToOfficial || officialVenueChanged;
 
     if (logisticsChanged) {
-      const todayMidnight = new Date();
-      todayMidnight.setUTCHours(0, 0, 0, 0);
-      if (finalDate < todayMidnight) {
-        return res.status(400).json({ success: false, message: "Cannot shift events into the past." });
-      }
-
       if (parseTimeToMinutes(finalStartTime) >= parseTimeToMinutes(finalEndTime)) {
         return res.status(400).json({ success: false, message: "End Time must occur after Start Time." });
       }
 
-      // 2. Verify new slot is free (excluding the current event's existing booking)
-      const existingBooking = await Booking.findOne({
-        _id: { $ne: event.bookingRef },
-        room_id: finalVenue,
-        date: finalDate,
-        status: { $in: ["pending", "approved"] },
-        $or: [
-          { start_time: { $lt: finalEndTime }, end_time: { $gt: finalStartTime } }
-        ]
-      }).populate("user_id", "name");
+      // Only check conflicts if the NEW venue is an official room
+      if (!isNowCustom) {
+        const existingBooking = await Booking.findOne({
+          _id: { $ne: event.bookingRef },
+          room_id: finalVenueId,
+          date: finalDate,
+          status: { $in: ["pending", "approved"] },
+          $or: [
+            { start_time: { $lt: finalEndTime }, end_time: { $gt: finalStartTime } }
+          ]
+        }).populate("user_id", "name");
 
-      // 3. If unavailable, throw the exact error message requested
-      if (existingBooking) {
-        const bookedBy = existingBooking.user_id?.name || "another student";
-        const purpose = existingBooking.purpose || "a prior reservation";
-        return res.status(400).json({ 
-          success: false, 
-          message: `Update Failed: The room is currently booked by ${bookedBy} for ${purpose}.` 
-        });
+        if (existingBooking) {
+          const bookedBy = existingBooking.user_id?.name || "another student";
+          return res.status(400).json({ 
+            success: false, 
+            message: `Update Failed: Room booked by ${bookedBy}.` 
+          });
+        }
       }
     }
 
-    // 4. Apply all updates to the Event record
+    // Apply updates
     event.eventName = eventName || event.eventName;
     event.date = finalDate;
     event.startTime = finalStartTime;
     event.endTime = finalEndTime;
-    event.venue = finalVenue;
+    event.venue = finalVenueId;
+    event.customVenue = finalCustomVenue;
+    event.contact_number = contact_number || event.contact_number;
     event.description = description !== undefined ? description : event.description;
 
-    // 5. Sync changes to the Booking Ticket and apply the isEdited flags!
-    if (logisticsChanged && event.bookingRef) {
-      event.isEdited = true; // Mark event as edited
-      
-      await Booking.findByIdAndUpdate(event.bookingRef, {
-        room_id: finalVenue,
-        date: finalDate,
-        start_time: finalStartTime,
-        end_time: finalEndTime,
+    if (logisticsChanged) {
+      event.isEdited = true;
+
+      if (isNowCustom) {
+        // Switching to Custom: Delete the old SBG booking if it exists
+        if (event.bookingRef) {
+          await Booking.findByIdAndDelete(event.bookingRef);
+          event.bookingRef = null;
+        }
+      } else {
+        // It is an official room
+        if (event.bookingRef) {
+          // Update existing booking
+          await Booking.findByIdAndUpdate(event.bookingRef, {
+            room_id: finalVenueId,
+            date: finalDate,
+            start_time: finalStartTime,
+            end_time: finalEndTime,
+            purpose: `Event: ${event.eventName}`,
+            contact_number: event.contact_number,
+            isEdited: true
+          });
+        } else {
+          // Switched from custom to official: Create a NEW booking
+          const newBooking = await Booking.create({
+            room_id: finalVenueId,
+            user_id: req.user._id,
+            date: finalDate,
+            start_time: finalStartTime,
+            end_time: finalEndTime,
+            purpose: `Event: ${event.eventName}`,
+            status: "pending",
+            contact_number: event.contact_number,
+            isEdited: true
+          });
+          event.bookingRef = newBooking._id;
+        }
+      }
+    } else if (event.bookingRef && (eventName || contact_number)) {
+      await Booking.findByIdAndUpdate(event.bookingRef, { 
         purpose: `Event: ${event.eventName}`,
-        isEdited: true // Mark booking as edited
-        // Notice we do NOT change the booking status here! It stays approved.
+        contact_number: event.contact_number
       });
-      // Notice we do NOT set event.isPublished = false! It stays live.
-      
-    } else if (eventName && event.bookingRef) {
-      // If only cosmetic (Name) changed, just update the booking purpose text
-      await Booking.findByIdAndUpdate(event.bookingRef, { purpose: `Event: ${event.eventName}` });
     }
 
     await event.save();
