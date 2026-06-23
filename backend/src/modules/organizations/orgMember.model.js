@@ -24,7 +24,6 @@ const orgMemberSchema = new mongoose.Schema(
 {timestamps:true}
 );
 
-// 🔥 prevent duplicate join
 orgMemberSchema.index({ user: 1, organization: 1 }, { unique: true });
 
 export default mongoose.models.OrganizationMember || 

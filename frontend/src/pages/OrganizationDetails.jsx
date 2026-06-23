@@ -14,8 +14,17 @@ const OrganizationDetails = ({ orgId, onBack }) => {
 
   const [isEditingDesc, setIsEditingDesc] = useState(false);
   const [descriptionInput, setDescriptionInput] = useState("");
+  const [nameInput, setNameInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [updatingMemberId, setUpdatingMemberId] = useState(null); 
+  const [updatingMemberId, setUpdatingMemberId] = useState(null);
+  const [activePhotoMenu, setActivePhotoMenu] = useState(null); 
+
+  useEffect(() => {
+    if (activePhotoMenu === null) return;
+    const closePhotoMenuGlobally = () => setActivePhotoMenu(null);
+    window.addEventListener("click", closePhotoMenuGlobally);
+    return () => window.removeEventListener("click", closePhotoMenuGlobally);
+  }, [activePhotoMenu]);
 
   useEffect(() => {
     if (orgId) {
@@ -32,6 +41,7 @@ const OrganizationDetails = ({ orgId, onBack }) => {
       if (res.data && res.data.success) {
         setData(res.data);
         setDescriptionInput(res.data.organization?.description || "");
+        setNameInput(res.data.organization?.name || "");
         setHasPendingRequest(res.data.hasPendingRequest || false);
         
         const membersList = res.data.members || [];
@@ -86,12 +96,13 @@ const OrganizationDetails = ({ orgId, onBack }) => {
     }
   };
 
-  const handleSaveDescription = async () => {
+  // ✅ Renamed this to match your button's onClick handler
+  const handleSaveProfile = async () => {
     try {
       setIsSubmitting(true);
-      const res = await api.put(`/organizations/${orgId}/update-profile`, { description: descriptionInput });
+      const res = await api.put(`/organizations/${orgId}/update-profile`, { description: descriptionInput , name : nameInput });
       if (res.data.success) {
-        setData(prev => ({ ...prev, organization: { ...prev.organization, description: res.data.organization.description } }));
+        setData(prev => ({ ...prev, organization: { ...prev.organization, description: res.data.organization.description , name : res.data.organization.name} }));
         setIsEditingDesc(false);
       }
     } catch (err) {
@@ -119,6 +130,29 @@ const OrganizationDetails = ({ orgId, onBack }) => {
       alert("Failed to upload image file from device.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleRemovePhoto = async (photoUrl) => {
+    if (!window.confirm("Are you sure you want to remove this photo from the spotlight?")) return;
+    try {
+      setIsSubmitting(true);
+      const res = await api.put(`/organizations/${orgId}/remove-photo`, { photoUrl });
+      if (res.data.success) {
+        setData(prev => ({ 
+          ...prev, 
+          organization: { 
+            ...prev.organization, 
+            photos: res.data.organization.photos,
+            coverPhoto: res.data.organization.coverPhoto
+          } 
+        }));
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to remove photo.");
+    } finally {
+      setIsSubmitting(false);
+      setActivePhotoMenu(null);
     }
   };
 
@@ -151,6 +185,22 @@ const OrganizationDetails = ({ orgId, onBack }) => {
       }
     } catch (err) {
       alert(err.response?.data?.message || "Failed to leave organization.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSetCover = async (photoUrl) => {
+    try {
+      setIsSubmitting(true);
+      const res = await api.put(`/organizations/${orgId}/cover-photo`, { photoUrl });
+      if (res.data.success) {
+        // Update local state to reflect the new cover photo immediately
+        setData(prev => ({ ...prev, organization: { ...prev.organization, coverPhoto: res.data.organization.coverPhoto } }));
+        alert("Cover photo updated successfully!");
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to set cover photo.");
     } finally {
       setIsSubmitting(false);
     }
@@ -207,7 +257,10 @@ const OrganizationDetails = ({ orgId, onBack }) => {
             <span className={`badge ${organization.type || ""}`}>{organization.type}</span>
             {isAuthorizedEditor && !isEditingDesc && (
               <button 
-                onClick={() => { setDescriptionInput(organization.description || ""); setIsEditingDesc(true); }} 
+                onClick={() => { 
+                  setDescriptionInput(organization.description || "");
+                  setIsEditingDesc(true); 
+                  setNameInput(organization.name || "")}} 
                 className="filter-btn edit-profile-btn"
               >
                 ✏️ Edit Profile
@@ -215,18 +268,34 @@ const OrganizationDetails = ({ orgId, onBack }) => {
             )}
           </div>
           
-          <h1 className="detail-title">{organization.name}</h1>
-          
           {isEditingDesc ? (
             <div className="textarea-container">
-              <textarea value={descriptionInput} onChange={(e) => setDescriptionInput(e.target.value)} rows={4} className="edit-desc-textarea"/>
+              <label>Organization Name</label>
+              <input 
+                type="text" 
+                value={nameInput} 
+                onChange={(e) => setNameInput(e.target.value)} 
+                className="edit-desc-textarea" 
+                style={{ marginBottom: '10px' }}
+              />
+              
+              <label>Description</label>
+              <textarea 
+                value={descriptionInput} 
+                onChange={(e) => setDescriptionInput(e.target.value)} 
+                rows={4} 
+                className="edit-desc-textarea"
+              />
               <div className="action-btn-gap">
-                <button onClick={handleSaveDescription} disabled={isSubmitting} className="filter-btn active small-btn-padding">Save</button>
+                <button onClick={handleSaveProfile} disabled={isSubmitting} className="filter-btn active small-btn-padding">Save</button>
                 <button onClick={() => setIsEditingDesc(false)} className="filter-btn small-btn-padding">Cancel</button>
               </div>
             </div>
           ) : (
-            <p className="detail-desc-text">{organization.description || "No description provided."}</p>
+            <>
+              <h1 className="detail-title">{organization.name}</h1>
+              <p className="detail-desc-text">{organization.description || "No description provided."}</p>
+            </>
           )}
 
           {currentUserMembership ? (
@@ -298,6 +367,46 @@ const OrganizationDetails = ({ orgId, onBack }) => {
             {organization.photos.map((photoUrl, index) => (
               <div key={index} className="gallery-img-frame">
                 <img src={photoUrl.startsWith("http") ? photoUrl : `http://localhost:5001${photoUrl}`} alt="Gallery item" className="gallery-img" />
+
+                {/* 3-Dot Menu Overlay */}
+                {isAuthorizedEditor && (
+                  <div className={`photo-controls-overlay ${activePhotoMenu === index ? 'menu-open' : ''}`}>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevents global click from instantly closing it
+                        setActivePhotoMenu(activePhotoMenu === index ? null : index);
+                      }}
+                      className="kebab-btn"
+                    >
+                      &#8942;
+                    </button>
+
+                    {/* Dropdown Options */}
+                    {activePhotoMenu === index && (
+                      <div style={{ position: 'absolute', top: '38px', right: '0', background: 'white', border: '1px solid #ddd', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 10, width: '130px', overflow: 'hidden' }}>
+                        <button 
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            handleSetCover(photoUrl); 
+                            setActivePhotoMenu(null); 
+                          }}
+                          style={{ display: 'block', width: '100%', padding: '10px', textAlign: 'left', border: 'none', background: 'transparent', cursor: 'pointer', borderBottom: '1px solid #eee', fontSize: '14px', color: '#333' }}
+                        >
+                          ⭐ Set Cover
+                        </button>
+                        <button 
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            handleRemovePhoto(photoUrl); 
+                          }}
+                          style={{ display: 'block', width: '100%', padding: '10px', textAlign: 'left', border: 'none', background: 'transparent', cursor: 'pointer', color: '#ef4444', fontSize: '14px' }}
+                        >
+                          🗑️ Remove
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -452,7 +561,7 @@ const MemberItemCard = ({
                     key={r} 
                     className={`role-option-item ${member.role === r ? "active" : ""}`} 
                     onClick={(e) => { 
-                      e.stopPropagation(); // 👈 Stops the bubble
+                      e.stopPropagation(); 
                       onRoleChange(member.userId, r); 
                       onToggleMenu(false); 
                     }}

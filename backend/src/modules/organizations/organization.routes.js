@@ -12,7 +12,11 @@ import {
   processJoinRequest, 
   removeMember,
   leaveOrganization,
-  getMyOrganizations
+  getMyOrganizations,
+  setCoverPhoto,
+  removePhoto,
+  updateOrganizationAdmin,
+  deleteOrganization
 } from "./organization.controller.js";
 
 import { uploadImage } from "../../middleware/upload.middleware.js";
@@ -72,4 +76,11 @@ router.put("/requests/:requestId", protect, processJoinRequest);
 
 router.delete("/:id/members", protect, removeMember);
 router.post("/:id/leave", protect, leaveOrganization);
+router.put("/:id/cover-photo", protect, setCoverPhoto);
+
+router.put("/:id/remove-photo", protect, removePhoto);
+router.put("/:id/admin", protect, authorize("sbg_core"), updateOrganizationAdmin);
+router.delete("/:id", protect, authorize("sbg_core"), deleteOrganization);
+
+
 export default router;
