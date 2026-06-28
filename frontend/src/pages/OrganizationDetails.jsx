@@ -14,8 +14,17 @@ const OrganizationDetails = ({ orgId, onBack }) => {
 
   const [isEditingDesc, setIsEditingDesc] = useState(false);
   const [descriptionInput, setDescriptionInput] = useState("");
+  const [nameInput, setNameInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [updatingMemberId, setUpdatingMemberId] = useState(null); 
+  const [updatingMemberId, setUpdatingMemberId] = useState(null);
+  const [activePhotoMenu, setActivePhotoMenu] = useState(null); 
+
+  useEffect(() => {
+    if (activePhotoMenu === null) return;
+    const closePhotoMenuGlobally = () => setActivePhotoMenu(null);
+    window.addEventListener("click", closePhotoMenuGlobally);
+    return () => window.removeEventListener("click", closePhotoMenuGlobally);
+  }, [activePhotoMenu]);
 
   useEffect(() => {
     if (orgId) {
@@ -32,6 +41,7 @@ const OrganizationDetails = ({ orgId, onBack }) => {
       if (res.data && res.data.success) {
         setData(res.data);
         setDescriptionInput(res.data.organization?.description || "");
+        setNameInput(res.data.organization?.name || "");
         setHasPendingRequest(res.data.hasPendingRequest || false);
         
         const membersList = res.data.members || [];
@@ -86,12 +96,13 @@ const OrganizationDetails = ({ orgId, onBack }) => {
     }
   };
 
-  const handleSaveDescription = async () => {
+  // ✅ Renamed this to match your button's onClick handler
+  const handleSaveProfile = async () => {
     try {
       setIsSubmitting(true);
-      const res = await api.put(`/organizations/${orgId}/update-profile`, { description: descriptionInput });
+      const res = await api.put(`/organizations/${orgId}/update-profile`, { description: descriptionInput , name : nameInput });
       if (res.data.success) {
-        setData(prev => ({ ...prev, organization: { ...prev.organization, description: res.data.organization.description } }));
+        setData(prev => ({ ...prev, organization: { ...prev.organization, description: res.data.organization.description , name : res.data.organization.name} }));
         setIsEditingDesc(false);
       }
     } catch (err) {
@@ -122,6 +133,29 @@ const OrganizationDetails = ({ orgId, onBack }) => {
     }
   };
 
+  const handleRemovePhoto = async (photoUrl) => {
+    if (!window.confirm("Are you sure you want to remove this photo from the spotlight?")) return;
+    try {
+      setIsSubmitting(true);
+      const res = await api.put(`/organizations/${orgId}/remove-photo`, { photoUrl });
+      if (res.data.success) {
+        setData(prev => ({ 
+          ...prev, 
+          organization: { 
+            ...prev.organization, 
+            photos: res.data.organization.photos,
+            coverPhoto: res.data.organization.coverPhoto
+          } 
+        }));
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to remove photo.");
+    } finally {
+      setIsSubmitting(false);
+      setActivePhotoMenu(null);
+    }
+  };
+
   const handleRoleChange = async (targetUserId, newRole) => {
     if (newRole === "convenor" && !window.confirm("Transfer control and demote yourself to member?")) return;
     try {
@@ -137,7 +171,7 @@ const OrganizationDetails = ({ orgId, onBack }) => {
 
   const handleLeaveOrganization = async () => {
     const confirmMessage = isCurrentlyConvenor 
-      ? "Are you sure you want to leave this organization? Since you are the Convenor, control will automatically transfer to your Deputy or Core Committee."
+      ? "As the Convenor, you must manually assign a new Convenor through the member management system before leaving. Are you sure you want to proceed?"
       : "Are you sure you want to leave this organization?";
 
     if (!window.confirm(confirmMessage)) return;
@@ -151,6 +185,22 @@ const OrganizationDetails = ({ orgId, onBack }) => {
       }
     } catch (err) {
       alert(err.response?.data?.message || "Failed to leave organization.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSetCover = async (photoUrl) => {
+    try {
+      setIsSubmitting(true);
+      const res = await api.put(`/organizations/${orgId}/cover-photo`, { photoUrl });
+      if (res.data.success) {
+        // Update local state to reflect the new cover photo immediately
+        setData(prev => ({ ...prev, organization: { ...prev.organization, coverPhoto: res.data.organization.coverPhoto } }));
+        alert("Cover photo updated successfully!");
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to set cover photo.");
     } finally {
       setIsSubmitting(false);
     }
@@ -173,13 +223,12 @@ const OrganizationDetails = ({ orgId, onBack }) => {
     }
   };
 
-  // Safe initial checks to completely guarantee no runtime template exceptions
-  if (loading) return <div className="organization-page" style={{ padding: "24px" }}><h2 className="loading">Loading details...</h2></div>;
+  if (loading) return <div className="organization-page page-padding"><h2 className="loading">Loading details...</h2></div>;
   if (error || !data || !data.organization || !data.members) {
     return (
-      <div className="organization-page" style={{ padding: "24px" }}>
-        <button onClick={onBack} className="filter-btn" style={{ marginBottom: "24px" }}>&larr; Back to Directory</button>
-        <div className="no-results" style={{ color: "#ef4444" }}><p>{error || "Organization data could not be fetched cleanly."}</p></div>
+      <div className="organization-page page-padding">
+        <button onClick={onBack} className="filter-btn back-btn-margin">&larr; Back to Directory</button>
+        <div className="no-results error-text-color"><p>{error || "Organization data could not be fetched cleanly."}</p></div>
       </div>
     );
   }
@@ -190,75 +239,86 @@ const OrganizationDetails = ({ orgId, onBack }) => {
   const isCurrentlyConvenor = currentUserMembership && currentUserMembership.role === "convenor";
   const isDeputyOrLeader = currentUserMembership && ["convenor", "deputy"].includes(currentUserMembership.role);
 
-  // 🌟 Safe array declarations using logical fallbacks
   const convenors = members ? members.filter((m) => m.role === "convenor") : [];
   const deputies = members ? members.filter((m) => m.role === "deputy") : [];
   const coreMembers = members ? members.filter((m) => m.role === "core") : [];
   const generalMembers = members ? members.filter((m) => m.role === "member") : [];
 
   return (
-    <div className="organization-page" style={{ animation: "fadeIn 0.2s ease-out" }}>
-      <button onClick={onBack} className="filter-btn" style={{ marginBottom: "24px", display: "inline-flex", alignItems: "center", gap: "8px" }}>
+    <div className="organization-page detail-view-animate">
+      <button onClick={onBack} className="filter-btn back-btn-layout">
         &larr; Back to Directory
       </button>
 
       {/* Profile Card */}
-      <div className="organization-card" style={{ cursor: "default", padding: "28px", width: "100%", marginBottom: "32px" }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
-            <span className={`badge ${organization.type || ""}`} style={{ position: "static" }}>{organization.type}</span>
+      <div className="organization-card detail-profile-card">
+        <div className="card-column-layout">
+          <div className="card-header-row">
+            <span className={`badge ${organization.type || ""}`}>{organization.type}</span>
             {isAuthorizedEditor && !isEditingDesc && (
               <button 
-                onClick={() => { setDescriptionInput(organization.description || ""); setIsEditingDesc(true); }} 
-                className="filter-btn" 
-                style={{ fontSize: "12px", padding: "4px 12px", marginLeft: "auto" }}
+                onClick={() => { 
+                  setDescriptionInput(organization.description || "");
+                  setIsEditingDesc(true); 
+                  setNameInput(organization.name || "")}} 
+                className="filter-btn edit-profile-btn"
               >
                 ✏️ Edit Profile
               </button>
             )}
           </div>
           
-          <h1 style={{ fontSize: "32px", fontWeight: "800", color: "#111827", margin: "0" }}>{organization.name}</h1>
-          
           {isEditingDesc ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              <textarea value={descriptionInput} onChange={(e) => setDescriptionInput(e.target.value)} rows={4} style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #cbd5e1", fontSize: "14px", fontFamily: "inherit" }}/>
-              <div style={{ display: "flex", gap: "8px" }}>
-                <button onClick={handleSaveDescription} disabled={isSubmitting} className="filter-btn active" style={{ padding: "6px 16px", fontSize: "13px" }}>Save</button>
-                <button onClick={() => setIsEditingDesc(false)} className="filter-btn" style={{ padding: "6px 16px", fontSize: "13px" }}>Cancel</button>
+            <div className="textarea-container">
+              <label>Organization Name</label>
+              <input 
+                type="text" 
+                value={nameInput} 
+                onChange={(e) => setNameInput(e.target.value)} 
+                className="edit-desc-textarea" 
+                style={{ marginBottom: '10px' }}
+              />
+              
+              <label>Description</label>
+              <textarea 
+                value={descriptionInput} 
+                onChange={(e) => setDescriptionInput(e.target.value)} 
+                rows={4} 
+                className="edit-desc-textarea"
+              />
+              <div className="action-btn-gap">
+                <button onClick={handleSaveProfile} disabled={isSubmitting} className="filter-btn active small-btn-padding">Save</button>
+                <button onClick={() => setIsEditingDesc(false)} className="filter-btn small-btn-padding">Cancel</button>
               </div>
             </div>
           ) : (
-            <p style={{ fontSize: "15px", color: "#4b5563", lineHeight: "1.6", margin: "0" }}>{organization.description || "No description provided."}</p>
+            <>
+              <h1 className="detail-title">{organization.name}</h1>
+              <p className="detail-desc-text">{organization.description || "No description provided."}</p>
+            </>
           )}
 
           {currentUserMembership ? (
-            <div style={{ borderTop: "1px solid #e5e7eb", paddingTop: "16px", marginTop: "8px", display: "flex", justifyContent: "flex-start" }}>
+            <div className="membership-action-container">
               <button 
                 onClick={handleLeaveOrganization} 
                 disabled={isSubmitting} 
-                className="filter-btn" 
-                style={{ padding: "10px 24px", fontSize: "14px", color: "#dc2626", borderColor: "#fca5a5", backgroundColor: "#fff5f5" }}
+                className="filter-btn leave-club-btn"
               >
                 {isSubmitting ? "Leaving..." : "🚪 Leave Organization"}
               </button>
             </div>
           ) : (
-            <div style={{ borderTop: "1px solid #e5e7eb", paddingTop: "16px", marginTop: "8px" }}>
+            <div className="membership-action-container">
               {hasPendingRequest ? (
-                <button 
-                  disabled={true} 
-                  className="filter-btn" 
-                  style={{ padding: "10px 24px", fontSize: "14px", color: "#64748b", backgroundColor: "#f1f5f9", borderColor: "#cbd5e1", cursor: "not-allowed" }}
-                >
+                <button disabled={true} className="filter-btn requested-btn">
                   📩 Requested
                 </button>
               ) : (
                 <button 
                   onClick={handleRequestJoin} 
                   disabled={isSubmitting} 
-                  className="filter-btn active" 
-                  style={{ padding: "10px 24px", fontSize: "14px" }}
+                  className="filter-btn active long-btn-padding"
                 >
                   {isSubmitting ? "Submitting..." : "📩 Request to Join Organization"}
                 </button>
@@ -270,18 +330,18 @@ const OrganizationDetails = ({ orgId, onBack }) => {
 
       {/* Pending Queue Portal */}
       {isDeputyOrLeader && pendingReqs.length > 0 && (
-        <div className="organization-card" style={{ padding: "24px", width: "100%", marginBottom: "32px", borderColor: "#3b82f6", backgroundColor: "#f8fafc" }}>
-          <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#1e3a8a", margin: "0 0 16px 0" }}>📥 Pending Membership Requests ({pendingReqs.length})</h3>
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        <div className="organization-card pending-queue-card">
+          <h3 className="pending-queue-title">📥 Pending Membership Requests ({pendingReqs.length})</h3>
+          <div className="card-column-gap">
             {pendingReqs.map((req) => (
-              <div key={req._id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#ffffff", padding: "12px 20px", borderRadius: "8px", border: "1px solid #e2e8f0" }}>
+              <div key={req._id} className="pending-request-item">
                 <div>
-                  <h4 style={{ margin: "0", fontSize: "14px", fontWeight: "600", color: "#111827" }}>{req.user?.name}</h4>
-                  <p style={{ margin: "0", fontSize: "12px", color: "#6b7280" }}>{req.user?.studentID || "Student ID"}</p>
+                  <h4 className="applicant-name">{req.user?.name}</h4>
+                  <p className="applicant-id">{req.user?.studentID || "Student ID"}</p>
                 </div>
-                <div style={{ display: "flex", gap: "8px" }}>
-                  <button onClick={() => handleActionOnRequest(req._id, "approved")} className="filter-btn active" style={{ padding: "6px 14px", fontSize: "12px", backgroundColor: "#10b981", borderColor: "#10b981" }}>Approve</button>
-                  <button onClick={() => handleActionOnRequest(req._id, "rejected")} className="filter-btn" style={{ padding: "6px 14px", fontSize: "12px", color: "#ef4444", borderColor: "#fca5a5" }}>Reject</button>
+                <div className="action-btn-gap">
+                  <button onClick={() => handleActionOnRequest(req._id, "approved")} className="filter-btn active approve-btn">Approve</button>
+                  <button onClick={() => handleActionOnRequest(req._id, "rejected")} className="filter-btn reject-btn">Reject</button>
                 </div>
               </div>
             ))}
@@ -290,38 +350,78 @@ const OrganizationDetails = ({ orgId, onBack }) => {
       )}
 
       {/* Photo Gallery Grid */}
-      <div style={{ marginBottom: "36px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", marginBottom: "16px" }}>
-          <h3 style={{ fontSize: "18px", fontWeight: "700", color: "#111827", margin: 0 }}>Spotlight Photos</h3>
+      <div className="gallery-section-margin">
+        <div className="gallery-header-row">
+          <h3 className="section-heading">Spotlight Photos</h3>
           {isAuthorizedEditor && (
             <div>
-              <label htmlFor="device-file-picker" className="filter-btn active" style={{ padding: "8px 16px", fontSize: "13px", display: "inline-flex", alignItems: "center", gap: "6px", cursor: "pointer" }}>
+              <label htmlFor="device-file-picker" className="filter-btn active upload-lbl-btn">
                 {isSubmitting ? "Uploading..." : "➕ Upload from Device"}
               </label>
-              <input id="device-file-picker" type="file" accept="image/*" onChange={handleFileUpload} disabled={isSubmitting} style={{ display: "none" }} />
+              <input id="device-file-picker" type="file" accept="image/*" onChange={handleFileUpload} disabled={isSubmitting} className="hidden-file-input" />
             </div>
           )}
         </div>
         {organization.photos && organization.photos.length > 0 ? (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "16px" }}>
+          <div className="gallery-grid">
             {organization.photos.map((photoUrl, index) => (
-              <div key={index} style={{ borderRadius: "8px", overflow: "hidden", border: "1px solid #e5e7eb", aspectRatio: "16/10" }}>
-                <img src={photoUrl.startsWith("http") ? photoUrl : `http://localhost:5001${photoUrl}`} alt="Gallery item" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <div key={index} className="gallery-img-frame">
+                <img src={photoUrl.startsWith("http") ? photoUrl : `http://localhost:5001${photoUrl}`} alt="Gallery item" className="gallery-img" />
+
+                {/* 3-Dot Menu Overlay */}
+                {isAuthorizedEditor && (
+                  <div className={`photo-controls-overlay ${activePhotoMenu === index ? 'menu-open' : ''}`}>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevents global click from instantly closing it
+                        setActivePhotoMenu(activePhotoMenu === index ? null : index);
+                      }}
+                      className="kebab-btn"
+                    >
+                      &#8942;
+                    </button>
+
+                    {/* Dropdown Options */}
+                    {activePhotoMenu === index && (
+                      <div style={{ position: 'absolute', top: '38px', right: '0', background: 'white', border: '1px solid #ddd', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 10, width: '130px', overflow: 'hidden' }}>
+                        <button 
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            handleSetCover(photoUrl); 
+                            setActivePhotoMenu(null); 
+                          }}
+                          style={{ display: 'block', width: '100%', padding: '10px', textAlign: 'left', border: 'none', background: 'transparent', cursor: 'pointer', borderBottom: '1px solid #eee', fontSize: '14px', color: '#333' }}
+                        >
+                          ⭐ Set Cover
+                        </button>
+                        <button 
+                          onClick={(e) => { 
+                            e.stopPropagation(); 
+                            handleRemovePhoto(photoUrl); 
+                          }}
+                          style={{ display: 'block', width: '100%', padding: '10px', textAlign: 'left', border: 'none', background: 'transparent', cursor: 'pointer', color: '#ef4444', fontSize: '14px' }}
+                        >
+                          🗑️ Remove
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
           </div>
-        ) : ( <p style={{ fontSize: "14px", color: "#9ca3af", fontStyle: "italic" }}>No photos uploaded yet.</p> )}
+        ) : ( <p className="empty-gallery-text">No photos uploaded yet.</p> )}
       </div>
 
       {/* Team Structure List */}
       <div>
-        <h3 style={{ fontSize: "18px", fontWeight: "700", color: "#111827", marginBottom: "20px", borderBottom: "1px solid #e5e7eb", paddingBottom: "10px" }}>Our Team</h3>
+        <h3 className="team-section-title">Our Team</h3>
         
         {/* Convenors and Deputies */}
         {(convenors.length > 0 || deputies.length > 0) && (
-          <div style={{ marginBottom: "32px" }}>
-            <h4 className="section-label" style={{ fontSize: "12px", fontWeight: "700", color: "#9ca3af", textTransform: "uppercase", marginBottom: "14px" }}>Leaders</h4>
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <div className="team-tier-container">
+            <h4 className="section-label group-label-style">Leaders</h4>
+            <div className="card-column-gap">
               {convenors.map((m) => ( 
                 <MemberItemCard 
                     key={m.userId} 
@@ -358,9 +458,9 @@ const OrganizationDetails = ({ orgId, onBack }) => {
 
         {/* Core Committee */}
         {coreMembers.length > 0 && (
-          <div style={{ marginBottom: "32px" }}>
-            <h4 className="section-label" style={{ fontSize: "12px", fontWeight: "700", color: "#9ca3af", textTransform: "uppercase", marginBottom: "14px" }}>Core Members({coreMembers.length})</h4>
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <div className="team-tier-container">
+            <h4 className="section-label group-label-style">Core Members({coreMembers.length})</h4>
+            <div className="card-column-gap">
               {coreMembers.map((m) => ( 
                 <MemberItemCard 
                     key={m.userId} 
@@ -383,8 +483,8 @@ const OrganizationDetails = ({ orgId, onBack }) => {
         {/* General Members */}
         {generalMembers.length > 0 && (
           <div>
-            <h4 className="section-label" style={{ fontSize: "12px", fontWeight: "700", color: "#9ca3af", textTransform: "uppercase", marginBottom: "14px" }}>General Members ({generalMembers.length})</h4>
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            <h4 className="section-label group-label-style">General Members ({generalMembers.length})</h4>
+            <div className="card-column-gap">
               {generalMembers.map((m) => ( 
                 <MemberItemCard 
                     key={m.userId} 
@@ -408,7 +508,6 @@ const OrganizationDetails = ({ orgId, onBack }) => {
   );
 };
 
-//* Full horizontal-span Team Card layout with integrated mutually exclusive Management Portals */
 const MemberItemCard = ({ 
   member, 
   badgeColor, 
@@ -418,8 +517,8 @@ const MemberItemCard = ({
   onRoleChange, 
   isProcessing, 
   onRemove,
-  isMenuOpen,     // 🌟 Received from parent
-  onToggleMenu    // 🌟 Received from parent
+  isMenuOpen,     
+  onToggleMenu    
 }) => {
 
   useEffect(() => {
@@ -430,44 +529,50 @@ const MemberItemCard = ({
   }, [isMenuOpen, onToggleMenu]);
 
   return (
-    <div style={{ display: "flex", alignItems: "center", justify: "space-between", padding: "16px 24px", backgroundColor: "#ffffff", border: "1px solid #e5e7eb", borderRadius: "10px", width: "100%", opacity: isProcessing ? 0.6 : 1, position: "relative" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-        <div style={{ width: "44px", height: "44px", borderRadius: "50%", backgroundColor: "#f3f4f6", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "600", color: "#4b5563", fontSize: "16px", border: "1px solid #e5e7eb" }}>
+    <div className={`member-item-card ${isProcessing ? "processing-fade" : ""}`}>
+      <div className="member-info-block">
+        <div className="member-avatar">
           {member.name ? member.name.charAt(0).toUpperCase() : "U"}
         </div>
         <div>
-          <h4 style={{ margin: "0 0 2px 0", fontSize: "15px", fontWeight: "600", color: "#111827" }}>{member.name}</h4>
-          <p style={{ margin: "0", fontSize: "13px", color: "#6b7280" }}>{member.studentID || "Student ID"}</p>
+          <h4 className="member-card-name">{member.name}</h4>
+          <p className="member-card-id">{member.studentID || "Student ID"}</p>
         </div>
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: "12px", marginLeft: "auto" }}>
-        <span style={{ fontSize: "11px", fontWeight: "700", textTransform: "uppercase", padding: "4px 12px", borderRadius: "9999px", backgroundColor: badgeColor, color: textColor }}>{label}</span>
+      <div className="member-action-block">
+        <span style={{ backgroundColor: badgeColor, color: textColor }} className="role-tier-badge">{label}</span>
         
-        {/* Render setting gear button ONLY if card is not the Convenor's row */}
         {showActions && member.role !== "convenor" && (
           <div className="role-action-wrapper" onClick={(e) => e.stopPropagation()}>
             <button 
               className="manage-role-trigger" 
               disabled={isProcessing} 
-              onClick={() => onToggleMenu(!isMenuOpen)} // 🌟 Toggles through parent state bounds
+              onClick={() => onToggleMenu(!isMenuOpen)} 
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: "16px", height: "16px" }}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="gear-icon-svg">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </button>
-            {isMenuOpen && ( // 🌟 Evaluates the single variable flag
+            {isMenuOpen && ( 
               <div className="role-dropdown-portal">
                 {["convenor", "deputy", "core", "member"].map((r) => (
-                  <button key={r} className={`role-option-item ${member.role === r ? "active" : ""}`} onClick={() => { onRoleChange(member.userId, r); onToggleMenu(false); }}>
+                  <button 
+                    key={r} 
+                    className={`role-option-item ${member.role === r ? "active" : ""}`} 
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      onRoleChange(member.userId, r); 
+                      onToggleMenu(false); 
+                    }}
+                  >
                     {r === "core" ? "Core Member" : r === "member" ? "General Member" : r.charAt(0).toUpperCase() + r.slice(1)}
                     {member.role === r && <div className="active-dot" />}
                   </button>
                 ))}
                 
                 <button 
-                  className="role-option-item" 
-                  style={{ borderTop: "1px solid #f1f5f9", marginTop: "4px", color: "#dc2626" }}
+                  className="role-option-item kick-out-option" 
                   onClick={() => { onRemove(member.userId, member.name); onToggleMenu(false); }}
                 >
                   Kick Out

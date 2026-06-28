@@ -22,6 +22,12 @@ const joinRequestSchema = new mongoose.Schema(
 );
 
 // Prevent duplicate pending requests from the same student
-joinRequestSchema.index({ user: 1, organization: 1, status: 1 });
+joinRequestSchema.index(
+  { user: 1, organization: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { status: "pending" }
+  }
+);
 
 export default mongoose.models.JoinRequest || mongoose.model("JoinRequest", joinRequestSchema);

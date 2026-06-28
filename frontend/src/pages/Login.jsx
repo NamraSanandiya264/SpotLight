@@ -40,8 +40,7 @@ const Login = () => {
       // 1. Save token for API calls
       localStorage.setItem("token", res.data.token);
 
-      // 2. ✅ Update global Auth state with user data (including role)
-      // Your backend returns { user: { name, role, ... }, token: "..." }
+      localStorage.setItem("role", res.data.user.role);
       login(res.data.user); 
 
       toast.success("Login successful ✅");

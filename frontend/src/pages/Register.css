@@ -79,28 +79,6 @@
   background: #1e40af;
 }
 
-/* GOOGLE */
-.google-btn {
-  border: 1px solid #ccc;
-  background: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
-.google-btn img {
-  width: 20px;
-}
-
-/* Divider */
-.divider {
-  text-align: center;
-  color: gray;
-  margin: 10px 0;
-}
-
 .form-group {
   display: flex;
   flex-direction: column;

@@ -20,7 +20,6 @@ const Register = () => {
     yearOfStudy: "",
     branch: "",
     phone: "",
-    role: "student",
   });
 
   const handleChange = (e) => {
@@ -278,38 +277,7 @@ const Register = () => {
             )}
           </div>
 
-          {/* Role */}
-          <div className="form-group">
-            <label>
-              Role <span className="required">*</span>
-            </label>
-            <select
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-            >
-              <option value="student">Student</option>
-              <option value="sbg_core">SBG Core</option>
-            </select>
-          </div>
-          {errors.general && (<p className="error-text">{errors.general}</p>)}
-          {/* Submit */}
-          <button type="submit" className="signup-btn">
-            Sign Up
-          </button>
-
-          {/* Divider */}
-          <div className="divider">OR</div>
-
-          {/* Google */}
-          <button type="button" className="google-btn">
-            <img
-              src="https://developers.google.com/identity/images/g-logo.png"
-              alt="google"
-            />
-            Continue with Google
-          </button>
-
+          <button type="submit" className="signup-btn">Register</button>
           <div className="login-redirect">
             <p>
               Already have an account? <Link to="/login">Login here</Link>

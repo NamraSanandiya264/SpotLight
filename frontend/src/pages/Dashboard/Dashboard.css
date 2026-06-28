@@ -367,27 +367,19 @@
   cursor: pointer;
 }
 
-.room-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-top: 8px;
-}
-
-.room-tile {
-  padding: 10px;
-  border: 2px solid var(--border);
-  border-radius: 8px;
-  text-align: center;
-  font-weight: 600;
+/* Dropdown Select Styling Override */
+.dropdown-select {
+  background-color: #ffffff;
   cursor: pointer;
-  font-size: 0.9rem;
+  appearance: none; 
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 40px; /* Leaves room for custom arrow */
 }
 
-.room-tile.active {
-  border-color: var(--primary);
-  background: var(--primary-light);
-  color: var(--primary);
+.dropdown-select:invalid, .dropdown-select option[value=""] {
+  color: var(--text-muted);
 }
 
 .icon {
@@ -483,4 +475,132 @@
 @keyframes slideIn {
   from { opacity: 0; transform: translateY(-5px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+.cancel-btn {
+  background: #fef2f2;
+  color: #ef4444;
+  padding: 8px 16px;
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 15px;
+  width: fit-content;
+  transition: var(--transition);
+}
+
+.cancel-btn:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.status-badge.canceled { background: #f3f4f6; color: #4b5563; }
+
+/* =========================================
+   10. ADMIN TABLE STYLES
+   ========================================= */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  min-width: 1050px; /* Ensures it scrolls on very small screens instead of squishing */
+}
+
+.admin-table th, 
+.admin-table td {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+  color: var(--text-main);
+  vertical-align: middle;
+}
+
+.admin-table th {
+  background-color: #f8fafc; /* Matches sidebar-bg */
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+.admin-table tbody tr {
+  transition: var(--transition);
+}
+
+.admin-table tbody tr:hover {
+  background-color: #f1f5f9;
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Action Buttons inside Table */
+.table-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.table-actions .approve-btn,
+.table-actions .reject-btn {
+  padding: 8px; /* Slightly smaller for the table */
+  margin: 0; 
+  flex: none; /* Stops them from expanding */
+}
+
+/* Specific styling for the revoke button in the table */
+.table-cancel-btn {
+  margin-top: 0;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+}
+
+.col-requested {
+  width: 150px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  white-space: normal; 
+  
+}
+
+/* Give the student name a guaranteed minimum width */
+.col-student {
+  min-width: 150px;
+}
+
+/* Force long unbroken text to wrap vertically instead of stretching the table */
+.col-purpose {
+  max-width: 220px;
+  min-width: 150px;
+  white-space: normal;
+  overflow-wrap: break-word; /* Breaks long strings like 'Hedj,hvcr...' */
+  word-wrap: break-word;
+  line-height: 1.4;
+}
+
+/* Ensure these standard data columns never stack weirdly */
+.col-date, 
+.col-time, 
+.col-room, 
+.col-contact {
+  white-space: nowrap;
+}
+
+.col-actions {
+  min-width: 110px;
 }

@@ -1,6 +1,4 @@
-/* =========================================
-   CAMPUS CALENDAR WORKSPACE STYLES
-   ========================================= */
+/* Calendar Workspace Styles */
 .campus-calendar-container {
   background: #ffffff;
   padding: 16px 20px;
@@ -11,6 +9,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
 }
 
 .calendar-control-header {
@@ -23,7 +22,7 @@
   flex-shrink: 0;
 }
 
-.calendar-control-header h2 {
+.title-section h2 {
   font-size: 1.4rem;
   color: var(--text-main);
   display: flex;
@@ -32,7 +31,7 @@
   margin: 0 0 2px 0;
 }
 
-.calendar-control-header p {
+.title-section p {
   color: var(--text-muted);
   font-size: 0.85rem;
   margin: 0;
@@ -67,18 +66,16 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: var(--transition);
+  transition: all 0.2s ease;
 }
 
 .nav-arrow-btn:hover {
-  color: var(--primary);
-  border-color: var(--primary);
+  color: #2563eb;
+  border-color: #2563eb;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-/* =========================================
-   CALENDAR GRID CALCULATIONS
-   ========================================= */
+/* Calendar Grid Calculations */
 .calendar-grid-workspace {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -117,18 +114,18 @@
 }
 
 .calendar-day-tile:hover:not(.empty-day) {
-  border-color: var(--primary);
+  border-color: #2563eb;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
   transform: translateY(-1px);
 }
 
 .calendar-day-tile.is-today {
-  border: 2px solid var(--primary);
+  border: 2px solid #2563eb;
   background-color: #f8fafc;
 }
 
 .calendar-day-tile.is-today .day-number-label {
-  background-color: var(--primary);
+  background-color: #2563eb;
   color: #ffffff;
   border-radius: 50%;
   width: 22px;
@@ -159,12 +156,8 @@
   overflow: hidden;
 }
 
-/* =========================================
-   🚀 PILL-SHAPED EVENT BADGES
-   ========================================= */
+/* Event Pill Badges and Themes */
 .event-strip-item {
-  background-color: #cbe1fe;
-  color: #1e40af;
   padding: 4px 6px;
   border-radius: 6px;
   font-size: 0.72rem;
@@ -177,155 +170,206 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  border-left: 3px solid #3b82f6;
+  border-left: 3px solid;
   width: 100%;
   box-sizing: border-box;
 }
 
 .event-strip-item:hover {
-  background-color: #dbeafe;
-  color: #1d4ed8;
   transform: translateX(1px);
+  filter: brightness(0.95);
 }
 
-.event-strip-dot {
-  width: 4px;
-  height: 4px;
-  background-color: currentColor;
-  border-radius: 50%;
-  flex-shrink: 0;
+/* Past events muting */
+.event-strip-item.is-past {
+  opacity: 0.5;
+  filter: grayscale(0.8);
 }
+
+/* Dynamic Themes */
+.theme-0 { background-color: #dbeafe; color: #1e40af; border-left-color: #3b82f6; } 
+.theme-1 { background-color: #dcfce7; color: #166534; border-left-color: #22c55e; } 
+.theme-2 { background-color: #f3e8ff; color: #6b21a8; border-left-color: #a855f7; } 
+.theme-3 { background-color: #ffedd5; color: #9a3412; border-left-color: #f97316; } 
+.theme-4 { background-color: #fce7f3; color: #9d174d; border-left-color: #ec4899; } 
 
 .event-strip-text {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex-grow: 1;
+}
+
+.edited-indicator {
+  font-size: 0.8rem;
+  line-height: 1;
+  font-weight: 800;
+  flex-shrink: 0;
 }
 
 .event-overflow-badge {
   position: absolute;
-  bottom: 6px;       /* Tucked neatly into the bottom edge */
-  right: 6px;        /* Anchored to the right corner */
-  
-  /* Remove full-width behavior */
+  bottom: 6px;
+  right: 6px;
   width: auto;       
   display: inline-block;
-  
-  /* Micro-sizing adjustments */
   font-size: 0.62rem; 
   font-weight: 700;
   line-height: 1;
   padding: 3px 6px;
   border-radius: 4px;
-  
-  /* Theme matching colors */
-  color: #2563eb;
-  background-color: #eff6ff;
-  border: 1px solid rgba(37, 99, 235, 0.2);
-  
+  color: #4b5563;
+  background-color: #f3f4f6;
+  border: 1px solid #e5e7eb;
   cursor: pointer;
   transition: all 0.15s ease-in-out;
   z-index: 5;
 }
 
 .event-overflow-badge:hover {
-  background-color: #dbeafe;
-  border-color: #2563eb;
+  background-color: #e5e7eb;
   transform: scale(1.05);
 }
 
-/* =========================================
-   SWEETALERT MODAL WORKSPACE OVERRIDES
-   ========================================= */
-.swal-evt-title {
-  margin: 0;
+/* Native React Modal Overlay */
+.calendar-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Prevents long descriptions from breaking UI */
+.calendar-modal-content {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  width: 90%;
+  max-width: 450px;
+  max-height: 85vh; 
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  position: relative;
+  animation: slideUp 0.2s ease-out;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.modal-close-btn:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.modal-header h3 {
+  margin: 0 0 16px 0;
+  padding-right: 24px;
+  color: #111827;
   font-size: 1.4rem;
-  color: var(--text-main);
-  text-align: left;
-}
-
-.swal-evt-body {
-  text-align: left;
-  font-size: 0.95rem;
-  color: var(--text-main);
-  margin-top: 16px;
-}
-
-.swal-evt-body p {
-  margin: 8px 0;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.swal-divider {
-  border: 0;
-  border-top: 1px dashed var(--border);
-  margin: 16px 0;
+.modal-edited-badge {
+  font-size: 0.7rem;
+  background: #e0e7ff;
+  color: #3730a3;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
-.swal-evt-desc {
-  background: var(--sidebar-bg);
-  padding: 12px;
-  border-radius: 8px;
-  color: var(--text-muted);
-  line-height: 1.5;
+/* Scrollable container for text heavy events */
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: #374151;
+  font-size: 0.95rem;
+  overflow-y: auto; 
+  padding-right: 8px;
+}
+
+.modal-detail-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.modal-icon {
+  color: #6b7280;
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.modal-desc-box {
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px dashed #e5e7eb;
+  color: #6b7280;
   font-style: italic;
+  line-height: 1.5;
+  white-space: pre-wrap;
 }
 
-.swal-day-list-container {
+/* List Modal Styles */
+.modal-list-container {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-height: 350px;
-  overflow-y: auto;
-  padding: 4px 2px;
-  margin-top: 16px;
-  text-align: left;
 }
 
-.swal-day-list-item {
-  background-color: #f8fafc;
-  border: 1px solid var(--border, #e2e8f0);
+.modal-list-item {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
   padding: 12px;
   cursor: pointer;
   transition: all 0.15s ease;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
 }
 
-.swal-day-list-item:hover {
-  border-color: #2563eb;
-  background-color: #ffffff;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  transform: translateX(2px);
+.modal-list-item:hover {
+  border-color: #3b82f6;
+  background: #ffffff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-.swal-day-list-meta {
+.modal-list-meta {
   display: flex;
   justify-content: space-between;
-  align-items: center;
   font-size: 0.8rem;
   font-weight: 600;
+  margin-bottom: 4px;
 }
 
-.swal-day-list-time {
-  color: #2563eb;
-  background-color: #eff6ff;
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-.swal-day-list-org {
-  color: var(--text-muted, #6b7280);
-}
-
-.swal-day-list-title {
+.modal-list-time { color: #2563eb; }
+.modal-list-org { color: #6b7280; }
+.modal-list-title {
   font-size: 0.95rem;
-  color: var(--text-main, #111827);
-  margin-top: 2px;
+  color: #111827;
+  font-weight: 600;
 }
 
 .calendar-loader {
@@ -334,4 +378,14 @@
   font-size: 1.1rem;
   font-weight: 600;
   color: var(--text-muted);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

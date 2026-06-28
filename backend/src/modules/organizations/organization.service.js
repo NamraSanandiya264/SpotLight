@@ -1,17 +1,40 @@
 import Organization from "./organization.model.js";
 import OrganizationMember from "./orgMember.model.js";
 import JoinRequest from "./joinRequest.model.js";
-
+import User from "../user/user.model.js";
 
 // ✅ Create Organization
 export const createOrganizationService = async (
   data,
   userId
 ) => {
+  // Extract the convenor's student ID and the rest of the organization data
+  const { convenor_student_id, name, type, ...otherData } = data;
 
+  // 1. Validate the convenor exists
+  if (!convenor_student_id) {
+    throw new Error("Convenor Student ID is required to create an organization.");
+  }
+
+  const convenorUser = await User.findOne({ studentID: convenor_student_id });
+  
+  if (!convenorUser) {
+    throw new Error(`User with Student ID ${convenor_student_id} not found.`);
+  }
+
+  // 2. Create the Organization
   const organization = await Organization.create({
-    ...data,
+    name,
+    type,
+    ...otherData,
     createdBy: userId
+  });
+
+  // 3. Assign the convenor role to the found user
+  await OrganizationMember.create({
+    user: convenorUser._id,
+    organization: organization._id,
+    role: "convenor",
   });
 
   return organization;
@@ -153,29 +176,11 @@ export const updateMemberRoleService = async (
   return targetUser;
 };
 
-
-// // =====================================================
-// // GET ALL ORGANIZATIONS
-// // =====================================================
-
-export const getAllOrganizationsService =
-async()=>{
-
-  const organizations =
-    await Organization.find()
-    .select(
-      "name type photos description"
-    );
-
+export const getAllOrganizationsService = async()=>{
+  const organizations = await Organization.find()
+    .select("name type photos description coverPhoto");
   return organizations;
 };
-
-
-
-
-// =====================================================
-// GET ORGANIZATION DETAILS
-// =====================================================
 
 export const getOrganizationByIdService =
 async(orgId)=>{
@@ -219,26 +224,15 @@ async(orgId)=>{
   return {
 
     organization:{
-
-      _id:
-      organization._id,
-
-      name:
-      organization.name,
-
-      type:
-      organization.type,
-
-      description:
-      organization.description,
-
-      photos:
-      organization.photos
-
+      _id: organization._id,
+      name: organization.name,
+      type: organization.type,
+      description: organization.description,
+      photos: organization.photos,
+      coverPhoto: organization.coverPhoto
     },
 
-    members:
-    formattedMembers
+    members: formattedMembers
 
   };
 
@@ -256,6 +250,10 @@ export const updateOrganizationProfileService = async (orgId, userId, updateData
   const updatedFields = {};
   if (updateData.description !== undefined) {
     updatedFields.description = updateData.description;
+  }
+
+  if (updateData.name !== undefined) {
+    updatedFields.name = updateData.name;
   }
   
   // Accept the newly constructed local server file path string
@@ -339,17 +337,115 @@ export const removeMemberService = async (orgId, targetUserId, currentUserId) =>
   }
 
   // 2. Prevent the Convenor from accidentally deleting themselves
-  if (targetUserId === currentUserId) {
+  if (targetUserId.toString() === currentUserId.toString()) {
     throw new Error("Action denied: You cannot remove yourself. Transfer your Convenor role first.");
   }
 
-  // 3. Remove the target user entry
+  // 3. Atomic operational extraction
   const result = await OrganizationMember.findOneAndDelete({
     user: targetUserId,
     organization: orgId
   });
 
-  if (!result) throw new Error("Target member record not found in this organization.");
+  if (!result) {
+    throw new Error("Target member record not found in this organization.");
+  }
+
+  //Clear historic membership join records to prevent stale application lockouts
+  await JoinRequest.deleteMany({
+    user: targetUserId,
+    organization: orgId
+  });
+
   return result;
 };
 
+export const leaveOrganizationService = async (orgId, userId) => {
+  const membership = await OrganizationMember.findOne({ user: userId, organization: orgId });
+  if (!membership) {
+    throw new Error("You are not a registered member of this organization.");
+  }
+
+  // Business Constraint: If they are the convenor, prevent them from abandoning the club without a leader
+  if (membership.role === "convenor") {
+    // Check if there is another core member who can be promoted, or force a role transfer first
+    const alternativeLeader = await OrganizationMember.findOne({
+      organization: orgId,
+      user: { $ne: userId },
+      role: { $in: ["deputy", "core"] }
+    });
+
+    if (!alternativeLeader) {
+      throw new Error("Action Denied: As the sole Convenor, you cannot leave until you add or appoint a new leader.");
+    }
+  }
+
+  // Remove the member
+  await OrganizationMember.deleteOne({ _id: membership._id });
+
+  await JoinRequest.deleteMany({ user: userId, organization: orgId });
+
+  return { success: true };
+};
+
+export const getMyOrganizationsService = async (userId) => {
+  // Find all memberships for this user and populate the organization details
+  const memberships = await OrganizationMember.find({ user: userId })
+    .populate("organization", "name type");
+  
+  // Map over the results to just return the organization objects
+  return memberships.map(m => m.organization);
+};
+
+export const setCoverPhotoService = async (orgId, userId, photoUrl) => {
+  const org = await Organization.findById(orgId);
+  if (!org) throw new Error("Organization not found");
+
+  const member = await OrganizationMember.findOne({ user: userId, organization: orgId });
+  if (!member || !["convenor", "deputy", "core"].includes(member.role)) {
+    throw new Error("Unauthorized: Only core members and leaders can set the cover photo.");
+  }
+
+  org.coverPhoto = photoUrl;
+  await org.save();
+  
+  return org;
+};
+export const removePhotoService = async (orgId, userId, photoUrl) => {
+  const org = await Organization.findById(orgId);
+  if (!org) throw new Error("Organization not found");
+
+  const member = await OrganizationMember.findOne({ user: userId, organization: orgId });
+  if (!member || !["convenor", "deputy", "core"].includes(member.role)) {
+    throw new Error("Unauthorized: Only core members and leaders can remove photos.");
+  }
+
+  org.photos = org.photos.filter((p) => p !== photoUrl);
+
+  if (org.coverPhoto === photoUrl) {
+    org.coverPhoto = ""; 
+  }
+
+  await org.save();
+  return org;
+};
+
+
+export const updateOrganizationAdminService = async (orgId, updateData) => {
+  const updatedOrg = await Organization.findByIdAndUpdate(orgId, updateData, { 
+    new: true, 
+    runValidators: true 
+  });
+  if (!updatedOrg) throw new Error("Organization not found");
+  return updatedOrg;
+};
+
+export const deleteOrganizationService = async (orgId) => {
+  const org = await Organization.findByIdAndDelete(orgId);
+  if (!org) throw new Error("Organization not found");
+
+  await OrganizationMember.deleteMany({ organization: orgId });
+  await JoinRequest.deleteMany({ organization: orgId });
+
+  return true;
+};

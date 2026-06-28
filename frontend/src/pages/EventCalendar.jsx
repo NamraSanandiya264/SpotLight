@@ -1,7 +1,17 @@
 import { useState, useEffect } from "react";
 import { getMonthlyCalendar } from "../services/api";
-import { FaCalendarAlt, FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import Swal from "sweetalert2";
+import { 
+  FaCalendarAlt, 
+  FaChevronLeft, 
+  FaChevronRight,
+  FaTimes,
+  FaBuilding,
+  FaMapMarkerAlt,
+  FaClock,
+  FaAlignLeft,
+  FaChevronDown,
+  FaChevronUp
+} from "react-icons/fa";
 import "./EventCalendar.css";
 
 const MONTHS = [
@@ -15,6 +25,17 @@ const EventCalendar = () => {
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [calendarData, setCalendarData] = useState({});
   const [loading, setLoading] = useState(false);
+
+  /* Accordion state for list view */
+  const [expandedEventId, setExpandedEventId] = useState(null);
+
+  /* Native Modal State Management */
+  const [modalConfig, setModalConfig] = useState({
+    isOpen: false,
+    type: "none", 
+    data: null,
+    title: ""
+  });
 
   useEffect(() => {
     const fetchCalendar = async () => {
@@ -31,23 +52,16 @@ const EventCalendar = () => {
     fetchCalendar();
   }, [currentMonth, currentYear]);
 
-  // 🌟 Global Event Bridge Handler initialized properly on mount/update context
-  useEffect(() => {
-    window.dispatchSwalEvent = (encodedEvent) => {
-      const event = JSON.parse(decodeURIComponent(encodedEvent));
-      Swal.close();
-      setTimeout(() => showEventDetails(event), 200);
-    };
+  /* Helper to visually mute past events */
+  const checkIsPast = (dateString, endTimeStr) => {
+    const now = new Date();
+    const eventEnd = new Date(dateString);
+    if (!endTimeStr) return eventEnd < now;
 
-    return () => {
-      delete window.dispatchSwalEvent;
-    };
-  }, []);
-
-  const firstDayOfMonth = new Date(currentYear, currentMonth - 1, 1).getDay();
-  const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
-  const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-  const blankSpaces = Array.from({ length: firstDayOfMonth }, (_, i) => i);
+    const [hours, minutes] = endTimeStr.split(":").map(Number);
+    eventEnd.setHours(hours, minutes, 0, 0);
+    return eventEnd < now;
+  };
 
   const handlePrevMonth = () => {
     if (currentMonth === 1) {
@@ -67,46 +81,34 @@ const EventCalendar = () => {
     }
   };
 
-  const showEventDetails = (event) => {
-    Swal.fire({
-      title: `<h3 class="swal-evt-title">${event.eventName}</h3>`,
-      html: `
-        <div class="swal-evt-body">
-          <p><span>🏢</span> <strong>Club/Org:</strong> ${event.organization?.name || "Campus Club"}</p>
-          <p><span>📍</span> <strong>Venue:</strong> ${event.venue}</p>
-          <p><span>⏰</span> <strong>Time:</strong> ${event.startTime} - ${event.endTime}</p>
-          <hr class="swal-divider"/>
-          <p class="swal-evt-desc">${event.description || "No description provided for this campus event."}</p>
-        </div>
-      `,
-      confirmButtonText: "Awesome!",
-      confirmButtonColor: "#2563eb",
-      background: "#ffffff"
+  const openSingleEventModal = (event) => {
+    setModalConfig({
+      isOpen: true,
+      type: "single",
+      data: event,
+      title: event.eventName
     });
   };
 
-  const showFullDayView = (e, dateLabel, allEvents) => {
+  const openDayListModal = (e, dateLabel, eventsList) => {
     e.stopPropagation();
-    
-    const eventsListHtml = allEvents.map(event => `
-      <div class="swal-day-list-item" onclick="window.dispatchSwalEvent('${encodeURIComponent(JSON.stringify(event))}')">
-        <div class="swal-day-list-meta">
-          <span class="swal-day-list-time">⏰ ${event.startTime} - ${event.endTime}</span>
-          <span class="swal-day-list-org">🏢 ${event.organization?.name || "Club"}</span>
-        </div>
-        <div class="swal-day-list-title">📍 ${event.venue} | <strong>${event.eventName}</strong></div>
-      </div>
-    `).join("");
-
-    Swal.fire({
-      title: `<h3 class="swal-evt-title">Schedule for ${dateLabel}</h3>`,
-      html: `<div class="swal-day-list-container">${eventsListHtml}</div>`,
-      showConfirmButton: true,
-      confirmButtonText: "Close",
-      confirmButtonColor: "#2563eb",
-      width: "500px"
+    setExpandedEventId(null); 
+    setModalConfig({
+      isOpen: true,
+      type: "list",
+      data: eventsList,
+      title: `Schedule for ${dateLabel}`
     });
   };
+
+  const closeModal = () => {
+    setModalConfig({ isOpen: false, type: "none", data: null, title: "" });
+  };
+
+  const firstDayOfMonth = new Date(currentYear, currentMonth - 1, 1).getDay();
+  const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
+  const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  const blankSpaces = Array.from({ length: firstDayOfMonth }, (_, i) => i);
 
   return (
     <div className="campus-calendar-container">
@@ -151,30 +153,34 @@ const EventCalendar = () => {
               <div 
                 key={day} 
                 className={`calendar-day-tile ${isToday ? 'is-today' : ''} ${dayEvents.length > 0 ? 'has-events' : ''}`}
-                onClick={(e) => dayEvents.length > 0 && showFullDayView(e, formattedDate, dayEvents)}
+                onClick={(e) => dayEvents.length > 0 && openDayListModal(e, formattedDate, dayEvents)}
               >
                 <span className="day-number-label">{day}</span>
                 
                 <div className="day-events-wrapper">
-                  {dayEvents.slice(0, 2).map(event => (
-                    <div 
-                      key={event._id} 
-                      className="event-strip-item"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        showEventDetails(event);
-                      }}
-                      title={event.eventName}
-                    >
-                      <span className="event-strip-dot"></span>
-                      <span className="event-strip-text">{event.eventName}</span>
-                    </div>
-                  ))}
+                  {dayEvents.slice(0, 2).map((event, index) => {
+                    const isPast = checkIsPast(event.date, event.endTime);
+                    const themeClass = `theme-${index % 5}`; 
+
+                    return (
+                      <div 
+                        key={event._id} 
+                        className={`event-strip-item ${themeClass} ${isPast ? 'is-past' : ''}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openSingleEventModal(event);
+                        }}
+                        title={event.eventName}
+                      >
+                        <span className="event-strip-text">{event.eventName}</span>
+                      </div>
+                    );
+                  })}
 
                   {dayEvents.length >= 3 && (
                     <div 
                       className="event-overflow-badge"
-                      onClick={(e) => showFullDayView(e, formattedDate, dayEvents)}
+                      onClick={(e) => openDayListModal(e, formattedDate, dayEvents)}
                     >
                       + {dayEvents.length - 2}
                     </div>
@@ -183,6 +189,83 @@ const EventCalendar = () => {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Modal Rendering */}
+      {modalConfig.isOpen && (
+        <div className="calendar-modal-overlay" onClick={closeModal}>
+          <div className="calendar-modal-content" onClick={e => e.stopPropagation()}>
+            <button className="modal-close-btn" onClick={closeModal}>
+              <FaTimes />
+            </button>
+            
+            <div className="modal-header">
+              <h3>{modalConfig.title}</h3>
+            </div>
+
+            <div className="modal-body">
+              {modalConfig.type === "single" && (
+                <>
+                  <div className="modal-detail-row">
+                    <FaBuilding className="modal-icon" />
+                    <span><strong>Club/Org:</strong> {modalConfig.data.organization?.name || "Campus Club"}</span>
+                  </div>
+                  <div className="modal-detail-row">
+                    <FaMapMarkerAlt className="modal-icon" />
+                    <span><strong>Venue:</strong> {modalConfig.data.customVenue || modalConfig.data.venue?.name}</span>
+                  </div>
+                  <div className="modal-detail-row">
+                    <FaClock className="modal-icon" />
+                    <span><strong>Time:</strong> {modalConfig.data.startTime} - {modalConfig.data.endTime}</span>
+                  </div>
+                  <div className="modal-detail-row modal-desc-box">
+                    <FaAlignLeft className="modal-icon" />
+                    <span>{modalConfig.data.description || "No additional details provided."}</span>
+                  </div>
+                </>
+              )}
+
+              {modalConfig.type === "list" && (
+                <div className="modal-list-container">
+                  {modalConfig.data.map(event => (
+                    <div key={event._id} className="modal-list-item">
+                      <div 
+                        className="modal-list-header-clickable"
+                        onClick={() => setExpandedEventId(expandedEventId === event._id ? null : event._id)}
+                      >
+                        <div className="modal-list-meta">
+                          <span className="modal-list-time">{event.startTime} - {event.endTime}</span>
+                          <span className="modal-list-org">{event.organization?.name || "Club"}</span>
+                        </div>
+                        <div className="modal-list-title-row">
+                          <span className="modal-list-title">{event.eventName}</span>
+                          <span className="modal-expand-icon">
+                            {expandedEventId === event._id ? <FaChevronUp /> : <FaChevronDown />}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {expandedEventId === event._id && (
+                        <div className="modal-expanded-content">
+                          <div className="modal-detail-row">
+                            <FaMapMarkerAlt className="modal-icon" />
+                            <span>{event.customVenue || event.venue?.name || "TBD"}</span>
+                          </div>
+                          {event.description && (
+                            <div className="modal-detail-row">
+                              <FaAlignLeft className="modal-icon" />
+                              <span>{event.description}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

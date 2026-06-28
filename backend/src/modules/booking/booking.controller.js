@@ -2,6 +2,8 @@ import {
   createBookingService,
   getBookingsService,
   updateBookingStatusService,
+  checkRoomConflict,
+  cancelBookingService
 } from "./booking.service.js";
 import mongoose from "mongoose";
 import Booking from "./booking.model.js";
@@ -56,26 +58,38 @@ export const checkAvailability = async (req, res) => {
   try {
     const { room_id, date, start_time, end_time } = req.body;
     
-    // Log the incoming data to see if anything is missing
-    console.log("Checking availability for:", { room_id, date, start_time, end_time });
+    if (!room_id || !date || !start_time || !end_time) {
+      return res.status(400).json({ success: false, message: "Missing required lookup parameters." });
+    }
 
     if (!mongoose.Types.ObjectId.isValid(room_id)) {
       return res.status(400).json({ message: "Invalid Room ID format" });
     }
 
+    // Prevent past time slots on the current day
+    const requestDate = new Date(date);
+    requestDate.setUTCHours(0,0,0,0);
+    
+    const today = new Date();
+    const todayMidnight = new Date(today);
+    todayMidnight.setUTCHours(0,0,0,0);
+
+    if (requestDate.getTime() === todayMidnight.getTime()) {
+      const currentLocalTime = `${String(today.getHours()).padStart(2, '0')}:${String(today.getMinutes()).padStart(2, '0')}`;
+      if (start_time < currentLocalTime) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Validation Error: The requested start time has already passed today." 
+        });
+      }
+    }
+
     const roomObjectId = new mongoose.Types.ObjectId(room_id);
 
-    const existing = await Booking.findOne({
-      room_id: roomObjectId,
-      date: new Date(date), // Ensure the date string is converted to a Date object
-      status: { $in: ["pending", "approved"] },
-      $or: [
-        {
-          start_time: { $lt: end_time },
-          end_time: { $gt: start_time },
-        },
-      ],
-    });
+    const targetDate = new Date(date);
+    targetDate.setUTCHours(0, 0, 0, 0);
+
+    const existing = await checkRoomConflict(room_id, date, start_time, end_time);
 
     if (existing) {
       return res.json({ available: false });
@@ -96,12 +110,28 @@ export const getMyBookings = async (req, res) => {
       user_id: req.user._id,
     })
       .populate("room_id", "name")
-      .sort({ created_at: -1 });
+      .sort({ createdAt: -1 });
 
     res.json({ bookings });
 
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const cancelBooking = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedBooking = await cancelBookingService(id, req.user);
+    const result = await updatedBooking.populate("room_id", "name");
+
+    res.status(200).json({
+      success: true,
+      message: "Booking canceled successfully",
+      booking: result
+    });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
   }
 };

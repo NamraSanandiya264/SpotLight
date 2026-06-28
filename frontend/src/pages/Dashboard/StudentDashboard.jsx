@@ -4,7 +4,9 @@ import {
   checkAvailability,
   createBooking,
   getMyBookings,
-  getAllRooms
+  getAllRooms,
+  cancelBooking,
+  getMyOrganizations
 } from "../../services/api";
 import { 
   FaHourglassHalf, 
@@ -13,12 +15,14 @@ import {
   FaPlus,
   FaDoorOpen,
   FaCalendarAlt,
-  FaClock
+  FaClock,
+  FaRegFileAlt,
+  FaTimesCircle,
+  FaPhone
 } from "react-icons/fa";
-import { MdOutlineNotes } from "react-icons/md"; 
 import Swal from "sweetalert2"; 
 
-const StudentDashboard = () => {
+const StudentDashboard = ({user}) => {
   const [showPanel, setShowPanel] = useState(false);
   const [rooms, setRooms] = useState([]);
   const [date, setDate] = useState("");
@@ -28,8 +32,23 @@ const StudentDashboard = () => {
   const [purpose, setPurpose] = useState("");
   const [bookings, setBookings] = useState([]);
   const [availabilityChecked, setAvailabilityChecked] = useState(false);
-  const [statusMessage, setStatusMessage] = useState({ text: "", type: "" });
+  const [statusMessage, setStatusMessage] = useState({ text: "", type: "", icon: null });
   const [activeTab, setActiveTab] = useState("pending");
+  const [contactNumber, setContactNumber] = useState(user?.phone || "");
+  const [organization, setOrganization] = useState("");
+  const [userOrgs, setUserOrgs] = useState([]); 
+  
+  const closeBookingPanel = () => {
+    setShowPanel(false);
+    setDate("");
+    setStartTime("");
+    setEndTime("");
+    setSelectedRoom("");
+    setPurpose("");
+    setAvailabilityChecked(false);
+    setStatusMessage({ text: "", type: "", icon: null });
+    setOrganization(""); 
+  };
 
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -47,7 +66,6 @@ const StudentDashboard = () => {
     loadDashboardData();
   }, []);
 
-  /* --- FILTERING LOGIC --- */
   const today = new Date().toISOString().split('T')[0];
 
   const pendingRequests = bookings.filter(b => b.status === "pending");
@@ -57,27 +75,56 @@ const StudentDashboard = () => {
   );
 
   const pastBookings = bookings.filter(b => 
-    (b.status === "approved" && b.date?.split('T')[0] < today) || b.status === "rejected"
+    b.status === "rejected" || b.status === "canceled" || (b.status === "approved" && b.date?.split('T')[0] < today)
   );
 
-  /* Helper function to reset availability validation on input mutations */
   const handleInputMutation = (setter, value) => {
     setter(value);
     setAvailabilityChecked(false);
-    setStatusMessage({ text: "", type: "" });
+    setStatusMessage({ text: "", type: "", icon: null });
   };
 
   const handleCheckAvailability = async () => {
-    setStatusMessage({ text: "", type: "" });
-    if (!date || !startTime || !endTime || !selectedRoom) {
-      setStatusMessage({ text: "Please fill all fields", type: "error" });
+    setStatusMessage({ text: "", type: "", icon: null });
+    if (!date || !startTime || !endTime || !selectedRoom || !contactNumber || !organization) {
+      setStatusMessage({ 
+        text: "Please fill all fields", 
+        type: "error",
+        icon: <FaTimesCircle style={{ color: "#ef4444" }} />
+      });
+      return;
+    }
+    if (contactNumber.length !== 10) {
+      setStatusMessage({ 
+        text: "Please enter a valid 10-digit contact number", 
+        type: "error",
+        icon: <FaTimesCircle style={{ color: "#ef4444" }} />
+      });
+      return;
+    }
+    if (startTime >= endTime) {
+      setStatusMessage({ 
+        text: "Start time must be strictly before end time", 
+        type: "error",
+        icon: <FaTimesCircle style={{ color: "#ef4444" }} />
+      });
       return;
     }
 
-    /* ✅ Check 2: Client-side Chronological Time Window Check */
-    if (startTime >= endTime) {
-      setStatusMessage({ text: "Start time must be strictly before end time ❌", type: "error" });
-      return;
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (date === todayStr) {
+      const now = new Date();
+      const currentLocalTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      
+      if (startTime < currentLocalTime) {
+        setStatusMessage({ 
+          text: `You cannot book a past time slot. It is currently ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`, 
+          type: "error",
+          icon: <FaTimesCircle style={{ color: "#ef4444" }} />
+        });
+        setAvailabilityChecked(false);
+        return;
+      }
     }
 
     try {
@@ -89,14 +136,27 @@ const StudentDashboard = () => {
       });
 
       if (res.data.available) {
-        setStatusMessage({ text: "Room available ✅", type: "success" });
+        setStatusMessage({ 
+          text: "Room available for booking", 
+          type: "success",
+          icon: <FaCheckCircle style={{ color: "#10b981" }} />
+        });
         setAvailabilityChecked(true);
       } else {
-        setStatusMessage({ text: "Room not available ❌", type: "error" });
+        setStatusMessage({ 
+          text: "Room not available for this slot", 
+          type: "error",
+          icon: <FaTimesCircle style={{ color: "#ef4444" }} />
+        });
         setAvailabilityChecked(false);
       }
     } catch (err) {
-      setStatusMessage({ text: "Server error during check", type: "error" });
+      console.error('Availability check failed:', err);
+      setStatusMessage({ 
+        text: `Server error during availability verification${err && err.message ? `: ${err.message}` : ''}`, 
+        type: "error",
+        icon: <FaTimesCircle style={{ color: "#ef4444" }} />
+      });
     }
   };
 
@@ -110,25 +170,60 @@ const StudentDashboard = () => {
         start_time: startTime,
         end_time: endTime,
         purpose: purpose || "General Meeting",
+        contact_number: contactNumber,
+        organization: organization,
       });
 
       const newBooking = res.data.booking || res.data;
       setBookings((prev) => [newBooking, ...prev]);
       
-      setShowPanel(false);
-      setAvailabilityChecked(false);
-      setPurpose("");
+      closeBookingPanel();
       
       Swal.fire({
-        title: "Booking Submitted! 🎉",
+        title: "Booking Submitted!",
         text: "Your reservation request has been sent to the SBG Core team for approval.",
         icon: "success",
         confirmButtonColor: "#2563eb",
       });
     } catch (err) {
-      const errorMsg = err.response?.data?.message || "Booking failed";
-      setStatusMessage({ text: errorMsg, type: "error" }); 
+      const errorMsg = err.response?.data?.message || "Booking creation failed";
+      setStatusMessage({ 
+        text: errorMsg, 
+        type: "error",
+        icon: <FaTimesCircle style={{ color: "#ef4444" }} />
+      }); 
     }
+  };
+
+  const handleCancelBooking = async (id) => {
+    const result = await Swal.fire({
+      title: "Cancel Booking?",
+      text: "Are you sure you want to cancel this approved booking? This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#64748b",
+      confirmButtonText: "Yes, cancel it"
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await cancelBooking(id);
+      setBookings((prev) => 
+        prev.map((b) => (b._id === id ? { ...b, status: "canceled" } : b))
+      );
+      Swal.fire("Canceled!", "Your booking has been canceled.", "success");
+    } catch (err) {
+      Swal.fire("Error", err.response?.data?.message || "Could not cancel booking", "error");
+    }
+  };
+
+  const isCancelable = (createdAt) => {
+    if (!createdAt) return false;
+    const timeDiff = new Date() - new Date(createdAt);
+    const hoursPassed = timeDiff / (1000 * 60 * 60);
+    return hoursPassed <= 24;
   };
 
   const renderBookingCards = (list) => (
@@ -140,28 +235,60 @@ const StudentDashboard = () => {
           <div className="booking-card" key={b._id || index}>
             <div className="card-header">
               <span className={`status-badge ${b.status}`}>{b.status}</span>
+              {b.isEdited && (
+                <span className="status-badge" style={{ backgroundColor: "#e0e7ff", color: "#1e40af", marginLeft: "8px" }}>
+                  ✏️ Edited
+                </span>
+              )}
             </div>
             
-            <p><MdOutlineNotes className="icon" /> <strong>Purpose:</strong> {b.purpose}</p>
+            <p><FaRegFileAlt className="icon" /> <strong>Purpose:</strong> {b.purpose}</p>
             
             <div className="booking-row">
               <span><FaDoorOpen className="icon" /> <strong>Room:</strong> {b.room_id?.name || "N/A"}</span>
             </div>
             
             <p><FaCalendarAlt className="icon" /> <strong>Date:</strong> {b.date ? b.date.split('T')[0] : "N/A"}</p>
-            
             <p><FaClock className="icon" /> <strong>Time:</strong> {b.start_time} - {b.end_time}</p>
+            {b.status === "approved" && activeTab === "approved" && isCancelable(b.createdAt) &&(
+                <button 
+                  className="cancel-btn" 
+                  onClick={() => handleCancelBooking(b._id)}
+                >
+                  <FaTimesCircle /> Cancel Booking
+                </button>
+              )}
           </div>
         ))
       )}
     </div>
   );
 
+  const openBookingPanel = async () => {
+    const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+    setContactNumber(storedUser?.phone || storedUser?.contact_number || "");
+    
+    try {
+      const res = await getMyOrganizations(); 
+      console.log("API Response:", res.data); 
+      
+      const fetchedOrgs = Array.isArray(res.data) 
+        ? res.data 
+        : (res.data.data || res.data.organizations || res.data.clubs || []);
+        
+      setUserOrgs(fetchedOrgs);
+    } catch (err) {
+      console.error("Error fetching organizations", err);
+    }
+    
+    setShowPanel(true);
+  };
+
   return (
     <div className="student-dashboard">
       <div className="dashboard-header">
-        <h2>My Dashboard</h2>
-        <button className="book-btn" onClick={() => setShowPanel(true)}>
+        <h2>Room Booking Portal</h2>
+        <button className="book-btn" onClick={openBookingPanel}>
           <FaPlus /> Book a Room
         </button>
       </div>
@@ -212,11 +339,10 @@ const StudentDashboard = () => {
 
       {showPanel && (
         <div className="booking-panel">
-          <button className="close-btn" onClick={() => setShowPanel(false)}>✖</button>
+          <button className="close-btn" onClick={closeBookingPanel}>✖</button>
           <h3>New Reservation</h3>
 
           <label>Date</label>
-          {/* ✅ Check 2: past reservation block via min restriction */}
           <input 
             type="date" 
             className="input" 
@@ -255,21 +381,57 @@ const StudentDashboard = () => {
             onChange={(e) => setPurpose(e.target.value)}
           />
 
-          <label>Select Room</label>
-          <div className="room-grid">
-            {rooms.map((room) => (
-              <div
-                key={room._id}
-                className={`room-tile ${selectedRoom === room._id ? "active" : ""}`}
-                /* ✅ Check 1: Mutating selected tile safely clears old validation signatures */
-                onClick={() => handleInputMutation(setSelectedRoom, room._id)}
-              >
-                {room.name}
-              </div>
-            ))}
-          </div>
+          <label>Contact Number</label>
+          <input 
+            type="tel" 
+            className="input" 
+            placeholder="e.g., 9876543210"
+            value={contactNumber}
+            maxLength="10"
+            onChange={(e) => handleInputMutation(setContactNumber, e.target.value.replace(/\D/g, ''))} 
+          />
 
-          {statusMessage.text && <div className={`status-alert ${statusMessage.type}`}>{statusMessage.text}</div>}
+          <label htmlFor="org-select">Organization</label>
+          <select
+            id="org-select"
+            className="input dropdown-select"
+            value={organization}
+            onChange={(e) => handleInputMutation(setOrganization, e.target.value)}
+          >
+            <option value="" disabled>-- Select Organization --</option>
+            <option value="None">None</option>
+            {userOrgs.map((org, index) => (
+              <option key={index} value={org.name || org.title || org}>
+                {org.name || org.title || org}
+              </option>
+            ))}
+          </select>
+
+          <label htmlFor="room-select">Select Room</label>
+          <select
+            id="room-select"
+            className="input dropdown-select"
+            value={selectedRoom}
+            onChange={(e) => handleInputMutation(setSelectedRoom, e.target.value)}
+          >
+            <option value="" disabled>-- Choose a Classroom/Lab --</option>
+            
+            {[...rooms]
+              .sort((a, b) => (a.name || "").localeCompare(b.name || "", undefined, { numeric: true, sensitivity: 'base' }))
+              .map((room) => (
+                <option key={room._id} value={room._id}>
+                  {room.name}
+                </option>
+              ))
+            }
+          </select>
+
+          {statusMessage.text && (
+            <div className={`status-alert ${statusMessage.type}`} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {statusMessage.icon}
+              <span>{statusMessage.text}</span>
+            </div>
+          )}
 
           <button className="check-btn" onClick={handleCheckAvailability}>Check Availability</button>
 

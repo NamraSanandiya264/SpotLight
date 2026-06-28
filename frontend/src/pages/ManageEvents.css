@@ -18,12 +18,12 @@
 
 .manage-events-grid {
   display: grid;
-  grid-template-columns: 1.5fr 1fr;;
+  grid-template-columns: 1.5fr 1fr;
   gap: 32px;
   align-items: stretch;
 }
 
-/* Loading & Restricted Fallbacks */
+/* Loading and Restricted Fallbacks */
 .manage-events-loading {
   padding: 24px;
 }
@@ -45,7 +45,7 @@
 .restricted-access-card h2 {
   color: #1f2937;
   margin-bottom: 12px;
-  fontWeight: 700;
+  font-weight: 700;
 }
 
 .restricted-access-card p {
@@ -64,7 +64,7 @@
   width: 100%;
 }
 
-/*  Two-Column Flex Layout for Form Content */
+/* Two-Column Flex Layout */
 .event-form-columns-wrapper {
   display: flex;
   gap: 32px;
@@ -119,7 +119,7 @@
 .form-field input, 
 .form-field select {
   width: 100%;
-  padding: 10px 12px; /* Marginally increased for better full-width text entry */
+  padding: 10px 12px;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
   box-sizing: border-box;
@@ -131,8 +131,8 @@
   border: 1px solid #cbd5e1;
   border-radius: 6px;
   box-sizing: border-box;
-  flex-grow: 1; /* Automatically extends vertically to match the right column's height lines */
-  resize: none; /* Disables manual sizing handles to preserve form symmetry */
+  flex-grow: 1;
+  resize: none;
 }
 
 .form-time-row {
@@ -147,7 +147,7 @@
   margin-top: 8px;
 }
 
-/* Action Buttons for Form submission */
+/* Action Buttons */
 .btn-primary-submit {
   flex: 1;
   padding: 10px;
@@ -174,7 +174,7 @@
   color: #4b5563;
 }
 
-/* Scheduled Cards Container Right Column */
+/* Scheduled Cards Container */
 .events-list-block {
   display: flex;
   flex-direction: column;
@@ -183,11 +183,12 @@
   border-top: 1px solid #e5e7eb; 
   padding-top: 24px;
 }
-/* Display cards side-by-side across the row space below the form */
+
+/* Vertical list layout for easy scanning */
 .events-cards-grid-wrapper {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* Automatically tiles cards depending on width */
-  gap: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .list-block-title {
@@ -207,9 +208,7 @@
   gap: 12px;
 }
 
-/* Card Row Elements Header Layout */
-
-/* Container alignment for the buttons in the top right */
+/* Card Header Layout */
 .card-controls-cluster {
   display: flex;
   align-items: center;
@@ -227,6 +226,7 @@
   display: flex;
   gap: 8px;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .org-badge-tag {
@@ -256,6 +256,19 @@
   color: #16a34a;
 }
 
+/* Past event visual muting */
+.event-roster-card.is-past {
+  background-color: #f8fafc;
+  border-color: #f1f5f9;
+  opacity: 0.7;
+}
+
+/* Completed Badge */
+.status-badge-tag.completed {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
+
 /* Card Action Control Buttons */
 .card-action-group {
   display: flex;
@@ -282,7 +295,7 @@
   border-color: #86efac;
 }
 
-/* 3-Dots Interactive Button Trigger */
+/* Dropdown interactive trigger */
 .dropdown-menu-wrapper {
   position: relative;
   display: inline-block;
@@ -308,7 +321,7 @@
   color: #111827;
 }
 
-/* Absolute Floating Action Box Popover */
+/* Action Box Popover */
 .dropdown-actions-box {
   position: absolute;
   top: 100%;
@@ -318,14 +331,14 @@
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  z-index: 50; /* Ensures it sits above event cards below it */
+  z-index: 50;
   min-width: 130px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
-/* Dropdown Menu Option Actions Elements */
+/* Dropdown Menu Options */
 .dropdown-item-btn {
   width: 100%;
   padding: 10px 14px;
@@ -355,8 +368,7 @@
   background-color: #fff5f5;
 }
 
-
-/* Meta Labels Details Typography Layout */
+/* Details Typography Layout */
 .card-details-stack {
   display: flex;
   flex-direction: column;
@@ -379,13 +391,41 @@
   margin-top: 4px;
 }
 
-/* Bottom Description Custom Box */
-.card-description-box {
+/* Expandable Description Section */
+.card-description-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   margin-top: 4px;
-  padding: 10px 14px;
+}
+
+.btn-toggle-desc {
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
+  transition: color 0.15s ease;
+}
+
+.btn-toggle-desc:hover {
+  color: #1d4ed8;
+}
+
+.card-description-box {
+  margin-top: 8px;
+  padding: 12px 14px;
   background-color: #f9fafb;
   border-radius: 6px;
-  border-left: 4px solid #d1d5db;
+  border-left: 4px solid #cbd5e1;
+  width: 100%;
+  box-sizing: border-box;
+  animation: fadeIn 0.2s ease-out;
 }
 
 .card-description-box p {
@@ -394,7 +434,7 @@
   color: #4b5563;
   font-style: italic;
   white-space: pre-wrap;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .no-events-fallback {
@@ -403,44 +443,7 @@
   margin: 0;
 }
 
-/* Simple Fade In Entry */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(2px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-/* Fix double semi-colon typos discovered in your source mapping */
-.manage-events-grid {
-  display: grid;
-  grid-template-columns: 1.5fr 1fr;
-  gap: 32px;
-  align-items: start;
-}
-
-/* =========================================
-   SWEETALERT POPUP CUSTOM DESIGN REVISIONS
-   ========================================= */
-.swal2-popup {
-  font-family: inherit !important;
-  border-radius: 14px !important;
-  padding: 24px !important;
-}
-
-.swal2-title {
-  font-size: 22px !important;
-  font-weight: 700 !important;
-  color: #111827 !important;
-}
-
-.swal2-html-container {
-  font-size: 14px !important;
-  color: #4b5563 !important;
-  line-height: 1.5 !important;
-}
-
-.swal2-styled {
-  font-size: 14px !important;
-  font-weight: 600 !important;
-  padding: 10px 24px !important;
-  border-radius: 6px !important;
 }

@@ -26,6 +26,10 @@ const organizationSchema = new mongoose.Schema(
         type: String, // image URLs
       }
     ],
+    coverPhoto: {
+      type: String,
+      default: "",
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User"
