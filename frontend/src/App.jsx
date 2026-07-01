@@ -5,6 +5,7 @@ import { ToastContainer } from "react-toastify";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import { useAuth } from "./context/AuthContext"; 
 import Profile from "./pages/Profile/Profile";
+import ForgotPassword from "./pages/ForgotPassword";
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -22,6 +23,9 @@ function App() {
       <Routes>
         <Route path="/" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        
+        {/* ✅ Add the Forgot Password route here */}
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
         {/* Protected Dashboard Route Container */}
         <Route

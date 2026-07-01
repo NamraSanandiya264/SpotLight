@@ -10,7 +10,7 @@ Service (user.service.js)
 Database 
 */
 
-import { registerUser, loginUser } from "./user.service.js";
+import { registerUser, loginUser, generateAndSendOTP, resetPasswordWithOTP } from "./user.service.js";
 console.log("USER CONTROLLER LOADED");
 import User from "./user.model.js";
 import bcrypt from "bcryptjs";
@@ -153,3 +153,22 @@ export const uploadAvatar = async (req, res) => {
   }
 };
 
+
+export const forgotPassword = async (req, res) => {
+  try {
+    const response = await generateAndSendOTP(req.body.email);
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    const response = await resetPasswordWithOTP(email, otp, newPassword);
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};

@@ -10,7 +10,10 @@ const eventSchema = new mongoose.Schema(
     venue: { 
       type: mongoose.Schema.Types.ObjectId, 
       ref: "Room", 
-      required: true 
+    },
+    customVenue: { 
+      type: String,
+      trim: true 
     },
     
     organization: { 
@@ -18,7 +21,10 @@ const eventSchema = new mongoose.Schema(
       ref: "Organization", 
       required: true 
     },
-    
+    contact_number: {
+      type: String,
+      required: [true, "Contact number is mandatory."],
+    },
     bookingRef: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Booking"

@@ -24,6 +24,8 @@ import {
    updateProfile,
    changePassword,
    uploadAvatar,
+   forgotPassword,
+   resetPassword,
 } from "./user.controller.js";
 
 const router = express.Router();
@@ -51,5 +53,7 @@ router.get("/profile", protect, (req, res) => {
       user: req.user,
    });
 });
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPassword);
 
 export default router;

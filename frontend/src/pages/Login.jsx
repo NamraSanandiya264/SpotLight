@@ -95,6 +95,12 @@ const Login = () => {
 
           {errors.general && <p className="error-text">{errors.general}</p>}
 
+          <div className="forgot-password-link" style={{ textAlign: "right", marginBottom: "15px" }}>
+            <Link to="/forgot-password" style={{ fontSize: "14px", color: "#4f46e5", textDecoration: "none" }}>
+              Forgot Password?
+            </Link>
+          </div>
+
           <button type="submit" className="signup-btn">Login</button>
 
           <div className="login-redirect">
