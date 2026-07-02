@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import api from "../services/api";
+import api from "../../services/api";
 import "./Organizations.css";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
 const Organizations = ({ onSelectOrg }) => {
   const [organizations, setOrganizations] = useState([]);

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import "./Dashboard.css";
+import "../Dashboard/Dashboard.css";
 import {
   getBookings, 
   updateBookingStatus,
@@ -14,7 +14,7 @@ import {
 } from "react-icons/fa";
 import Swal from "sweetalert2";
 
-const CoreDashboard = () => {
+const CoreRoomBooking = () => {
   const [bookings, setBookings] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [activeTab, setActiveTab] = useState("pending");
@@ -269,4 +269,4 @@ const CoreDashboard = () => {
   );
 };
 
-export default CoreDashboard;
+export default CoreRoomBooking;

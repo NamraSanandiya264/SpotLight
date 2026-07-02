@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Register from "./pages/Register";
-import Login from "./pages/Login";
+import Register from "./pages/Auth/Register";
+import Login from "./pages/Auth/Login";
 import { ToastContainer } from "react-toastify";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import { useAuth } from "./context/AuthContext"; 

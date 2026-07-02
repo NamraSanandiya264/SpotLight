@@ -1,274 +1,45 @@
-/* =========================================
-   CORE HOME SPACE CONTAINER OVERLAYS
-   ========================================= */
-.home-dashboard-workspace {
-  padding: 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-  animation: fadeIn 0.3s ease-out;
-}
-
-/* 🌟 Welcoming Hero Section styling */
-.dashboard-welcome-hero {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.welcome-greeting-title {
-  font-size: 32px;
-  font-weight: 800;
-  color: #111827;
-  margin: 0;
-  letter-spacing: -0.5px;
-}
-
-.highlight-username {
-  color: #2563eb; /* Matches your brand primary accent blue line */
-}
-
-/* 🌟 Rich Text Quote Typography Block */
-.daily-quote-card {
-  padding: 14px 20px;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  border-left: 4px solid #3b82f6;
-  border-radius: 0 8px 8px 0;
-  max-width: 800px;
-}
-
-.quote-text {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 500;
-  color: #4b5563;
-  font-style: italic;
-  line-height: 1.5;
-}
-
-/* =========================================
-   SPLIT CONTAINER MULTI-COLUMN FEED PANELS
-   ========================================= */
-.dashboard-split-feed-grid {
+/* Container for the entire Home Dashboard */
+.home-dashboard {
   display: grid;
-  grid-template-columns: 1.2fr 1fr; /* Event timeline gets a bit more breathing space */
-  gap: 28px;
-  align-items: start;
+  grid-template-columns: 2fr 1fr; /* Left side is wider for schedules, right for notifications */
+  gap: 24px;
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
-.feed-column {
+/* Make the top banner span the entire width */
+.dashboard-header {
+  grid-column: 1 / -1;
+}
+
+/* Main content column */
+.dashboard-main-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Sidebar content column */
+.dashboard-side-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Basic widget card styling to be shared across all components */
+.widget-card {
   background-color: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
+  border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02), 0 2px 4px -1px rgba(0,0,0,0.02);
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  height: 480px; /* Locked alignment heights across columns */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  border: 1px solid #eaeaea;
 }
 
-.column-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #f3f4f6;
-  padding-bottom: 14px;
-}
-
-.column-header-row h3 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 700;
-  color: #1f2937;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.icon-accent {
-  font-size: 16px;
-}
-.icon-accent.blue { color: #2563eb; }
-.icon-accent.amber { color: #d97706; }
-
-.live-pill-badge {
-  font-size: 11px;
-  font-weight: 700;
-  background-color: #f0fdf4;
-  color: #16a34a;
-  padding: 4px 8px;
-  border-radius: 20px;
-  text-transform: uppercase;
-}
-
-.official-tag {
-  font-size: 11px;
-  font-weight: 600;
-  background-color: #fef3c7;
-  color: #d97706;
-  padding: 4px 8px;
-  border-radius: 6px;
-}
-
-/* Internal Column Scroll track limits */
-.feed-scroll-container {
-  overflow-y: auto;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding-right: 4px;
-}
-
-.feed-scroll-container::-webkit-scrollbar { width: 4px; }
-.feed-scroll-container::-webkit-scrollbar-thumb {
-  background-color: #e2e8f0;
-  border-radius: 4px;
-}
-
-/* =========================================
-   LEFT: HAPPENING TODAY TICKER COMPONENTS
-   ========================================= */
-.live-event-ticker-row {
-  display: flex;
-  gap: 16px;
-  padding: 12px;
-  border-radius: 10px;
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
-  transition: all 0.2s ease;
-}
-
-.live-event-ticker-row:hover {
-  border-color: #3b82f6;
-  background-color: #ffffff;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-  transform: translateX(2px);
-}
-
-.ticker-time-pill {
-  flex-shrink: 0;
-  background-color: #eff6ff;
-  color: #1e40af;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 6px 10px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  height: fit-content;
-}
-
-.ticker-details-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  overflow: hidden;
-}
-
-.ticker-event-title {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 700;
-  color: #111827;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.ticker-meta-line {
-  font-size: 12px;
-  color: #6b7280;
-  display: flex;
-  gap: 12px;
-}
-
-.ticker-venue {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: #4b5563;
-  font-weight: 500;
-}
-
-/* =========================================
-   RIGHT: SBG NOTICE BOARD ITEM CARD DESIGNS
-   ========================================= */
-.notice-sticky-card {
-  background-color: #fffdf5; /* Soft official warm notepad tint tint */
-  border: 1px solid #fef08a;
-  border-left: 4px solid #eab308;
-  border-radius: 4px 10px 10px 4px;
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-}
-
-.notice-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 8px;
-}
-
-.notice-subject-heading {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 700;
-  color: #1c1917;
-  line-height: 1.3;
-}
-
-.notice-timestamp {
-  font-size: 11px;
-  font-weight: 600;
-  color: #854d0e;
-  white-space: nowrap;
-}
-
-.notice-body-text {
-  margin: 0;
-  font-size: 13px;
-  color: #44403c;
-  line-height: 1.4;
-}
-
-.notice-footer-signature {
-  font-size: 11px;
-  color: #716c66;
-  text-align: right;
-  margin-top: 2px;
-  border-top: 1px dashed rgba(234, 179, 8, 0.2);
-  padding-top: 6px;
-}
-
-/* Empty Fallback states layout styles */
-.empty-feed-fallback {
-  text-align: center;
-  padding: 40px 20px;
-  margin: auto 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.empty-feed-fallback p {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: #6b7280;
-}
-
-.sub-fallback {
-  font-size: 12px;
-  color: #9ca3af;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+/* Responsive design for tablets and mobile */
+@media (max-width: 1024px) {
+  .home-dashboard {
+    grid-template-columns: 1fr; /* Stacks everything in one column */
+    padding: 16px;
+  }
 }

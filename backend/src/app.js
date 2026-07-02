@@ -6,6 +6,7 @@ import roomRoutes from "./modules/room/room.routes.js";
 import organizationRoutes from "./modules/organizations/organization.routes.js";
 import eventRoutes from "./modules/events/event.routes.js";
 import noticeRoutes from "./modules/notice/notice.routes.js";
+import notificationRoutes from "./modules/notifications/notification.routes.js";
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use("/api/organizations", organizationRoutes);
 app.use("/api/events", eventRoutes);
 app.use('/uploads', express.static('uploads'));
 app.use("/api/notices", noticeRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 app.get("/", (req, res) => {
   res.send("Backend is running 🚀");

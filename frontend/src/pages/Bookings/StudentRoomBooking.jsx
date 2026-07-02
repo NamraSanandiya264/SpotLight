@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import "./Dashboard.css";
+import "../Dashboard/Dashboard.css";
 import {
   checkAvailability,
   createBooking,
@@ -22,7 +22,7 @@ import {
 } from "react-icons/fa";
 import Swal from "sweetalert2"; 
 
-const StudentDashboard = ({user}) => {
+const StudentRoomBooking = ({user}) => {
   const [showPanel, setShowPanel] = useState(false);
   const [rooms, setRooms] = useState([]);
   const [date, setDate] = useState("");
@@ -442,4 +442,4 @@ const StudentDashboard = ({user}) => {
   );
 };
 
-export default StudentDashboard;
+export default StudentRoomBooking;

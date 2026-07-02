@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./Register.css";
-import API from "../services/api";
+import API from "../../services/api";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";

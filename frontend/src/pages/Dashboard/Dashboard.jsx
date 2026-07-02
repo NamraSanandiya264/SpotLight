@@ -1,26 +1,38 @@
-// src/pages/Dashboard/Dashboard.jsx
-import { useState, useEffect } from "react"; 
-import DashboardLayout from "./DashboardLayout";
-import StudentDashboard from "./StudentDashboard";
-import CoreDashboard from "./CoreDashboard";
-import ManageEvents from "../ManageEvents"; 
-import { useAuth } from "../../context/AuthContext"; 
-import api from "../../services/api"; // 🌟 Import your api config helper
+import React, { useState, useEffect } from "react";
+import Sidebar from "../../components/Dashboard/Sidebar";
+import Home from "./Home";
+import Organizations from "../Organizations/Organizations";
+import OrganizationDetails from "../Organizations/OrganizationDetails";
+import EventCalendar from "../Events/EventCalendar";
+import ManageEvents from "../Events/ManageEvents";
+import StudentRoomBooking from "../Bookings/StudentRoomBooking";
+import CoreRoomBooking from "../Bookings/CoreRoomBooking";
+import { useAuth } from "../../context/AuthContext";
+import api from "../../services/api";
+import "./Dashboard.css"; // Imported directly here now
 
-const Dashboard = () => {
-  const { user } = useAuth(); 
-  const [currentView, setCurrentView] = useState("dashboard"); 
-  const [isCoreOrLeader, setIsCoreOrLeader] = useState(false); // 🌟 Track if they belong to any club leadership
+const Dashboard = ({ children, user: userProp }) => {
+  const { user: authUser } = useAuth();
+  const user = userProp || authUser;
+  
+  const [activeMenu, setActiveMenu] = useState("home"); 
+  const [collapsed, setCollapsed] = useState(false);
+  const [isCoreOrLeader, setIsCoreOrLeader] = useState(false);
+  
+  // High-level wrapper state to handle specific club view details
+  const [selectedOrgId, setSelectedOrgId] = useState(null);
 
+  // Fetch permissions on mount
   useEffect(() => {
     const checkClubPermissions = async () => {
       try {
         const res = await api.get("/events/deputy-view");
         if (res.data.success && res.data.managedOrgs?.length > 0) {
-          setIsCoreOrLeader(true); // User is an active core/leader of at least one organization
+          setIsCoreOrLeader(true);
         }
       } catch (err) {
         setIsCoreOrLeader(false);
+        console.error("Failed to check club permissions:", err);
       }
     };
     if (user) checkClubPermissions();
@@ -28,30 +40,64 @@ const Dashboard = () => {
 
   if (!user) return <p>Please log in</p>;
 
+  // Safeguard view resetter when moving away from or within organizations
+  const handleMenuChange = (menu) => {
+    if (menu !== "organizations") setSelectedOrgId(null);
+    setActiveMenu(menu);
+  };
+
+  // 🌟 Centralized rendering logic
+  const renderContent = () => {
+    if (children) {
+      return typeof children === "function"
+        ? children({ collapsed, setCollapsed, activeMenu })
+        : children;
+    }
+
+    switch (activeMenu) {
+      case "home":
+        return <Home isCoreOrLeader={isCoreOrLeader} setActiveMenu={handleMenuChange} />;
+      case "organizations":
+        return !selectedOrgId ? (
+          <Organizations onSelectOrg={setSelectedOrgId} />
+        ) : (
+          <OrganizationDetails orgId={selectedOrgId} onBack={() => setSelectedOrgId(null)} />
+        );
+      case "events":
+        return <EventCalendar />;
+      case "manage-events":
+        return isCoreOrLeader ? <ManageEvents /> : <p>Unauthorized</p>;
+      // Add the case string that your Sidebar uses for Room Bookings (e.g., "dashboard", "bookings")
+      case "dashboard": 
+      case "bookings":
+      default:
+        return user.role === "sbg_core" ? (
+          <CoreRoomBooking collapsed={collapsed} setCollapsed={setCollapsed} />
+        ) : (
+          <StudentRoomBooking collapsed={collapsed} setCollapsed={setCollapsed} />
+        );
+    }
+  };
+
   return (
-    // 🌟 Pass isCoreOrLeader down into the layout
-    <DashboardLayout 
-      user={user} 
-      currentView={currentView} 
-      setCurrentView={setCurrentView}
-      isCoreOrLeader={isCoreOrLeader} 
-    >
-      {({ collapsed, setCollapsed }) => (
-        <>
-          {currentView === "manage-events" && isCoreOrLeader ? (
-            <ManageEvents />
-          ) : (
-            <>
-              {user.role === "sbg_core" ? (
-                <CoreDashboard collapsed={collapsed} setCollapsed={setCollapsed} />
-              ) : (
-                <StudentDashboard collapsed={collapsed} setCollapsed={setCollapsed} />
-              )}
-            </>
-          )}
-        </>
-      )}
-    </DashboardLayout>
+    <div className={`dashboard-container ${collapsed ? "collapsed" : ""}`}>
+      {/* Sidebar Component */}
+      <Sidebar
+        collapsed={collapsed}
+        setCollapsed={setCollapsed}
+        activeMenu={activeMenu}
+        setActiveMenu={handleMenuChange}
+        user={user}
+        isCoreOrLeader={isCoreOrLeader}
+      />
+      
+      {/* Main Content Area */}
+      <div className="main-content">
+        <div className="content-area">
+          {renderContent()}
+        </div>
+      </div>
+    </div>
   );
 };
 

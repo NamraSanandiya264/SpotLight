@@ -342,3 +342,33 @@ export const getEventsByDay = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
+export const getUpcomingEvents = async (req, res) => {
+  try {
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+
+    // Fetch the next 5 upcoming published events
+    const events = await Event.find({
+      isPublished: true,
+      date: { $gte: today }
+    })
+    .populate("organization", "name")
+    .populate("venue", "name")
+    .sort({ date: 1, startTime: 1 })
+    .limit(5);
+
+    // Calculate how many events are happening exactly today
+    const endOfToday = new Date(today);
+    endOfToday.setUTCHours(23, 59, 59, 999);
+
+    const eventsToday = await Event.countDocuments({
+      isPublished: true,
+      date: { $gte: today, $lte: endOfToday }
+    });
+
+    res.status(200).json({ success: true, events, eventsToday });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};

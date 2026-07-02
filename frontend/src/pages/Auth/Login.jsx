@@ -1,10 +1,10 @@
 import { useState } from "react";
 import "./Register.css";
-import API from "../services/api";
+import API from "../../services/api";
 import { useNavigate, Link } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { toast } from "react-toastify";
-import { useAuth } from "../context/AuthContext"; // ✅ Import the hook
+import { useAuth } from "../../context/AuthContext"; // ✅ Import the hook
 
 const Login = () => {
   const navigate = useNavigate();

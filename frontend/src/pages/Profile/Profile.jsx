@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { FaUserCircle, FaCamera } from "react-icons/fa";
 import API from "../../services/api";
-import DashboardLayout from "../Dashboard/DashboardLayout";
+import Dashboard from "../Dashboard/Dashboard";
 import "./Profile.css";
 
 const YEAR_OPTIONS = [
@@ -129,14 +129,14 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <DashboardLayout user={{ name: "...", role: "student" }}>
+      <Dashboard user={{ name: "...", role: "student" }}>
         {() => <div className="profile-loading">Loading profile...</div>}
-      </DashboardLayout>
+      </Dashboard>
     );
   }
 
   return (
-    <DashboardLayout user={user}>
+    <Dashboard user={user}>
       {() => (
         <div className="profile-page">
           <h1 className="profile-title">My Profile</h1>
@@ -286,7 +286,7 @@ const Profile = () => {
           </div>
         </div>
       )}
-    </DashboardLayout>
+    </Dashboard>
   );
 };
 

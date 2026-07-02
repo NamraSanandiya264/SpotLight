@@ -7,6 +7,7 @@ import {
 } from "./booking.service.js";
 import mongoose from "mongoose";
 import Booking from "./booking.model.js";
+import { createNotification } from "../notifications/notification.service.js";
 
 //Create Booking
 export const createBooking = async (req, res) => {
@@ -43,6 +44,20 @@ export const updateBookingStatus = async (req, res) => {
     // Populate room info before sending back to keep UI from crashing
     const result = await updatedBooking.populate("room_id", "name");
 
+    const notificationMessage = status === "approved" 
+      ? `Your room booking for ${result.room_id?.name || 'a room'} has been approved.`
+      : `Your room booking for ${result.room_id?.name || 'a room'} has been rejected.`;
+    
+    const notificationType = status === "approved" ? "BOOKING_APPROVED" : "BOOKING_REJECTED";
+
+    // Fire the notification asynchronously 
+    await createNotification({
+      recipientId: result.user_id, // The student who made the booking
+      senderId: req.user._id,      // The SBG Core member processing it
+      message: notificationMessage,
+      type: notificationType,
+    });
+    
     res.status(200).json({
       success: true,
       message: `Booking ${status} successfully`,
