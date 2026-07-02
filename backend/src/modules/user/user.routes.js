@@ -24,6 +24,8 @@ import {
    updateProfile,
    changePassword,
    uploadAvatar,
+   forgotPassword,
+   resetPassword,
 } from "./user.controller.js";
 
 const router = express.Router();
@@ -48,5 +50,7 @@ router.get("/profile", protect, (req, res) => {
 });
 router.get('/sbg-metrics', protect, getSbgMetrics);
 router.get('/activity', protect, getUserActivity);
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password", resetPassword);
 
 export default router;

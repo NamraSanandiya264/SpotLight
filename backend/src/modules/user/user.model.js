@@ -77,6 +77,14 @@ const userSchema = new mongoose.Schema(
       enum: ["student", "sbg_core"],
       default: "student",
     },
+
+    resetPasswordOTP: {
+      type: String,
+    },
+    resetPasswordOTPExpires: {
+      type: Date,
+    },
+
   },
 
   { timestamps: true }
