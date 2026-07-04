@@ -33,7 +33,7 @@ const eventSchema = new mongoose.Schema(
     description: { type: String },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     isPublished: { type: Boolean, default: false },
-    isEdited: { type: Boolean, default: false }
+    isEdited: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

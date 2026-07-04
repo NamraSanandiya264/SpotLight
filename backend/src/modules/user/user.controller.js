@@ -10,8 +10,7 @@ Service (user.service.js)
 Database 
 */
 
-import { registerUser, loginUser, generateAndSendOTP, resetPasswordWithOTP } from "./user.service.js";
-console.log("USER CONTROLLER LOADED");
+import { registerUser, loginUser, generateAndSendOTP, resetPasswordWithOTP, verifyEmailOTP } from "./user.service.js";
 import User from "./user.model.js";
 import Event from "../events/event.model.js";
 import bcrypt from "bcryptjs";
@@ -19,8 +18,7 @@ import Booking from "../booking/booking.model.js";
 import Notification from "../notifications/notification.model.js";
 import OrganizationMember from "../organizations/orgMember.model.js";
 
-export const register = async (req, res) => { //Runs when user hits /register API endpoint with POST method 
-  // req.body contains the data sent by the frontend 
+export const register = async (req, res) => { 
   try {
     const user = await registerUser(req.body);
     res.status(201).json({
@@ -28,12 +26,21 @@ export const register = async (req, res) => { //Runs when user hits /register AP
       user,
     });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ message: error.message });
   }
-  console.log(req.body);
 };
 
-export const login = async (req, res) => { // Runs when user hits /login API 
+export const verifyRegistration = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    const response = await verifyEmailOTP(email, otp);
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
+export const login = async (req, res) => { 
   try {
     const data = await loginUser(req.body);
     res.status(200).json({
@@ -247,7 +254,7 @@ export const getSbgMetrics = async (req, res) => {
     endOfWeek.setDate(today.getDate() + 7);
     endOfWeek.setUTCHours(23, 59, 59, 999);
 
-    // 1. Pending Room Requests (Purpose does NOT start with "Event:")
+   
     const pendingRooms = await Booking.countDocuments({
       status: "pending",
       purpose: { $not: /^Event:/ }

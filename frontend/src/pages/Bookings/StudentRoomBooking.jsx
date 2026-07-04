@@ -69,14 +69,7 @@ const StudentRoomBooking = ({user}) => {
   const today = new Date().toISOString().split('T')[0];
 
   const pendingRequests = bookings.filter(b => b.status === "pending");
-
-  const approvedBookings = bookings.filter(b => 
-    b.status === "approved" && b.date?.split('T')[0] >= today
-  );
-
-  const pastBookings = bookings.filter(b => 
-    b.status === "rejected" || b.status === "canceled" || (b.status === "approved" && b.date?.split('T')[0] < today)
-  );
+  const historyBookings = bookings.filter(b => b.status !== "pending");
 
   const handleInputMutation = (setter, value) => {
     setter(value);
@@ -250,7 +243,7 @@ const StudentRoomBooking = ({user}) => {
             
             <p><FaCalendarAlt className="icon" /> <strong>Date:</strong> {b.date ? b.date.split('T')[0] : "N/A"}</p>
             <p><FaClock className="icon" /> <strong>Time:</strong> {b.start_time} - {b.end_time}</p>
-            {b.status === "approved" && activeTab === "approved" && isCancelable(b.createdAt) &&(
+            {b.status === "approved" && isCancelable(b.createdAt) &&(
                 <button 
                   className="cancel-btn" 
                   onClick={() => handleCancelBooking(b._id)}
@@ -301,16 +294,10 @@ const StudentRoomBooking = ({user}) => {
           <FaHourglassHalf /> Pending ({pendingRequests.length})
         </button>
         <button 
-          className={`tab-btn ${activeTab === "approved" ? "active" : ""}`}
-          onClick={() => setActiveTab("approved")}
-        >
-          <FaCheckCircle /> Confirmed ({approvedBookings.length})
-        </button>
-        <button 
           className={`tab-btn ${activeTab === "history" ? "active" : ""}`}
           onClick={() => setActiveTab("history")}
         >
-          <FaHistory /> History ({pastBookings.length})
+          <FaHistory /> History ({historyBookings.length})
         </button>
       </div>
 
@@ -322,17 +309,10 @@ const StudentRoomBooking = ({user}) => {
           </div>
         )}
 
-        {activeTab === "approved" && (
-          <div className="tab-content">
-            <h3>Confirmed Bookings</h3>
-            {renderBookingCards(approvedBookings)}
-          </div>
-        )}
-
         {activeTab === "history" && (
           <div className="tab-content">
             <h3>Booking History</h3>
-            {renderBookingCards(pastBookings)}
+            {renderBookingCards(historyBookings)}
           </div>
         )}
       </div>

@@ -27,8 +27,8 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
       match: [
-        /^[a-zA-Z0-9._%+-]+@dau\.ac\.in$/,
-        "Use DAU email only",
+        /^[0-9._%+-]+@(dau\.ac\.in)$/,
+        "Use your university email only",
       ],
     },
 
@@ -84,7 +84,16 @@ const userSchema = new mongoose.Schema(
     resetPasswordOTPExpires: {
       type: Date,
     },
-
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    verificationOTP: {
+      type: String,
+    },
+    verificationOTPExpires: {
+      type: Date,
+    },
   },
 
   { timestamps: true }

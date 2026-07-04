@@ -206,20 +206,14 @@ async(orgId)=>{
       "name studentID"
     );
 
-  const formattedMembers =
-    members.map((m)=>({
-
-      userId:m.user._id,
-
-      name:m.user.name,
-
-      studentID:
-      m.user.studentID,
-
-      role:m.role
-
+  const formattedMembers = members
+    .filter((m) => m.user !== null)
+    .map((m) => ({
+      userId: m.user._id,
+      name: m.user.name,
+      studentID: m.user.studentID,
+      role: m.role
     }));
-
 
   return {
 
