@@ -229,37 +229,18 @@ const EventCalendar = () => {
               {modalConfig.type === "list" && (
                 <div className="modal-list-container">
                   {modalConfig.data.map(event => (
-                    <div key={event._id} className="modal-list-item">
-                      <div 
-                        className="modal-list-header-clickable"
-                        onClick={() => setExpandedEventId(expandedEventId === event._id ? null : event._id)}
-                      >
-                        <div className="modal-list-meta">
-                          <span className="modal-list-time">{event.startTime} - {event.endTime}</span>
-                          <span className="modal-list-org">{event.organization?.name || "Club"}</span>
-                        </div>
-                        <div className="modal-list-title-row">
-                          <span className="modal-list-title">{event.eventName}</span>
-                          <span className="modal-expand-icon">
-                            {expandedEventId === event._id ? <FaChevronUp /> : <FaChevronDown />}
-                          </span>
-                        </div>
+                    <div 
+                      key={event._id} 
+                      className="modal-list-item"
+                      onClick={() => openSingleEventModal(event)} 
+                    >
+                      <div className="modal-list-meta">
+                        <span className="modal-list-time">{event.startTime} - {event.endTime}</span>
+                        <span className="modal-list-org">{event.organization?.name || "Club"}</span>
                       </div>
-                      
-                      {expandedEventId === event._id && (
-                        <div className="modal-expanded-content">
-                          <div className="modal-detail-row">
-                            <FaMapMarkerAlt className="modal-icon" />
-                            <span>{event.customVenue || event.venue?.name || "TBD"}</span>
-                          </div>
-                          {event.description && (
-                            <div className="modal-detail-row">
-                              <FaAlignLeft className="modal-icon" />
-                              <span>{event.description}</span>
-                            </div>
-                          )}
-                        </div>
-                      )}
+                      <div className="modal-list-title-row">
+                        <span className="modal-list-title">{event.eventName}</span>
+                      </div>
                     </div>
                   ))}
                 </div>
