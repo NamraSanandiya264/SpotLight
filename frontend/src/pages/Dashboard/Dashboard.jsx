@@ -79,7 +79,7 @@ const Dashboard = ({ children, user: userProp }) => {
     }
   };
 
-  return (
+   return (
     <div className={`dashboard-container ${collapsed ? "collapsed" : ""}`}>
       {/* Sidebar Component */}
       <Sidebar
@@ -91,17 +91,13 @@ const Dashboard = ({ children, user: userProp }) => {
         isCoreOrLeader={isCoreOrLeader}
       />
       
-      <div className="mobile-header">
-          <button className="mobile-hamburger" onClick={() => setCollapsed(false)}>
-            ☰
-          </button>
-          <h2 className="mobile-title">DAU Portal</h2>
-        </div>
-
+      {/* Main Content Area */}
+      <div className="main-content">
         <div className="content-area">
           {renderContent()}
         </div>
       </div>
+    </div>
   );
 };
 
