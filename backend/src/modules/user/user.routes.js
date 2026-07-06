@@ -18,15 +18,8 @@ import multer from "multer";
 import { getUserActivity, getSbgMetrics } from "./user.controller.js";
 import { protect } from "../../middleware/auth.middleware.js";
 
-import {
-   register,
-   login,
-   updateProfile,
-   changePassword,
-   uploadAvatar,
-   forgotPassword,
-   resetPassword,
-} from "./user.controller.js";
+import { register, login, updateProfile, changePassword, uploadAvatar, 
+   forgotPassword, resetPassword, verifyRegistration } from "./user.controller.js";
 
 const router = express.Router();
 
@@ -41,6 +34,7 @@ router.post(
    uploadAvatar
 );
 router.post("/registerUser", register);
+router.post("/verify-email", verifyRegistration);
 router.post("/loginUser", login);
 router.get("/profile", protect, (req, res) => {
    res.json({

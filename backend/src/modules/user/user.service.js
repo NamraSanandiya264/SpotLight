@@ -3,33 +3,93 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 
-export const registerUser = async (data) => {     //called when user registers
+export const registerUser = async (data) => {
   const { studentID, name, email, password, yearOfStudy, role } = data;
 
   if (!studentID || !name || !email || !password || !yearOfStudy) {
     throw new Error("All fields are required");
   }
 
-  // check if user exists
-  const existingUser = await User.findOne({ email });
+  const existingUser = await User.findOne({
+    $or: [{ email }, { studentID: Number(studentID) }]
+  });
+
   if (existingUser) {
-    throw new Error("User already exists");
+    if (existingUser.email === email) {
+      throw new Error("This email is already registered. Please login.");
+    }
+    if (existingUser.studentID === Number(studentID)) {
+      throw new Error("This Student ID is already registered.");
+    }
   }
-
-  // hash password
+  
   const hashedPassword = await bcrypt.hash(password, 10);
+  
+  // Generate 6-digit OTP for registration
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-  // create user in database
   const user = await User.create({
     studentID,
     name,
     email,
     password: hashedPassword,
     yearOfStudy,
-    role
+    role,
+    verificationOTP: otp,
+    verificationOTPExpires: Date.now() + 10 * 60 * 1000, // 10 mins
+    isVerified: false
   });
 
+  // Send Email
+  const transporter = nodemailer.createTransport({
+    service: "gmail", 
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "Welcome! Verify your Email",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #eaeaea; border-radius: 10px;">
+        <h2 style="color: #333; text-align: center;">Verify Your Account</h2>
+        <p style="color: #555; font-size: 16px;">Hello ${name},</p>
+        <p style="color: #555; font-size: 16px;">Welcome to the platform! Use the verification code below to complete your registration:</p>
+        <div style="background-color: #f4f4f5; padding: 15px; text-align: center; border-radius: 5px; margin: 20px 0;">
+          <span style="font-size: 28px; font-weight: bold; letter-spacing: 4px; color: #4f46e5;">${otp}</span>
+        </div>
+        <p style="color: #999; font-size: 14px; text-align: center; margin-top: 30px;">
+          This code expires in 10 minutes.
+        </p>
+      </div>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
   return user;
+};
+
+export const verifyEmailOTP = async (email, otp) => {
+  const user = await User.findOne({
+    email,
+    verificationOTP: otp,
+    verificationOTPExpires: { $gt: Date.now() }, 
+  });
+
+  if (!user) {
+    throw new Error("Invalid or expired OTP");
+  }
+
+  // Mark as verified and clear OTP fields
+  user.isVerified = true;
+  user.verificationOTP = undefined;
+  user.verificationOTPExpires = undefined;
+  await user.save();
+
+  return { message: "Email verified successfully" };
 };
 
 export const loginUser = async (data) => {
@@ -40,17 +100,18 @@ export const loginUser = async (data) => {
     throw new Error("User not found");
   }
 
-  // compare password
+  // Prevent login if not verified
+  if (!user.isVerified) {
+    throw new Error("Please verify your email address before logging in");
+  }
+
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
     throw new Error("Invalid credentials");
   }
 
-  // generate token
   const token = jwt.sign(
-    { id: user._id,
-      role: user.role
-    },
+    { id: user._id, role: user.role },
     process.env.JWT_SECRET,
     { expiresIn: "1d" }
   );
