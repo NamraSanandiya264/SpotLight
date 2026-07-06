@@ -1,21 +1,20 @@
 import Notice from "./notice.model.js";
 
-// Get all active, unexpired notices (latest first)
-// @access  Public or Protected
+// @desc    Get all active, unexpired notices
+// @route   GET /api/notices
 export const getNotices = async (req, res) => {
   try {
     const currentDate = new Date();
 
-    // Fetch notices that are active AND (have no expiration date OR haven't expired yet)
+    // Fetch notices that haven't expired
     const notices = await Notice.find({
-      isActive: true,
       $or: [
         { expiresAt: { $exists: false } },
         { expiresAt: null },
         { expiresAt: { $gt: currentDate } }
       ]
     })
-      .sort({ createdAt: -1 }) // Newest first
+      .sort({ createdAt: -1 })
       .populate("author", "name email");
 
     res.status(200).json({ success: true, notices });
@@ -24,17 +23,15 @@ export const getNotices = async (req, res) => {
   }
 };
 
-// Create a new notice
+// @desc    Create a new notice (Publishes immediately)
 // @route   POST /api/notices
-// @access Protected (SBG Core Only)
 export const createNotice = async (req, res) => {
   try {
-    // Security check: Only SBG Core can publish notices
     if (req.user.role !== "sbg_core") {
-      return res.status(403).json({ success: false, message: "Unauthorized. SBG Core only." });
+      return res.status(403).json({ success: false, message: "Unauthorized." });
     }
 
-    const { title, content, isActive, expiresAt } = req.body;
+    const { title, content, expiresAt } = req.body;
 
     if (!title || !content) {
       return res.status(400).json({ success: false, message: "Title and content are required." });
@@ -44,11 +41,31 @@ export const createNotice = async (req, res) => {
       title,
       content,
       author: req.user._id || req.user.id,
-      isActive: isActive !== undefined ? isActive : true,
+      isActive: true, // Always true now
       expiresAt: expiresAt ? new Date(expiresAt) : undefined
     });
 
     res.status(201).json({ success: true, notice: newNotice });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Delete a notice
+// @route   DELETE /api/notices/:id
+export const deleteNotice = async (req, res) => {
+  try {
+    if (req.user.role !== "sbg_core") {
+      return res.status(403).json({ success: false, message: "Unauthorized" });
+    }
+
+    const notice = await Notice.findByIdAndDelete(req.params.id);
+    
+    if (!notice) {
+      return res.status(404).json({ success: false, message: "Notice not found" });
+    }
+
+    res.status(200).json({ success: true, message: "Notice deleted successfully" });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

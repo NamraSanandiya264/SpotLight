@@ -83,14 +83,13 @@ const Sidebar = ({ collapsed, setCollapsed, activeMenu, setActiveMenu, isCoreOrL
           <FaCalendarAlt /> {!collapsed && <span>Event Calendar</span>}
         </li>
 
-        {/* 🌟 MOVED: Create Event is now perfectly nested inside the main menu beneath Event Calendar */}
         {isCoreOrLeader && (
           <li
             className={activeMenu === "manage-events" ? "active" : ""}
             onClick={() => handleTabChange("manage-events")}
             title="Create Event"
           >
-            <FiPlus /> {!collapsed && <span>Create Event</span>}
+            <FiPlus /> {!collapsed && <span>Manage Events</span>}
           </li>
         )}
       </ul>

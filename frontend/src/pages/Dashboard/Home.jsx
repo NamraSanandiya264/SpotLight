@@ -4,7 +4,6 @@ import WelcomeBanner from "../../components/Dashboard/WelcomeBanner";
 import NoticeBoard from "../../components/Dashboard/NoticeBoard"; 
 import ActionQueue from "../../components/Dashboard/ActionQueue"; 
 import DiscoverEvents from "../../components/Dashboard/DiscoverEvents"; 
-import SbgMetrics from "../../components/Dashboard/SbgMetrics";
 import UpcomingSchedule from "../../components/Dashboard/UpcomingSchedule"; 
 import QuickActions from "../../components/Dashboard/QuickActions";
 import NeedsAttention from "../../components/Dashboard/NeedsAttention"; 
@@ -20,11 +19,10 @@ const Home = ({ isCoreOrLeader, setActiveMenu }) => {
     <div className="home-dashboard">
       <WelcomeBanner user={user} />
       
-      {/* Notice Board occupies full width below banner */}
       <NoticeBoard user={user} />
 
       <div className="dashboard-split">
-        {/* Left Column (Wider) */}
+        {/* Left Column */}
         <div className="dashboard-left">
           {isSbgCore ? (
             <ActionQueue setActiveMenu={setActiveMenu} />
@@ -34,15 +32,11 @@ const Home = ({ isCoreOrLeader, setActiveMenu }) => {
           <DiscoverEvents setActiveMenu={setActiveMenu} />
         </div>
 
-        {/* Right Column (Narrower) */}
+        {/* Right Column */}
         <div className="dashboard-right">
-          {isSbgCore ? (
-            <SbgMetrics setActiveMenu={setActiveMenu} />
-          ) : (
-            <>
-              <QuickActions isCoreOrLeader={isCoreOrLeader} setActiveMenu={setActiveMenu} />
-              {isCoreOrLeader && <NeedsAttention setActiveMenu={setActiveMenu} />}
-            </>
+          <QuickActions isCoreOrLeader={isCoreOrLeader} setActiveMenu={setActiveMenu} />
+          {isCoreOrLeader && !isSbgCore && (
+            <NeedsAttention setActiveMenu={setActiveMenu} />
           )}
         </div>
       </div>

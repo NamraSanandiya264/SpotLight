@@ -1,54 +1,64 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../services/api';
 import { FiCheck, FiX, FiClock } from 'react-icons/fi';
 import './DashboardComponents.css';
 
 const ActionQueue = ({ setActiveMenu }) => {
   const [queue, setQueue] = useState([]);
+  const [totalPending, setTotalPending] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchPendingQueue = async () => {
-      try {
-        // Fetch all bookings, then filter for pending on the frontend 
-        // (Or replace with a dedicated '/bookings/pending' endpoint if you have one)
-        const res = await api.get('/bookings'); 
-        if (res.data && res.data.bookings) {
-          const pendingItems = res.data.bookings
-            .filter(b => b.status === 'pending')
-            .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
-            .slice(0, 4); // Take the oldest 4 pending requests
-
-          setQueue(pendingItems);
-        }
-      } catch (error) {
-        console.error("Failed to fetch action queue:", error);
-      } finally {
-        setLoading(false);
+  // 1. Extract fetch logic into a reusable function
+  const loadQueue = useCallback(async () => {
+    try {
+      const res = await api.get('/bookings'); 
+      if (res.data && res.data.bookings) {
+        const pendingItems = res.data.bookings.filter(b => b.status === 'pending');
+        setTotalPending(pendingItems.length);
+        const oldestPending = pendingItems
+          .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+          .slice(0, 4);
+        setQueue(oldestPending);
       }
-    };
-
-    fetchPendingQueue();
+    } catch (error) {
+      console.error("Failed to fetch action queue:", error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
+  // 2. Call it on initial load
+  useEffect(() => {
+    loadQueue();
+  }, [loadQueue]);
+
+  // 3. Call it after an action to backfill the list
   const handleAction = async (id, action) => {
     try {
-      // Assuming your backend route is something like PATCH /bookings/:id/status
+      setQueue(prev => prev.filter(item => item._id !== id));
+      setTotalPending(prev => Math.max(0, prev - 1));
+
       await api.patch(`/bookings/${id}/status`, { status: action });
       
-      // Remove the item from the UI queue immediately for a snappy feel
-      setQueue(prev => prev.filter(item => item._id !== id));
+      await loadQueue();
     } catch (error) {
-      console.error(`Failed to ${action} request:`, error);
-      alert(`Failed to process request. Please try again.`);
+      console.error(`Failed to process request:`, error);
+      alert('Failed to process request. Reverting UI.');
+      await loadQueue(); 
     }
   };
+
 
   return (
     <div className="widget-card">
       <div className="widget-inner">
         <h3 className="widget-title">
           <FiClock color="#F59E0B" /> Priority Action Queue
+          {totalPending > 0 && (
+            <span style={{ fontSize: '0.75rem', backgroundColor: '#FEF3C7', color: '#D97706', padding: '2px 8px', borderRadius: '12px', marginLeft: '8px' }}>
+              {totalPending} Pending
+            </span>
+          )}
         </h3>
         <button className="btn-link" onClick={() => setActiveMenu('bookings')}>
           View All →

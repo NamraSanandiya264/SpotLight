@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 import './DashboardComponents.css';
 
-const DiscoverEvents = ({ setEventsToday, setActiveMenu }) => {
+const DiscoverEvents = ({ setEventsToday }) => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -28,9 +28,6 @@ const DiscoverEvents = ({ setEventsToday, setActiveMenu }) => {
     <div className="widget-card">
       <div className="discover-header">
         <h3 className="widget-section-title">Discover Campus Events</h3>
-        <button className="btn-link" onClick={() => setActiveMenu('events')}>
-          View Calendar →
-        </button>
       </div>
 
       {loading ? (

@@ -6,15 +6,14 @@ import './DashboardComponents.css';
 
 const NeedsAttention = ({ setActiveMenu }) => {
   const [tasks, setTasks] = useState({ pendingEvents: 0, rejectedEvents: 0 });
-  const [pendingJoins, setPendingJoins] = useState([]); // Array of { clubName, count }
+  const [pendingJoins, setPendingJoins] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAttentionItems = async () => {
       try {
-        // Fetch Event Pipeline
         const eventRes = await api.get('/events/deputy-view');
-        // Fetch Pending Join Requests (Adjust this endpoint to match your backend)
+        // If the pending requests route fails, fallback to empty array safely
         const joinRes = await api.get('/organizations/pending-requests').catch(() => ({ data: { data: [] } }));
         
         let pending = 0;
@@ -30,7 +29,6 @@ const NeedsAttention = ({ setActiveMenu }) => {
 
         setTasks({ pendingEvents: pending, rejectedEvents: rejected });
         
-        // Assuming joinRes.data.data returns an array like [{ clubName: 'Robotics', count: 3 }]
         if (joinRes.data?.data) {
           setPendingJoins(joinRes.data.data);
         }
@@ -49,19 +47,14 @@ const NeedsAttention = ({ setActiveMenu }) => {
   const hasTasks = tasks.pendingEvents > 0 || tasks.rejectedEvents > 0 || pendingJoins.length > 0;
 
   return (
-    <div className={`widget-card attention-card ${hasTasks ? 'alert' : 'clear'}`}>
-      <div className="attention-header">
-        <h3 className="attention-title">Club Alerts</h3>
-      </div>
-      <p className="attention-status">
+    <div className="widget-card">
+      <h3 className="widget-section-title">Club Alerts</h3>
+      
+      <p className="widget-small-text" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', fontWeight: '600', color: hasTasks ? '#D97706' : '#059669' }}>
         {hasTasks ? (
-          <>
-            <FiAlertCircle color="#F59E0B" size={20} /> Pending action items
-          </>
+          <><FiAlertCircle size={18} /> Pending action items</>
         ) : (
-          <>
-            <FiCheckCircle color="#8820cd" size={20} /> All caught up!
-          </>
+          <><FiCheckCircle size={18} /> All caught up!</>
         )}
       </p>
 
@@ -69,46 +62,64 @@ const NeedsAttention = ({ setActiveMenu }) => {
         <div className="attention-list">
           {pendingJoins.map((join, index) => (
             <div key={join.clubName ?? `join-${index}`} className="attention-item">
-              <span className="attention-item-meta">
-                <FiUsers color="#2563EB" /> {join.count} Pending join request(s) for {join.clubName}
-              </span>
-              <button
-                type="button"
-                onClick={() => setActiveMenu('organizations')}
-                className="attention-link-button"
-              >
-                Review
-              </button>
+              <div className="attention-item-meta" style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '0.95rem', fontWeight: '600', color: '#1E293B', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <FiUsers color="#2563EB" /> {join.count} Pending Request(s)
+                  </span>
+                  <span className="widget-small-text">For {join.clubName}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveMenu('organizations')}
+                  className="btn-link"
+                  style={{ padding: '4px 8px' }}
+                >
+                  Review
+                </button>
+              </div>
             </div>
           ))}
 
           {tasks.pendingEvents > 0 && (
             <div className="attention-item">
-              <span className="attention-item-meta">
-                <FiClock color="#D97706" /> {tasks.pendingEvents} Event(s) awaiting SBG approval
-              </span>
-              <button
-                type="button"
-                onClick={() => setActiveMenu('manage-events')}
-                className="attention-link-button"
-              >
-                View
-              </button>
+              <div className="attention-item-meta" style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '0.95rem', fontWeight: '600', color: '#1E293B', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <FiClock color="#D97706" /> {tasks.pendingEvents} Event(s)
+                  </span>
+                  <span className="widget-small-text">Awaiting SBG approval</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveMenu('manage-events')}
+                  className="btn-link"
+                  style={{ padding: '4px 8px' }}
+                >
+                  View
+                </button>
+              </div>
             </div>
           )}
 
           {tasks.rejectedEvents > 0 && (
             <div className="attention-item">
-              <span className="attention-item-meta">
-                <FiXCircle color="#DC2626" /> {tasks.rejectedEvents} Event(s) rejected (Needs revision)
-              </span>
-              <button
-                type="button"
-                onClick={() => setActiveMenu('manage-events')}
-                className="attention-link-button"
-              >
-                Fix
-              </button>
+              <div className="attention-item-meta" style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '0.95rem', fontWeight: '600', color: '#1E293B', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <FiXCircle color="#DC2626" /> {tasks.rejectedEvents} Event(s)
+                  </span>
+                  <span className="widget-small-text">Rejected (Needs revision)</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveMenu('manage-events')}
+                  className="btn-link"
+                  style={{ padding: '4px 8px' }}
+                >
+                  Fix
+                </button>
+              </div>
             </div>
           )}
         </div>
