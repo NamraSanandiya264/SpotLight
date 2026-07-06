@@ -91,13 +91,17 @@ const Dashboard = ({ children, user: userProp }) => {
         isCoreOrLeader={isCoreOrLeader}
       />
       
-      {/* Main Content Area */}
-      <div className="main-content">
+      <div className="mobile-header">
+          <button className="mobile-hamburger" onClick={() => setCollapsed(false)}>
+            ☰
+          </button>
+          <h2 className="mobile-title">DAU Portal</h2>
+        </div>
+
         <div className="content-area">
           {renderContent()}
         </div>
       </div>
-    </div>
   );
 };
 
