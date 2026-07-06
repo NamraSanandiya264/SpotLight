@@ -1,0 +1,717 @@
+/* =========================================================
+   1. BASE WIDGET STYLES & HEADERS
+   ========================================================= */
+.widget-card {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box; /* Crucial for preventing grid blowouts */
+}
+
+.widget-header, 
+.widget-inner,
+.discover-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.widget-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1E293B;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.widget-section-title {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1E293B;
+}
+
+.widget-section-title.large {
+  font-size: 1.25rem;
+}
+
+.widget-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.widget-small-text {
+  font-size: 0.85rem;
+  color: #64748B;
+}
+
+/* =========================================================
+   2. GLOBAL BUTTONS
+   ========================================================= */
+.btn-primary {
+  background-color: #2563EB;
+  color: #FFFFFF;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: #1D4ED8;
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+
+.btn-primary:disabled {
+  background-color: #93C5FD;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: #2563EB;
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.btn-link:hover {
+  background-color: #EFF6FF;
+}
+
+/* =========================================================
+   3. WELCOME BANNER & NOTIFICATIONS
+   ========================================================= */
+.welcome-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  position: relative;
+  width: 100%;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.welcome-copy {
+  display: flex;
+  flex-direction: column;
+}
+
+.welcome-title {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1E293B;
+}
+
+.notification-wrapper {
+  position: relative;
+}
+
+.notification-button {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.notification-button:hover {
+  background: #F8FAFC;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.notification-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #EF4444;
+  color: #FFFFFF;
+  font-size: 0.7rem;
+  font-weight: 700;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 2px solid #FFFFFF;
+}
+
+.notification-dropdown {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  width: 340px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  z-index: 50;
+  overflow: hidden;
+}
+
+.notification-dropdown-header {
+  padding: 16px;
+  border-bottom: 1px solid #E2E8F0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #F8FAFC;
+}
+
+.notification-dropdown-header h4 {
+  margin: 0;
+  color: #1E293B;
+}
+
+.notification-dropdown-body {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.notification-empty {
+  padding: 24px 16px;
+  margin: 0;
+  color: #64748B;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.notification-item {
+  padding: 16px;
+  border-bottom: 1px solid #F1F5F9;
+  background-color: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.notification-unread {
+  background-color: #EFF6FF;
+}
+
+.notification-item-message {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #1F2937;
+  line-height: 1.5;
+}
+
+.notification-item-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notification-date {
+  font-size: 0.75rem;
+  color: #64748B;
+}
+
+.notification-mark-read {
+  background: none;
+  border: none;
+  color: #2563EB;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0;
+  font-weight: 600;
+}
+
+/* =========================================================
+   4. NOTICE BOARD
+   ========================================================= */
+.notice-item {
+  padding: 16px 20px;
+  border-left: 4px solid #3B82F6;
+  background-color: #F8FAFC;
+  border-radius: 0 12px 12px 0;
+  margin-bottom: 12px;
+  transition: background-color 0.2s ease;
+}
+
+.notice-item:hover {
+  background-color: #F1F5F9;
+}
+
+.notice-title {
+  margin: 0 0 8px 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #0F172A;
+}
+
+.notice-content {
+  margin: 0 0 12px 0;
+  font-size: 0.9rem;
+  color: #475569;
+  line-height: 1.6;
+  white-space: pre-wrap; /* Keeps line breaks from backend */
+}
+
+.notice-date {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #94A3B8;
+  display: block;
+}
+
+/* =========================================================
+   5. SHARED LIST & ITEM CARDS (Queue, Schedule, Events, Metrics)
+   ========================================================= */
+.schedule-list,
+.event-list,
+.metrics-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.schedule-item,
+.event-card,
+.metric-card,
+.queue-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  background-color: #FFFFFF;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.queue-item:hover, 
+.event-card:hover, 
+.schedule-item:hover,
+.metric-card.clickable:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.queue-item {
+  justify-content: space-between;
+}
+
+/* THE MAGIC TRICK: min-width: 0 prevents flexbox text overlap */
+.queue-content,
+.event-details,
+.metric-content,
+.schedule-item > div:first-child {
+  flex: 1;
+  min-width: 0; 
+}
+
+/* =========================================================
+   6. ACTION QUEUE SPECIFICS
+   ========================================================= */
+.queue-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.queue-badge {
+  font-size: 0.7rem;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.queue-badge.event { background-color: #F3E8FF; color: #7E22CE; }
+.queue-badge.room { background-color: #E0F2FE; color: #0369A1; }
+
+.queue-item-title {
+  margin: 0 0 4px 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #0F172A;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.queue-item-desc {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #64748B;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.queue-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.icon-button.approve { background-color: #ECFDF5; color: #059669; }
+.icon-button.approve:hover { background-color: #D1FAE5; }
+.icon-button.reject { background-color: #FEF2F2; color: #DC2626; }
+.icon-button.reject:hover { background-color: #FEE2E2; }
+
+/* =========================================================
+   7. SBG METRICS (System Overview)
+   ========================================================= */
+.metric-card {
+  padding: 20px;
+}
+
+.metric-icon {
+  padding: 12px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.metric-content {
+  display: flex;
+  flex-direction: column; /* FIX: Stacks the number above the text */
+  justify-content: center;
+}
+
+.metric-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0F172A;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.metric-label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #64748B;
+}
+
+/* =========================================================
+   8. DISCOVER EVENTS
+   ========================================================= */
+.event-date-box {
+  background: #EFF6FF;
+  border-radius: 10px;
+  padding: 10px 14px;
+  text-align: center;
+  min-width: 65px;
+  flex-shrink: 0;
+}
+
+.event-month {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #2563EB;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.event-day {
+  display: block;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1E40AF;
+  line-height: 1;
+}
+
+.event-name {
+  margin: 0 0 4px 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #1F2937;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event-meta {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #6B7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event-time {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #4B5563;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* =========================================================
+   9. UPCOMING SCHEDULE
+   ========================================================= */
+.schedule-room-title {
+  margin: 0 0 4px 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #0F172A;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.schedule-room-detail {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #64748B;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.schedule-date {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.schedule-date-primary {
+  margin: 0 0 4px 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1E293B;
+  text-align: right;
+}
+
+.schedule-time {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #64748B;
+  text-align: right;
+}
+
+/* =========================================================
+   10. QUICK ACTIONS
+   ========================================================= */
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.action-button {
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+  background-color: #F8FAFC;
+  color: #475569;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.action-button:hover {
+  background-color: #F1F5F9;
+  border-color: #CBD5E1;
+}
+
+.action-button.primary {
+  background-color: #EFF6FF;
+  color: #1D4ED8;
+  border-color: #BFDBFE;
+}
+
+.action-button.primary:hover {
+  background-color: #DBEAFE;
+}
+
+/* =========================================================
+   11. EMPTY & LOADING STATES
+   ========================================================= */
+.empty-state, .empty-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  text-align: center;
+  background-color: #F8FAFC;
+  border-radius: 12px;
+  border: 2px dashed #E2E8F0;
+}
+
+.empty-box-title {
+  margin: 0 0 8px 0;
+  color: #10B981;
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.empty-box-text {
+  margin: 0;
+  color: #64748B;
+  font-size: 0.9rem;
+}
+
+.widget-loading {
+  color: #64748B;
+  font-size: 0.95rem;
+  font-style: italic;
+  padding: 20px 0;
+}
+
+/* =========================================================
+   12. MODALS (Publish Notice)
+   ========================================================= */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-content {
+  background-color: #FFFFFF;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 500px;
+  padding: 32px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-close-button {
+  background: none;
+  border: none;
+  color: #94A3B8;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.modal-close-button:hover {
+  color: #1E293B;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid #CBD5E1;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s ease;
+  font-family: inherit;
+}
+
+.form-input:focus {
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.checkbox-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #2563EB;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+/* =========================================================
+   13. RESPONSIVE BREAKPOINTS
+   ========================================================= */
+@media (max-width: 600px) {
+  .queue-item, .schedule-item, .event-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .queue-actions, .schedule-date {
+    width: 100%;
+    flex-direction: row;
+    justify-content: flex-end;
+    margin-top: 8px;
+  }
+  
+  .event-time {
+    align-self: flex-end;
+  }
+}

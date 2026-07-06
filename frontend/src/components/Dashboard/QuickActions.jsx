@@ -1,56 +1,29 @@
 import React from 'react';
+import './DashboardComponents.css';
 
 const QuickActions = ({ isCoreOrLeader, setActiveMenu }) => {
-  
   return (
     <div className="widget-card">
-      <h3 style={{ marginTop: 0, marginBottom: '16px', fontSize: '1.2rem', color: '#333' }}>
-        Quick Actions
-      </h3>
-      
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', 
-        gap: '12px' 
-      }}>
+      <h3 className="widget-section-title large">Quick Actions</h3>
+
+      <div className="action-grid">
         
-        <button 
-          onClick={() => setActiveMenu('organizations')}
-          style={actionButtonStyle}
-        >
+        <button className="action-button" onClick={() => setActiveMenu('organizations')}>
           Browse Clubs
         </button>
 
-        <button 
-          onClick={() => setActiveMenu('events')}
-          style={actionButtonStyle}
-        >
+        <button className="action-button" onClick={() => setActiveMenu('events')}>
           Campus Calendar
         </button>
 
         {isCoreOrLeader && (
-          <button 
-            onClick={() => setActiveMenu('manage-events')}
-            style={{ ...actionButtonStyle, backgroundColor: '#EFF6FF', color: '#1D4ED8', borderColor: '#BFDBFE' }}
-          >
+          <button className="action-button primary" onClick={() => setActiveMenu('manage-events')}>
             + Create Event
           </button>
         )}
       </div>
     </div>
   );
-};
-
-const actionButtonStyle = {
-  padding: '12px',
-  borderRadius: '8px',
-  border: '1px solid #E5E7EB',
-  backgroundColor: '#F9FAFB',
-  color: '#4B5563',
-  fontWeight: '500',
-  cursor: 'pointer',
-  transition: 'all 0.2s',
-  textAlign: 'center'
 };
 
 export default QuickActions;

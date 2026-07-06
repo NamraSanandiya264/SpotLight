@@ -4,17 +4,17 @@ const noticeSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: [true, "A title/subject is mandatory for official notices."],
-      trim: true
+      required: true,
+      trim: true,
     },
     content: {
       type: String,
-      required: [true, "Notice body content cannot be empty."],
-      trim: true
+      required: true,
     },
-    postedBy: {
-      type: String,
-      default: "Student Representative Body"
+    author: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
     isActive: {
       type: Boolean,

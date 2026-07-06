@@ -2,7 +2,7 @@ import { useState } from "react";
 import API from "../services/api";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
-import "./Register.css"; // Reusing your existing styles
+import "./Auth/Register.css"; // Reusing your existing styles
 
 const ForgotPassword = () => {
   const navigate = useNavigate();

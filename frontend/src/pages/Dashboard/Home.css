@@ -1,45 +1,32 @@
-/* Container for the entire Home Dashboard */
 .home-dashboard {
-  display: grid;
-  grid-template-columns: 2fr 1fr; /* Left side is wider for schedules, right for notifications */
+  display: flex;
+  flex-direction: column;
   gap: 24px;
-  padding: 24px;
-  max-width: 1400px;
+  width: 100%;
+  max-width: 1600px;
   margin: 0 auto;
 }
 
-/* Make the top banner span the entire width */
-.dashboard-header {
-  grid-column: 1 / -1;
+.dashboard-split {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+  /* Prevents widgets from stretching vertically to match the other column */
+  align-items: start; 
 }
 
-/* Main content column */
-.dashboard-main-column {
+.dashboard-left, 
+.dashboard-right {
   display: flex;
   flex-direction: column;
   gap: 24px;
+  /* Crucial: Prevents grid blowouts when text is too long */
+  min-width: 0; 
 }
 
-/* Sidebar content column */
-.dashboard-side-column {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-/* Basic widget card styling to be shared across all components */
-.widget-card {
-  background-color: #ffffff;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  border: 1px solid #eaeaea;
-}
-
-/* Responsive design for tablets and mobile */
-@media (max-width: 1024px) {
-  .home-dashboard {
-    grid-template-columns: 1fr; /* Stacks everything in one column */
-    padding: 16px;
+/* Responsive stacking for tablets and smaller screens */
+@media (max-width: 1100px) {
+  .dashboard-split {
+    grid-template-columns: 1fr;
   }
 }

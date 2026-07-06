@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
+import PropTypes from 'prop-types';
 import { FiBell } from 'react-icons/fi';
 import api from '../../services/api';
+import './DashboardComponents.css';
 
 const WelcomeBanner = ({ user }) => {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -50,49 +52,55 @@ const WelcomeBanner = ({ user }) => {
       setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
-      error("Failed to mark notification as read:", error);
+      console.error("Failed to mark notification as read:", error);
     }
   };
 
   return (
-    <div className="dashboard-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", position: "relative" }}>
-      
-      <div>
-        <h2 style={{ margin: 0, fontSize: "1.6rem", fontWeight: "700", color: "#1E293B" }}>
-          {getGreeting()}, {firstName}
-        </h2>
+    <div className="dashboard-header welcome-banner">
+      <div className="welcome-copy">
+        <h2 className="welcome-title">{getGreeting()}, {firstName}</h2>
       </div>
 
-      <div ref={dropdownRef} style={{ position: 'relative' }}>
-        <button 
+      <div ref={dropdownRef} className="notification-wrapper">
+        <button
+          type="button"
           onClick={() => setShowDropdown(!showDropdown)}
-          style={{ background: '#FFFFFF', border: '1px solid #E5E7EB', padding: '10px', borderRadius: '50%', cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: "0 1px 2px rgba(0,0,0,0.05)" }}
+          className="notification-button"
+          aria-haspopup="true"
+          aria-expanded={showDropdown}
         >
           <FiBell size={20} color="#4B5563" />
           {unreadCount > 0 && (
-            <span style={{ position: 'absolute', top: '-2px', right: '-2px', background: '#EF4444', color: 'white', fontSize: '0.7rem', fontWeight: 'bold', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', border: '2px solid white' }}>
-              {unreadCount}
-            </span>
+            <span className="notification-badge">{unreadCount}</span>
           )}
         </button>
 
-        {/* Dropdown Menu */}
         {showDropdown && (
-          <div style={{ position: 'absolute', top: '50px', right: '0', width: '320px', background: '#FFFFFF', border: '1px solid #E5E7EB', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', zIndex: 50, overflow: 'hidden' }}>
-            <div style={{ padding: '16px', borderBottom: '1px solid #E5E7EB', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC' }}>
-              <h4 style={{ margin: 0, color: '#1E293B' }}>Notifications</h4>
+          <div className="notification-dropdown">
+            <div className="notification-dropdown-header">
+              <h4>Notifications</h4>
             </div>
-            <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+            <div className="notification-dropdown-body">
               {notifications.length === 0 ? (
-                <p style={{ padding: '16px', margin: 0, color: '#6B7280', fontSize: '0.9rem', textAlign: 'center' }}>No new notifications.</p>
+                <p className="notification-empty">No new notifications.</p>
               ) : (
                 notifications.map(notif => (
-                  <div key={notif._id} style={{ padding: '12px 16px', borderBottom: '1px solid #F3F4F6', backgroundColor: notif.isRead ? '#FFFFFF' : '#EFF6FF', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <p style={{ margin: 0, fontSize: '0.85rem', color: '#1F2937' }}>{notif.message}</p>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.7rem', color: '#6B7280' }}>{new Date(notif.createdAt).toLocaleDateString()}</span>
+                  <div
+                    key={notif._id}
+                    className={`notification-item ${notif.isRead ? '' : 'notification-unread'}`}
+                  >
+                    <p className="notification-item-message">{notif.message}</p>
+                    <div className="notification-item-footer">
+                      <span className="notification-date">{new Date(notif.createdAt).toLocaleDateString()}</span>
                       {!notif.isRead && (
-                        <button onClick={() => handleMarkAsRead(notif._id)} style={{ background: 'none', border: 'none', color: '#2563EB', fontSize: '0.75rem', cursor: 'pointer', padding: 0 }}>Mark read</button>
+                        <button
+                          type="button"
+                          onClick={() => handleMarkAsRead(notif._id)}
+                          className="notification-mark-read"
+                        >
+                          Mark read
+                        </button>
                       )}
                     </div>
                   </div>
@@ -104,6 +112,16 @@ const WelcomeBanner = ({ user }) => {
       </div>
     </div>
   );
+};
+
+WelcomeBanner.propTypes = {
+  user: PropTypes.shape({
+    name: PropTypes.string,
+  }),
+};
+
+WelcomeBanner.defaultProps = {
+  user: { name: 'Student' },
 };
 
 export default WelcomeBanner;

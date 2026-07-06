@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 import { FiCheck, FiX, FiClock } from 'react-icons/fi';
+import './DashboardComponents.css';
 
 const ActionQueue = ({ setActiveMenu }) => {
   const [queue, setQueue] = useState([]);
@@ -44,69 +45,72 @@ const ActionQueue = ({ setActiveMenu }) => {
   };
 
   return (
-    <div className="widget-card" style={{ display: 'flex', flexDirection: 'column', marginBottom: '24px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#1F2937', display: 'flex', alignItems: 'center', gap: '8px' }}>
+    <div className="widget-card">
+      <div className="widget-inner">
+        <h3 className="widget-title">
           <FiClock color="#F59E0B" /> Priority Action Queue
         </h3>
-        <button 
-          onClick={() => setActiveMenu('bookings')}
-          style={{ background: 'none', border: 'none', color: '#2563EB', fontSize: '0.85rem', cursor: 'pointer', fontWeight: '500' }}
-        >
+        <button className="btn-link" onClick={() => setActiveMenu('bookings')}>
           View All →
         </button>
       </div>
 
       {loading ? (
-        <p style={{ color: '#6B7280', fontSize: '0.9rem' }}>Loading queue...</p>
+        <p className="widget-loading">Loading queue...</p>
       ) : queue.length === 0 ? (
-        <div style={{ padding: '24px', textAlign: 'center', backgroundColor: '#F9FAFB', borderRadius: '8px', border: '1px dashed #E5E7EB' }}>
-          <p style={{ margin: 0, color: '#10B981', fontWeight: '600' }}>Inbox Zero!</p>
-          <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#6B7280' }}>There are no pending requests right now.</p>
+        <div className="empty-box">
+          <p className="empty-box-title">
+            Inbox Zero!
+          </p>
+          <p className="empty-box-text widget-small-text">
+            There are no pending requests right now.
+          </p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {queue.map((item) => (
-            <div key={item._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', border: '1px solid #E5E7EB', borderRadius: '8px', backgroundColor: '#FFFFFF' }}>
-              
-              {/* Request Details */}
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                  <span style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: '12px', backgroundColor: item.purpose?.startsWith('Event:') ? '#F3E8FF' : '#E0F2FE', color: item.purpose?.startsWith('Event:') ? '#7E22CE' : '#0369A1', fontWeight: '600', textTransform: 'uppercase' }}>
-                    {item.purpose?.startsWith('Event:') ? 'Event' : 'Room'}
-                  </span>
-                  <span style={{ fontSize: '0.75rem', color: '#6B7280' }}>
-                    {new Date(item.date).toLocaleDateString()} • {item.start_time}
-                  </span>
-                </div>
-                <h4 style={{ margin: '0 0 2px 0', fontSize: '0.95rem', color: '#111827' }}>
-                  {item.room_id?.name || 'Unknown Room'}
-                </h4>
-                <p style={{ margin: 0, fontSize: '0.8rem', color: '#4B5563', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '250px' }}>
-                  {item.purpose || 'No purpose specified'}
-                </p>
-              </div>
+        <div className="widget-body">
+          {queue.map((item) => {
+            const badgeClass = item.purpose?.startsWith('Event:') ? 'event' : 'room';
 
-              {/* Action Buttons */}
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button 
-                  onClick={() => handleAction(item._id, 'approved')}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '8px', border: 'none', backgroundColor: '#ECFDF5', color: '#059669', cursor: 'pointer', transition: 'background 0.2s' }}
-                  title="Approve"
-                >
-                  <FiCheck size={18} />
-                </button>
-                <button 
-                  onClick={() => handleAction(item._id, 'rejected')}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '8px', border: 'none', backgroundColor: '#FEF2F2', color: '#DC2626', cursor: 'pointer', transition: 'background 0.2s' }}
-                  title="Reject"
-                >
-                  <FiX size={18} />
-                </button>
+            return (
+              <div key={item._id} className="queue-item">
+                <div className="queue-content">
+                  <div className="queue-row">
+                    <span className={`queue-badge ${badgeClass}`}>
+                      {item.purpose?.startsWith('Event:') ? 'Event' : 'Room'}
+                    </span>
+                    <span className="widget-small-text">
+                      {new Date(item.date).toLocaleDateString()} • {item.start_time}
+                    </span>
+                  </div>
+                  <h4 className="queue-item-title">
+                    {item.room_id?.name || 'Unknown Room'}
+                  </h4>
+                  <p className="queue-item-desc">
+                    {item.purpose || 'No purpose specified'}
+                  </p>
+                </div>
+
+                <div className="queue-actions">
+                  <button
+                    type="button"
+                    onClick={() => handleAction(item._id, 'approved')}
+                    className="icon-button approve"
+                    title="Approve"
+                  >
+                    <FiCheck size={18} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAction(item._id, 'rejected')}
+                    className="icon-button reject"
+                    title="Reject"
+                  >
+                    <FiX size={18} />
+                  </button>
+                </div>
               </div>
-              
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

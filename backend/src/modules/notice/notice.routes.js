@@ -1,9 +1,10 @@
 import express from "express";
-import { getActiveNotices, createNotice } from "./notice.controller.js";
+import { getNotices, createNotice } from "./notice.controller.js";
+import { protect } from "../../middleware/auth.middleware.js"; 
 
 const router = express.Router();
 
-router.get("/active", getActiveNotices);
-router.post("/create", createNotice);
+router.get("/", getNotices);
+router.post("/", protect, createNotice);
 
 export default router;

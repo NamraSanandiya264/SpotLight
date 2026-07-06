@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import api from '../../services/api';
 import { FiAlertCircle, FiCheckCircle, FiClock, FiXCircle, FiUsers } from 'react-icons/fi';
+import './DashboardComponents.css';
 
 const NeedsAttention = ({ setActiveMenu }) => {
   const [tasks, setTasks] = useState({ pendingEvents: 0, rejectedEvents: 0 });
@@ -47,52 +49,66 @@ const NeedsAttention = ({ setActiveMenu }) => {
   const hasTasks = tasks.pendingEvents > 0 || tasks.rejectedEvents > 0 || pendingJoins.length > 0;
 
   return (
-    <div className="widget-card" style={{ padding: '16px 20px', borderLeft: hasTasks ? '4px solid #F59E0B' : '4px solid #8820cd' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: hasTasks ? '12px' : '0' }}>
-        <h3 style={{ margin: 0, fontSize: '1.05rem', color: '#1F2937' }}>
-          Club Alerts
-        </h3>
+    <div className={`widget-card attention-card ${hasTasks ? 'alert' : 'clear'}`}>
+      <div className="attention-header">
+        <h3 className="attention-title">Club Alerts</h3>
       </div>
-      <p style={{ fontSize: '0.85rem', color: '#6B7280', marginTop: '5px', marginBottom: '10px' }}>
+      <p className="attention-status">
         {hasTasks ? (
-          <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <>
             <FiAlertCircle color="#F59E0B" size={20} /> Pending action items
-          </span>
+          </>
         ) : (
-          <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <>
             <FiCheckCircle color="#8820cd" size={20} /> All caught up!
-          </span>
+          </>
         )}
       </p>
 
       {hasTasks && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {/* Join Requests */}
+        <div className="attention-list">
           {pendingJoins.map((join, index) => (
-            <div key={index} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.9rem', color: '#4B5563' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div key={join.clubName ?? `join-${index}`} className="attention-item">
+              <span className="attention-item-meta">
                 <FiUsers color="#2563EB" /> {join.count} Pending join request(s) for {join.clubName}
               </span>
-              <button onClick={() => setActiveMenu('organizations')} style={linkBtnStyle}>Review</button>
+              <button
+                type="button"
+                onClick={() => setActiveMenu('organizations')}
+                className="attention-link-button"
+              >
+                Review
+              </button>
             </div>
           ))}
 
-          {/* Event Alerts */}
           {tasks.pendingEvents > 0 && (
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.9rem', color: '#4B5563' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="attention-item">
+              <span className="attention-item-meta">
                 <FiClock color="#D97706" /> {tasks.pendingEvents} Event(s) awaiting SBG approval
               </span>
-              <button onClick={() => setActiveMenu('manage-events')} style={linkBtnStyle}>View</button>
+              <button
+                type="button"
+                onClick={() => setActiveMenu('manage-events')}
+                className="attention-link-button"
+              >
+                View
+              </button>
             </div>
           )}
-          
+
           {tasks.rejectedEvents > 0 && (
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.9rem', color: '#4B5563' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="attention-item">
+              <span className="attention-item-meta">
                 <FiXCircle color="#DC2626" /> {tasks.rejectedEvents} Event(s) rejected (Needs revision)
               </span>
-              <button onClick={() => setActiveMenu('manage-events')} style={linkBtnStyle}>Fix</button>
+              <button
+                type="button"
+                onClick={() => setActiveMenu('manage-events')}
+                className="attention-link-button"
+              >
+                Fix
+              </button>
             </div>
           )}
         </div>
@@ -101,6 +117,8 @@ const NeedsAttention = ({ setActiveMenu }) => {
   );
 };
 
-const linkBtnStyle = { background: 'none', border: 'none', color: '#2563EB', fontWeight: '600', cursor: 'pointer', padding: 0 };
+NeedsAttention.propTypes = {
+  setActiveMenu: PropTypes.func.isRequired,
+};
 
 export default NeedsAttention;

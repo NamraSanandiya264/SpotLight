@@ -1,49 +1,55 @@
 import Notice from "./notice.model.js";
 
-// 📢 A. Get all active notices for the Frontend Feed
-export const getActiveNotices = async (req, res) => {
+// Get all active, unexpired notices (latest first)
+// @access  Public or Protected
+export const getNotices = async (req, res) => {
   try {
-    // Fetch notices where isActive is true and it hasn't expired yet
-    const today = new Date();
-    
+    const currentDate = new Date();
+
+    // Fetch notices that are active AND (have no expiration date OR haven't expired yet)
     const notices = await Notice.find({
       isActive: true,
       $or: [
         { expiresAt: { $exists: false } },
-        { expiresAt: { $gt: today } }
+        { expiresAt: null },
+        { expiresAt: { $gt: currentDate } }
       ]
-    }).sort({ createdAt: -1 }); // Newest notices appear at the top
+    })
+      .sort({ createdAt: -1 }) // Newest first
+      .populate("author", "name email");
 
     res.status(200).json({ success: true, notices });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// 📢 B. Post a New Notice (Restricted to SBG / Authorized Leaders)
+// Create a new notice
+// @route   POST /api/notices
+// @access Protected (SBG Core Only)
 export const createNotice = async (req, res) => {
   try {
-    const { title, content, postedBy, durationDays } = req.body;
-
-    if (!title?.trim() || !content?.trim()) {
-      return res.status(400).json({ success: false, message: "Title and Content are required." });
+    // Security check: Only SBG Core can publish notices
+    if (req.user.role !== "sbg_core") {
+      return res.status(403).json({ success: false, message: "Unauthorized. SBG Core only." });
     }
 
-    let expiresAt;
-    if (durationDays) {
-      expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + Number(durationDays));
+    const { title, content, isActive, expiresAt } = req.body;
+
+    if (!title || !content) {
+      return res.status(400).json({ success: false, message: "Title and content are required." });
     }
 
-    const notice = await Notice.create({
+    const newNotice = await Notice.create({
       title,
       content,
-      postedBy: postedBy || "SBG Core",
-      expiresAt
+      author: req.user._id || req.user.id,
+      isActive: isActive !== undefined ? isActive : true,
+      expiresAt: expiresAt ? new Date(expiresAt) : undefined
     });
 
-    res.status(201).json({ success: true, message: "Notice posted to board successfully!", notice });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    res.status(201).json({ success: true, notice: newNotice });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };
