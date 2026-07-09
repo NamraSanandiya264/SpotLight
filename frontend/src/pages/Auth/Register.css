@@ -144,6 +144,21 @@
   }
 }
 
+.otp-info {
+  margin-bottom: 20px;
+  text-align: center;
+  color: #555;
+}
+
+.otp-actions {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.otp-actions p {
+  color: #666;
+}
+
 /* Hide left side on small screens (mobile) */
 @media (max-width: 768px) {
   .register-left {

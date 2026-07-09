@@ -1,8 +1,12 @@
 import User from "./user.model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import nodemailer from "nodemailer";
+import {
+  sendVerificationOTP,
+  sendPasswordResetOTP,
+} from "../../services/email.service.js";
 
+const OTP_RESEND_COOLDOWN = 60 * 1000;
 export const registerUser = async (data) => {
   const { studentID, name, email, password, yearOfStudy, role } = data;
 
@@ -15,11 +19,23 @@ export const registerUser = async (data) => {
   });
 
   if (existingUser) {
-    if (existingUser.email === email) {
-      throw new Error("This email is already registered. Please login.");
-    }
-    if (existingUser.studentID === Number(studentID)) {
-      throw new Error("This Student ID is already registered.");
+
+    if (
+      !existingUser.isVerified &&
+      existingUser.verificationOTPExpires &&
+      existingUser.verificationOTPExpires < new Date()
+    ) {
+      await User.findByIdAndDelete(existingUser._id);
+    } else {
+
+      if (existingUser.email === email) {
+        throw new Error("This email is already registered. Please login.");
+      }
+
+      if (existingUser.studentID === Number(studentID)) {
+        throw new Error("This Student ID is already registered.");
+      }
+
     }
   }
   
@@ -28,6 +44,7 @@ export const registerUser = async (data) => {
   // Generate 6-digit OTP for registration
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
+  const hashedOTP = await bcrypt.hash(otp, 10);
   const user = await User.create({
     studentID,
     name,
@@ -35,61 +52,61 @@ export const registerUser = async (data) => {
     password: hashedPassword,
     yearOfStudy,
     role,
-    verificationOTP: otp,
+    verificationOTP: hashedOTP,
     verificationOTPExpires: Date.now() + 10 * 60 * 1000, // 10 mins
+    verificationOTPLastSent: new Date(),
     isVerified: false
   });
 
   // Send Email
-  const transporter = nodemailer.createTransport({
-    service: "gmail", 
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
+  await sendVerificationOTP(email, name, otp);
 
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: "Welcome! Verify your Email",
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #eaeaea; border-radius: 10px;">
-        <h2 style="color: #333; text-align: center;">Verify Your Account</h2>
-        <p style="color: #555; font-size: 16px;">Hello ${name},</p>
-        <p style="color: #555; font-size: 16px;">Welcome to the platform! Use the verification code below to complete your registration:</p>
-        <div style="background-color: #f4f4f5; padding: 15px; text-align: center; border-radius: 5px; margin: 20px 0;">
-          <span style="font-size: 28px; font-weight: bold; letter-spacing: 4px; color: #4f46e5;">${otp}</span>
-        </div>
-        <p style="color: #999; font-size: 14px; text-align: center; margin-top: 30px;">
-          This code expires in 10 minutes.
-        </p>
-      </div>
-    `,
-  };
-
-  await transporter.sendMail(mailOptions);
   return user;
 };
 
 export const verifyEmailOTP = async (email, otp) => {
+
   const user = await User.findOne({
     email,
-    verificationOTP: otp,
-    verificationOTPExpires: { $gt: Date.now() }, 
+    verificationOTPExpires: { $gt: Date.now() }
   });
 
   if (!user) {
     throw new Error("Invalid or expired OTP");
   }
 
-  // Mark as verified and clear OTP fields
+  if(user.verificationOTPAttempts>=3){
+
+    throw new Error(
+        "Maximum attempts reached. Please request a new OTP."
+    );
+  }
+
+  const isMatch = await bcrypt.compare(
+    otp,
+    user.verificationOTP
+  );
+
+  if (!isMatch) {
+
+    user.verificationOTPAttempts += 1;
+
+    await user.save();
+
+    throw new Error("Invalid or expired OTP");
+
+  }
+
+  user.verificationOTPAttempts = 0;
   user.isVerified = true;
   user.verificationOTP = undefined;
   user.verificationOTPExpires = undefined;
+
   await user.save();
 
-  return { message: "Email verified successfully" };
+  return {
+    message: "Email verified successfully",
+  };
 };
 
 export const loginUser = async (data) => {
@@ -102,7 +119,10 @@ export const loginUser = async (data) => {
 
   // Prevent login if not verified
   if (!user.isVerified) {
-    throw new Error("Please verify your email address before logging in");
+    const error = new Error("Please verify your email address before logging in");
+    error.code = "EMAIL_NOT_VERIFIED";
+    error.email = user.email;
+    throw error;
   }
 
   const isMatch = await bcrypt.compare(password, user.password);
@@ -120,66 +140,72 @@ export const loginUser = async (data) => {
 };
 
 export const generateAndSendOTP = async (email) => {
-
-  console.log("EMAIL USER IS:", process.env.EMAIL_USER);
-  console.log("EMAIL PASS IS:", process.env.EMAIL_PASS ? "LOADED" : "UNDEFINED");
-
-  const transporter = nodemailer.createTransport({
-  service: "gmail", 
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
   const user = await User.findOne({ email });
+
   if (!user) {
     throw new Error("User not found");
   }
 
+  const now = new Date();
+
+    if (
+        user.resetPasswordOTPLastSent &&
+        now - user.resetPasswordOTPLastSent < OTP_RESEND_COOLDOWN
+    ) {
+        throw new Error(
+            "Please wait 60 seconds before requesting another OTP."
+        );
+    }
   // Generate 6-digit OTP
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  
-  // Set expiration to 10 minutes from now
-  user.resetPasswordOTP = otp;
+
+  // Hash OTP before saving
+  const hashedOTP = await bcrypt.hash(otp, 10);
+
+  // Save hashed OTP
+  user.resetPasswordOTP = hashedOTP;
   user.resetPasswordOTPExpires = Date.now() + 10 * 60 * 1000;
+  user.resetPasswordOTPLastSent = now;
+
+  user.resetPasswordOTPAttempts = 0;
   await user.save();
 
-  // Send Email
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: "Security Alert: Your Password Reset OTP",
-    // Replace the 'text' property with this 'html' property
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #eaeaea; border-radius: 10px;">
-        <h2 style="color: #333; text-align: center;">Password Reset Request</h2>
-        <p style="color: #555; font-size: 16px;">Hello,</p>
-        <p style="color: #555; font-size: 16px;">We received a request to reset your password. Use the verification code below to complete the process:</p>
-        
-        <div style="background-color: #f4f4f5; padding: 15px; text-align: center; border-radius: 5px; margin: 20px 0;">
-          <span style="font-size: 28px; font-weight: bold; letter-spacing: 4px; color: #4f46e5;">${otp}</span>
-        </div>
-        
-        <p style="color: #999; font-size: 14px; text-align: center; margin-top: 30px;">
-          If you didn't request this, you can safely ignore this email.
-        </p>
-      </div>
-    `,
-  };
+  // Send the plain OTP to the user
+  await sendPasswordResetOTP(email, otp);
 
-  await transporter.sendMail(mailOptions);
-  return { message: "OTP sent to email" };
+  return {
+    message: "OTP sent to email",
+  };
 };
 
 export const resetPasswordWithOTP = async (email, otp, newPassword) => {
   const user = await User.findOne({
     email,
-    resetPasswordOTP: otp,
-    resetPasswordOTPExpires: { $gt: Date.now() }, // Check if not expired
-  });
+    resetPasswordOTPExpires: { $gt: Date.now() }
+    });
 
-  if (!user) {
-    throw new Error("Invalid or expired OTP");
+    if (!user) {
+        throw new Error("Invalid or expired OTP");
+    }
+
+    if (user.resetPasswordOTPAttempts >= 3) {
+        throw new Error(
+            "Maximum attempts reached. Please request a new OTP."
+        );
+    }
+    const isMatch = await bcrypt.compare(
+        otp,
+        user.resetPasswordOTP
+    );
+
+    if (!isMatch) {
+
+      user.resetPasswordOTPAttempts += 1;
+
+      await user.save();
+
+      throw new Error("Invalid or expired OTP");
+
   }
 
   // Hash new password
@@ -187,9 +213,49 @@ export const resetPasswordWithOTP = async (email, otp, newPassword) => {
   user.password = await bcrypt.hash(newPassword, salt);
 
   // Clear OTP fields
+  user.resetPasswordOTPAttempts = 0;
   user.resetPasswordOTP = undefined;
   user.resetPasswordOTPExpires = undefined;
   await user.save();
 
   return { message: "Password reset successfully" };
+};
+
+export const resendVerificationOTP = async (email) => {
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  if (user.isVerified) {
+    throw new Error("Email is already verified");
+  }
+
+  const now = new Date();
+
+    if (
+        user.verificationOTPLastSent &&
+        now - user.verificationOTPLastSent < OTP_RESEND_COOLDOWN
+    ) {
+        throw new Error(
+            "Please wait 60 seconds before requesting another OTP."
+        );
+    }
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  const hashedOTP = await bcrypt.hash(otp, 10);
+
+  user.verificationOTP = hashedOTP;
+  user.verificationOTPExpires = Date.now() + 10 * 60 * 1000;
+  user.verificationOTPLastSent = now;
+
+  user.verificationOTPAttempts = 0;
+  await user.save();
+
+  await sendVerificationOTP(user.email, user.name, otp);
+
+  return {
+    message: "OTP sent successfully",
+  };
 };

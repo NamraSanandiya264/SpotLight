@@ -4,11 +4,12 @@ import API from "../../services/api";
 import { useNavigate, Link } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { toast } from "react-toastify";
-import { useAuth } from "../../context/AuthContext"; // ✅ Import the hook
+import { useAuth } from "../../context/AuthContext"; 
+import VerifyOTP from "../../components/auth/VerifyOTP";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useAuth(); // ✅ Get the login function from context
+  const { login } = useAuth(); 
 
   const [formData, setFormData] = useState({
     email: "",
@@ -17,6 +18,8 @@ const Login = () => {
 
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
+  const [showVerifyOTP, setShowVerifyOTP] = useState(false);
+  const [verifyEmail, setVerifyEmail] = useState("");
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -47,8 +50,24 @@ const Login = () => {
       navigate("/dashboard");
 
     } catch (error) {
-      const message = error.response?.data?.message || "Invalid credentials";
-      setErrors({ general: message });
+
+      if (error.response?.data?.code === "EMAIL_NOT_VERIFIED") {
+
+        setVerifyEmail(error.response.data.email);
+        setShowVerifyOTP(true);
+
+        toast.info("Please verify your email to continue.");
+
+        return;
+      }
+
+      const message =
+        error.response?.data?.message ||
+        "Invalid credentials";
+
+      setErrors({
+        general: message,
+      });
     }
   };
 
@@ -62,51 +81,152 @@ const Login = () => {
       </div>
 
       <div className="register-right">
-        <form onSubmit={handleSubmit} className="register-form" noValidate>
-          <h2>Login to your account</h2>
 
-          <div className="form-group">
-            <label>Email <span className="required">*</span></label>
-            <input
-              type="email"
-              name="email"
-              placeholder="Enter your email"
-              value={formData.email}
-              onChange={handleChange}
-            />
-            {errors.email && <p className="error-text">{errors.email}</p>}
-          </div>
+        {showVerifyOTP ? (
 
-          <div className="form-group">
-            <label>Password <span className="required">*</span></label>
-            <div className="password-wrapper">
+          <VerifyOTP
+            email={verifyEmail}
+
+            onSuccess={() => {
+
+              toast.success(
+                "Email verified successfully. Please login."
+              );
+
+              setShowVerifyOTP(false);
+
+            }}
+
+            onBack={() => {
+
+              setShowVerifyOTP(false);
+
+            }}
+          />
+
+        ) : (
+
+          <form
+            onSubmit={handleSubmit}
+            className="register-form"
+            noValidate
+          >
+
+            <h2>Login to your account</h2>
+
+            <div className="form-group">
+              <label>
+                Email <span className="required">*</span>
+              </label>
+
               <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                value={formData.password}
+                type="email"
+                name="email"
+                placeholder="Enter your email"
+                value={formData.email}
                 onChange={handleChange}
               />
-              <span className="toggle-password" onClick={() => setShowPassword(!showPassword)}>
-                {showPassword ? <FaEyeSlash /> : <FaEye />}
-              </span>
+
+              {errors.email && (
+                <p className="error-text">
+                  {errors.email}
+                </p>
+              )}
+
             </div>
-            {errors.password && <p className="error-text">{errors.password}</p>}
-          </div>
 
-          {errors.general && <p className="error-text">{errors.general}</p>}
+            <div className="form-group">
 
-          <div className="forgot-password-link" style={{ textAlign: "right", marginBottom: "15px" }}>
-            <Link to="/forgot-password" style={{ fontSize: "14px", color: "#4f46e5", textDecoration: "none" }}>
-              Forgot Password?
-            </Link>
-          </div>
+              <label>
+                Password <span className="required">*</span>
+              </label>
 
-          <button type="submit" className="signup-btn">Login</button>
+              <div className="password-wrapper">
 
-          <div className="login-redirect">
-            <p>Don't have an account? <Link to="/">Register here</Link></p>
-          </div>
-        </form>
+                <input
+                  type={
+                    showPassword
+                      ? "text"
+                      : "password"
+                  }
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                />
+
+                <span
+                  className="toggle-password"
+                  onClick={() =>
+                    setShowPassword(!showPassword)
+                  }
+                >
+                  {showPassword
+                    ? <FaEyeSlash />
+                    : <FaEye />}
+                </span>
+
+              </div>
+
+              {errors.password && (
+                <p className="error-text">
+                  {errors.password}
+                </p>
+              )}
+
+            </div>
+
+            {errors.general && (
+              <p className="error-text">
+                {errors.general}
+              </p>
+            )}
+
+            <div
+              className="forgot-password-link"
+              style={{
+                textAlign: "right",
+                marginBottom: "15px",
+              }}
+            >
+
+              <Link
+                to="/forgot-password"
+                style={{
+                  fontSize: "14px",
+                  color: "#4f46e5",
+                  textDecoration: "none",
+                }}
+              >
+                Forgot Password?
+              </Link>
+
+            </div>
+
+            <button
+              type="submit"
+              className="signup-btn"
+            >
+              Login
+            </button>
+
+            <div className="login-redirect">
+
+              <p>
+
+                Don't have an account?
+
+                <Link to="/">
+                  {" "}Register here
+                </Link>
+
+              </p>
+
+            </div>
+
+          </form>
+
+        )}
+
       </div>
     </div>
   );

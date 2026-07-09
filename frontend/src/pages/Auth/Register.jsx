@@ -1,18 +1,19 @@
-import { useState } from "react";
+import { useState , useEffect } from "react";
 import "./Register.css";
 import API from "../../services/api";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { useNavigate, Link } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import VerifyOTP from "../../components/auth/VerifyOTP";
 
 const Register = () => {
   const navigate = useNavigate();
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
-  
-  // New states for OTP verification
+  const location = useLocation();
+
   const [step, setStep] = useState(1);
-  const [otp, setOtp] = useState("");
 
   const [formData, setFormData] = useState({
     studentID: "",
@@ -58,25 +59,10 @@ const Register = () => {
       // Step 1: Create user and trigger email
       await API.post("/users/registerUser", formData);
       toast.success("OTP sent to your email ✉️");
-      setStep(2); // Move to OTP screen
+      setStep(2); 
     } catch (error) {
       handleBackendErrors(error);
       toast.error(error.response?.data?.message || "Registration failed ❌");
-    }
-  };
-
-  const handleOTPVerify = async (e) => {
-    e.preventDefault();
-    try {
-      // Step 2: Verify the OTP
-      await API.post("/users/verify-email", { 
-        email: formData.email, 
-        otp 
-      });
-      toast.success("Registration complete! Welcome to the network ✅");
-      navigate("/login");
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Invalid OTP ❌");
     }
   };
 
@@ -91,6 +77,17 @@ const Register = () => {
     }
     setErrors(backendErrors);
   };
+
+  useEffect(() => {
+    if (location.state?.step === 2) {
+      setStep(2);
+
+      setFormData((prev) => ({
+        ...prev,
+        email: location.state.email,
+      }));
+    }
+  }, [location.state]);
 
   return (
     <div className="register-container">
@@ -218,32 +215,17 @@ const Register = () => {
             </div>
           </form>
         ) : (
-          <form onSubmit={handleOTPVerify} className="register-form">
-            <h2>Verify Your Email</h2>
-            <p style={{marginBottom: "20px", color: "#555"}}>
-              We sent a 6-digit code to <strong>{formData.email}</strong>
-            </p>
-            
-            <div className="form-group">
-              <label>Enter OTP</label>
-              <input
-                type="text"
-                placeholder="123456"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                required
-                style={{ letterSpacing: "5px", textAlign: "center", fontSize: "1.2rem" }}
-              />
-            </div>
-
-            <button type="submit" className="signup-btn">Verify & Complete</button>
-            <div className="login-redirect">
-              <p style={{ cursor: "pointer", color: "#4f46e5" }} onClick={() => setStep(1)}>
-                Wrong email? Go back
-              </p>
-            </div>
-          </form>
-        )}
+            <VerifyOTP
+              email={formData.email}
+              onSuccess={() => {
+                toast.success("Registration completed successfully!");
+                navigate("/login");
+              }}
+              onBack={() => {
+                setStep(1);
+              }}
+            />
+          )}
       </div>
     </div>
   );

@@ -94,6 +94,20 @@ const userSchema = new mongoose.Schema(
     verificationOTPExpires: {
       type: Date,
     },
+    verificationOTPAttempts: {
+        type: Number,
+        default: 0,
+    },
+    verificationOTPLastSent: {
+      type: Date,
+    },
+    resetPasswordOTPAttempts:{
+        type:Number,
+        default:0,
+    },
+    resetPasswordOTPLastSent: {
+      type: Date,
+    },
   },
 
   { timestamps: true }

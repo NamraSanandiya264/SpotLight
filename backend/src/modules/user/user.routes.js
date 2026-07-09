@@ -1,25 +1,9 @@
-//It defines API endpoints (URLs) and tells Express which function to run
-
-/*
-Client (Postman)
-   ↓
-POST /api/users/register
-   ↓
-Routes (this file)
-   ↓
-Controller (register function)
-   ↓
-Service
-   ↓
-Database 
-*/
 import express from "express";
 import multer from "multer";
-import { getUserActivity, getSbgMetrics } from "./user.controller.js";
 import { protect } from "../../middleware/auth.middleware.js";
-
+import { authLimiter } from "../../middleware/rateLimiter.middleware.js";
 import { register, login, updateProfile, changePassword, uploadAvatar, 
-   forgotPassword, resetPassword, verifyRegistration } from "./user.controller.js";
+   forgotPassword, resetPassword, verifyRegistration, resendOTP } from "./user.controller.js";
 
 const router = express.Router();
 
@@ -33,18 +17,17 @@ router.post(
    upload.single("avatar"),
    uploadAvatar
 );
-router.post("/registerUser", register);
-router.post("/verify-email", verifyRegistration);
-router.post("/loginUser", login);
+router.post("/registerUser", authLimiter, register);
+router.post("/verify-email", authLimiter, verifyRegistration);
+router.post("/loginUser", authLimiter, login);
 router.get("/profile", protect, (req, res) => {
    res.json({
       message: "Current user fetched",
       user: req.user,
    });
 });
-router.get('/sbg-metrics', protect, getSbgMetrics);
-router.get('/activity', protect, getUserActivity);
-router.post("/forgot-password", forgotPassword);
-router.post("/reset-password", resetPassword);
+router.post("/forgot-password", authLimiter, forgotPassword);
+router.post("/reset-password", authLimiter, resetPassword);
+router.post("/resend-otp", authLimiter, resendOTP);
 
 export default router;
