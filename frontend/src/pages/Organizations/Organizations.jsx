@@ -166,7 +166,7 @@ const Organizations = ({ onSelectOrg }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {filteredOrganizations.map((org) => {
             const coverPhotoToUse = org.coverPhoto || org.photos?.[0]; 
-            const backendBaseURL = "http://localhost:5001";
+            const backendBaseURL = import.meta.env.BACKEND_URL;
             
             const completeImgSrc = coverPhotoToUse
               ? (coverPhotoToUse.startsWith("http") ? coverPhotoToUse : `${backendBaseURL}${coverPhotoToUse}`)

@@ -1,7 +1,11 @@
 import axios from "axios";
 
+const backendUrl = import.meta.env.BACKEND_URL;
+if (!backendUrl) {
+  throw new Error("BACKEND_URL is not defined in environment variables.");
+}
 const API = axios.create({
-  baseURL: "http://localhost:5001/api", // backend URL
+  baseURL: `${backendUrl}/api`,
 });
 
 // Add token interceptor
