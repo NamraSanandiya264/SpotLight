@@ -1,21 +1,4 @@
-import axios from "axios";
-
-const backendUrl = import.meta.env.BACKEND_URL;
-if (!backendUrl) {
-  throw new Error("BACKEND_URL is not defined in environment variables.");
-}
-const API = axios.create({
-  baseURL: `${backendUrl}/api`,
-});
-
-// Add token interceptor
-API.interceptors.request.use((req) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    req.headers.Authorization = `Bearer ${token}`;
-  }
-  return req;
-});
+import API from "../api/axios";
 
 export const getAllRooms = () => API.get("/rooms");
 
