@@ -12,7 +12,6 @@ import {
   FaChevronDown,
   FaChevronUp
 } from "react-icons/fa";
-import "./EventCalendar.css";
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
@@ -25,11 +24,8 @@ const EventCalendar = () => {
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [calendarData, setCalendarData] = useState({});
   const [loading, setLoading] = useState(false);
-
-  /* Accordion state for list view */
   const [expandedEventId, setExpandedEventId] = useState(null);
 
-  /* Native Modal State Management */
   const [modalConfig, setModalConfig] = useState({
     isOpen: false,
     type: "none", 
@@ -52,7 +48,6 @@ const EventCalendar = () => {
     fetchCalendar();
   }, [currentMonth, currentYear]);
 
-  /* Helper to visually mute past events */
   const checkIsPast = (dateString, endTimeStr) => {
     const now = new Date();
     const eventEnd = new Date(dateString);
@@ -110,137 +105,180 @@ const EventCalendar = () => {
   const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
   const blankSpaces = Array.from({ length: firstDayOfMonth }, (_, i) => i);
 
+  const getThemeClass = (index) => {
+    const themes = [
+      'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800',
+      'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800',
+      'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800',
+      'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800',
+      'bg-pink-100 text-pink-800 border-pink-200 dark:bg-pink-900/30 dark:text-pink-300 dark:border-pink-800',
+    ];
+    return themes[index % 5];
+  };
+
   return (
-    <div className="campus-calendar-container">
-      <div className="calendar-control-header">
-        <div className="title-section">
-          <h2><FaCalendarAlt className="heading-icon" /> Event Calendar</h2>
-          <p>Explore cultural, sports, and club activities across campus</p>
+    <div className="w-full flex flex-col transition-colors duration-300 min-h-screen pb-10">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight flex items-center gap-2">
+            <FaCalendarAlt className="text-blue-600 dark:text-blue-400" /> Event Calendar
+          </h2>
+          <p className="text-gray-500 dark:text-gray-400">Explore cultural, sports, and club activities across campus</p>
         </div>
-        <div className="navigation-actions">
-          <button className="nav-arrow-btn" onClick={handlePrevMonth}><FaChevronLeft /></button>
-          <span className="current-date-label">{MONTHS[currentMonth - 1]} {currentYear}</span>
-          <button className="nav-arrow-btn" onClick={handleNextMonth}><FaChevronRight /></button>
+        <div className="flex items-center gap-4 bg-white dark:bg-slate-800 p-2 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700">
+          <button className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-gray-600 dark:text-gray-300" onClick={handlePrevMonth}>
+            <FaChevronLeft />
+          </button>
+          <span className="font-bold text-gray-900 dark:text-gray-100 min-w-[140px] text-center">
+            {MONTHS[currentMonth - 1]} {currentYear}
+          </span>
+          <button className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-gray-600 dark:text-gray-300" onClick={handleNextMonth}>
+            <FaChevronRight />
+          </button>
         </div>
       </div>
 
       {loading ? (
-        <div className="calendar-loader">Loading Campus Grid...</div>
+        <div className="flex-1 flex justify-center items-center p-20 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-700">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
       ) : (
-        <div className="calendar-grid-workspace">
-          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => (
-            <div key={day} className="weekday-header-tile">{day}</div>
-          ))}
-
-          {blankSpaces.map(blank => (
-            <div key={`blank-${blank}`} className="calendar-day-tile empty-day"></div>
-          ))}
-
-          {daysArray.map(day => {
-            const dayString = String(day).padStart(2, "0");
-            const monthString = String(currentMonth).padStart(2, "0");
-            const dateKey = `${currentYear}-${monthString}-${dayString}`;
-            const dayEvents = calendarData[dateKey] || [];
-
-            const isToday = 
-              today.getDate() === day && 
-              today.getMonth() + 1 === currentMonth && 
-              today.getFullYear() === currentYear;
-
-            const formattedDate = `${dayString}/${monthString}/${currentYear}`;
-
-            return (
-              <div 
-                key={day} 
-                className={`calendar-day-tile ${isToday ? 'is-today' : ''} ${dayEvents.length > 0 ? 'has-events' : ''}`}
-                onClick={(e) => dayEvents.length > 0 && openDayListModal(e, formattedDate, dayEvents)}
-              >
-                <span className="day-number-label">{day}</span>
-                
-                <div className="day-events-wrapper">
-                  {dayEvents.slice(0, 2).map((event, index) => {
-                    const isPast = checkIsPast(event.date, event.endTime);
-                    const themeClass = `theme-${index % 5}`; 
-
-                    return (
-                      <div 
-                        key={event._id} 
-                        className={`event-strip-item ${themeClass} ${isPast ? 'is-past' : ''}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openSingleEventModal(event);
-                        }}
-                        title={event.eventName}
-                      >
-                        <span className="event-strip-text">{event.eventName}</span>
-                      </div>
-                    );
-                  })}
-
-                  {dayEvents.length >= 3 && (
-                    <div 
-                      className="event-overflow-badge"
-                      onClick={(e) => openDayListModal(e, formattedDate, dayEvents)}
-                    >
-                      + {dayEvents.length - 2}
-                    </div>
-                  )}
-                </div>
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-700 overflow-hidden flex-1">
+          <div className="grid grid-cols-7 border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-750">
+            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => (
+              <div key={day} className="py-3 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-r last:border-r-0 border-gray-200 dark:border-slate-700">
+                {day}
               </div>
-            );
-          })}
+            ))}
+          </div>
+
+          <div className="grid grid-cols-7 auto-rows-[120px]">
+            {blankSpaces.map(blank => (
+              <div key={`blank-${blank}`} className="border-b border-r border-gray-100 dark:border-slate-700/50 bg-gray-50/50 dark:bg-slate-800/20"></div>
+            ))}
+
+            {daysArray.map(day => {
+              const dayString = String(day).padStart(2, "0");
+              const monthString = String(currentMonth).padStart(2, "0");
+              const dateKey = `${currentYear}-${monthString}-${dayString}`;
+              const dayEvents = calendarData[dateKey] || [];
+
+              const isToday = 
+                today.getDate() === day && 
+                today.getMonth() + 1 === currentMonth && 
+                today.getFullYear() === currentYear;
+
+              const formattedDate = `${dayString}/${monthString}/${currentYear}`;
+
+              return (
+                <div 
+                  key={day} 
+                  className={`border-b border-r border-gray-100 dark:border-slate-700/50 p-2 flex flex-col gap-1 transition-colors relative group ${
+                    isToday ? 'bg-blue-50/50 dark:bg-blue-900/10' : 'bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-750'
+                  } ${dayEvents.length > 0 ? 'cursor-pointer' : ''}`}
+                  onClick={(e) => dayEvents.length > 0 && openDayListModal(e, formattedDate, dayEvents)}
+                >
+                  <div className="flex justify-end mb-1">
+                    <span className={`w-7 h-7 flex items-center justify-center rounded-full text-sm font-medium ${
+                      isToday 
+                        ? 'bg-blue-600 text-white shadow-sm' 
+                        : 'text-gray-700 dark:text-gray-300 group-hover:bg-gray-200 dark:group-hover:bg-slate-600 transition-colors'
+                    }`}>
+                      {day}
+                    </span>
+                  </div>
+                  
+                  <div className="flex flex-col gap-1 overflow-hidden flex-1">
+                    {dayEvents.slice(0, 2).map((event, index) => {
+                      const isPast = checkIsPast(event.date, event.endTime);
+                      const themeClass = getThemeClass(index); 
+
+                      return (
+                        <div 
+                          key={event._id} 
+                          className={`text-xs px-2 py-1 rounded border truncate font-medium transition-transform hover:scale-[1.02] shadow-sm ${themeClass} ${isPast ? 'opacity-50 grayscale' : ''}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openSingleEventModal(event);
+                          }}
+                          title={event.eventName}
+                        >
+                          {event.eventName}
+                        </div>
+                      );
+                    })}
+
+                    {dayEvents.length >= 3 && (
+                      <div 
+                        className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-600 dark:bg-slate-700 dark:text-gray-300 text-center font-medium hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors mt-auto"
+                        onClick={(e) => openDayListModal(e, formattedDate, dayEvents)}
+                      >
+                        + {dayEvents.length - 2} more
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 
-      {/* Modal Rendering */}
+      {/* Modals overlay */}
       {modalConfig.isOpen && (
-        <div className="calendar-modal-overlay" onClick={closeModal}>
-          <div className="calendar-modal-content" onClick={e => e.stopPropagation()}>
-            <button className="modal-close-btn" onClick={closeModal}>
-              <FaTimes />
-            </button>
-            
-            <div className="modal-header">
-              <h3>{modalConfig.title}</h3>
+        <div className="fixed inset-0 bg-gray-900/40 dark:bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4 animate-in fade-in" onClick={closeModal}>
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform scale-100 transition-transform animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center p-5 border-b border-gray-100 dark:border-slate-700">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 pr-4 truncate">{modalConfig.title}</h3>
+              <button className="text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full p-2 transition-colors shrink-0" onClick={closeModal}>
+                <FaTimes />
+              </button>
             </div>
 
-            <div className="modal-body">
+            <div className="p-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
               {modalConfig.type === "single" && (
-                <>
-                  <div className="modal-detail-row">
-                    <FaBuilding className="modal-icon" />
-                    <span><strong>Club/Org:</strong> {modalConfig.data.organization?.name || "Campus Club"}</span>
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-start gap-3 text-gray-700 dark:text-gray-300">
+                    <FaBuilding className="text-blue-500 mt-1 shrink-0" />
+                    <div>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider block mb-0.5">Club/Org</span>
+                      <span className="font-medium">{modalConfig.data.organization?.name || "Campus Club"}</span>
+                    </div>
                   </div>
-                  <div className="modal-detail-row">
-                    <FaMapMarkerAlt className="modal-icon" />
-                    <span><strong>Venue:</strong> {modalConfig.data.customVenue || modalConfig.data.venue?.name}</span>
+                  <div className="flex items-start gap-3 text-gray-700 dark:text-gray-300">
+                    <FaMapMarkerAlt className="text-red-500 mt-1 shrink-0" />
+                    <div>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider block mb-0.5">Venue</span>
+                      <span className="font-medium">{modalConfig.data.customVenue || modalConfig.data.venue?.name}</span>
+                    </div>
                   </div>
-                  <div className="modal-detail-row">
-                    <FaClock className="modal-icon" />
-                    <span><strong>Time:</strong> {modalConfig.data.startTime} - {modalConfig.data.endTime}</span>
+                  <div className="flex items-start gap-3 text-gray-700 dark:text-gray-300">
+                    <FaClock className="text-amber-500 mt-1 shrink-0" />
+                    <div>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider block mb-0.5">Time</span>
+                      <span className="font-medium">{modalConfig.data.startTime} - {modalConfig.data.endTime}</span>
+                    </div>
                   </div>
-                  <div className="modal-detail-row modal-desc-box">
-                    <FaAlignLeft className="modal-icon" />
-                    <span>{modalConfig.data.description || "No additional details provided."}</span>
+                  <div className="flex items-start gap-3 text-gray-700 dark:text-gray-300 mt-2 bg-gray-50 dark:bg-slate-750 p-4 rounded-xl border border-gray-100 dark:border-slate-700">
+                    <FaAlignLeft className="text-gray-400 mt-1 shrink-0" />
+                    <span className="text-sm leading-relaxed">{modalConfig.data.description || "No additional details provided."}</span>
                   </div>
-                </>
+                </div>
               )}
 
               {modalConfig.type === "list" && (
-                <div className="modal-list-container">
-                  {modalConfig.data.map(event => (
+                <div className="flex flex-col gap-3">
+                  {modalConfig.data.map((event, index) => (
                     <div 
                       key={event._id} 
-                      className="modal-list-item"
+                      className="flex flex-col gap-2 p-4 rounded-xl border border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-750 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors cursor-pointer group"
                       onClick={() => openSingleEventModal(event)} 
                     >
-                      <div className="modal-list-meta">
-                        <span className="modal-list-time">{event.startTime} - {event.endTime}</span>
-                        <span className="modal-list-org">{event.organization?.name || "Club"}</span>
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="font-bold text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors">{event.startTime} - {event.endTime}</span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">{event.organization?.name || "Club"}</span>
                       </div>
-                      <div className="modal-list-title-row">
-                        <span className="modal-list-title">{event.eventName}</span>
-                      </div>
+                      <span className="font-bold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{event.eventName}</span>
                     </div>
                   ))}
                 </div>

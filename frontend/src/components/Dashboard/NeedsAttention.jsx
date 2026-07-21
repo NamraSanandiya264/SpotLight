@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import api from '../../services/api';
 import { FiAlertCircle, FiCheckCircle, FiClock, FiXCircle, FiUsers } from 'react-icons/fi';
-import './DashboardComponents.css';
 
 const NeedsAttention = ({ setActiveMenu }) => {
   const [tasks, setTasks] = useState({ pendingEvents: 0, rejectedEvents: 0 });
@@ -47,79 +46,70 @@ const NeedsAttention = ({ setActiveMenu }) => {
   const hasTasks = tasks.pendingEvents > 0 || tasks.rejectedEvents > 0 || pendingJoins.length > 0;
 
   return (
-    <div className="widget-card">
-      <h3 className="widget-section-title">Club Alerts</h3>
+    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-700 p-6 transition-colors duration-300">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Club Alerts</h3>
       
-      <p className="widget-small-text" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', fontWeight: '600', color: hasTasks ? '#D97706' : '#059669' }}>
+      <div className={`flex items-center gap-2 mb-4 font-semibold text-sm ${hasTasks ? 'text-amber-600 dark:text-amber-500' : 'text-emerald-600 dark:text-emerald-500'}`}>
         {hasTasks ? (
           <><FiAlertCircle size={18} /> Pending action items</>
         ) : (
           <><FiCheckCircle size={18} /> All caught up!</>
         )}
-      </p>
+      </div>
 
       {hasTasks && (
-        <div className="attention-list">
+        <div className="flex flex-col gap-3">
           {pendingJoins.map((join, index) => (
-            <div key={join.clubName ?? `join-${index}`} className="attention-item">
-              <div className="attention-item-meta" style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '0.95rem', fontWeight: '600', color: '#1E293B', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <FiUsers color="#2563EB" /> {join.count} Pending Request(s)
-                  </span>
-                  <span className="widget-small-text">For {join.clubName}</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setActiveMenu('organizations')}
-                  className="btn-link"
-                  style={{ padding: '4px 8px' }}
-                >
-                  Review
-                </button>
+            <div key={join.clubName ?? `join-${index}`} className="flex justify-between items-center p-4 rounded-xl bg-gray-50 dark:bg-slate-750 border border-gray-100 dark:border-slate-700 shadow-sm">
+              <div className="flex flex-col">
+                <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                  <FiUsers className="text-blue-600 dark:text-blue-400" /> {join.count} Pending Request(s)
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">For {join.clubName}</span>
               </div>
+              <button
+                type="button"
+                onClick={() => setActiveMenu('organizations')}
+                className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg transition-colors"
+              >
+                Review
+              </button>
             </div>
           ))}
 
           {tasks.pendingEvents > 0 && (
-            <div className="attention-item">
-              <div className="attention-item-meta" style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '0.95rem', fontWeight: '600', color: '#1E293B', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <FiClock color="#D97706" /> {tasks.pendingEvents} Event(s)
-                  </span>
-                  <span className="widget-small-text">Awaiting SBG approval</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setActiveMenu('manage-events')}
-                  className="btn-link"
-                  style={{ padding: '4px 8px' }}
-                >
-                  View
-                </button>
+            <div className="flex justify-between items-center p-4 rounded-xl bg-gray-50 dark:bg-slate-750 border border-gray-100 dark:border-slate-700 shadow-sm">
+              <div className="flex flex-col">
+                <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                  <FiClock className="text-amber-500" /> {tasks.pendingEvents} Event(s)
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">Awaiting SBG approval</span>
               </div>
+              <button
+                type="button"
+                onClick={() => setActiveMenu('manage-events')}
+                className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg transition-colors"
+              >
+                View
+              </button>
             </div>
           )}
 
           {tasks.rejectedEvents > 0 && (
-            <div className="attention-item">
-              <div className="attention-item-meta" style={{ flex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '0.95rem', fontWeight: '600', color: '#1E293B', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <FiXCircle color="#DC2626" /> {tasks.rejectedEvents} Event(s)
-                  </span>
-                  <span className="widget-small-text">Rejected (Needs revision)</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setActiveMenu('manage-events')}
-                  className="btn-link"
-                  style={{ padding: '4px 8px' }}
-                >
-                  Fix
-                </button>
+            <div className="flex justify-between items-center p-4 rounded-xl bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 shadow-sm">
+              <div className="flex flex-col">
+                <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                  <FiXCircle className="text-red-500" /> {tasks.rejectedEvents} Event(s)
+                </span>
+                <span className="text-xs text-red-500/80 dark:text-red-400/80 mt-1">Rejected (Needs revision)</span>
               </div>
+              <button
+                type="button"
+                onClick={() => setActiveMenu('manage-events')}
+                className="text-xs font-medium text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 px-3 py-1.5 bg-red-100 dark:bg-red-900/30 rounded-lg transition-colors"
+              >
+                Fix
+              </button>
             </div>
           )}
         </div>

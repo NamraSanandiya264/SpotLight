@@ -9,6 +9,7 @@ import StudentRoomBooking from "../Bookings/StudentRoomBooking";
 import CoreRoomBooking from "../Bookings/CoreRoomBooking";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../services/api";
+import { FaBars } from "react-icons/fa";
 import "./Dashboard.css"; // Imported directly here now
 
 const Dashboard = ({ children, user: userProp }) => {
@@ -17,6 +18,7 @@ const Dashboard = ({ children, user: userProp }) => {
   
   const [activeMenu, setActiveMenu] = useState("home"); 
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [isCoreOrLeader, setIsCoreOrLeader] = useState(false);
   
   // High-level wrapper state to handle specific club view details
@@ -80,7 +82,11 @@ const Dashboard = ({ children, user: userProp }) => {
   };
 
    return (
-    <div className={`dashboard-container ${collapsed ? "collapsed" : ""}`}>
+    <div className="relative flex h-screen overflow-hidden bg-gray-50 dark:bg-slate-900 overflow-x-hidden transition-colors duration-300">
+      {mobileOpen && (
+        <div className="fixed inset-0 z-40 bg-slate-950/40 md:hidden" onClick={() => setMobileOpen(false)} />
+      )}
+
       {/* Sidebar Component */}
       <Sidebar
         collapsed={collapsed}
@@ -89,11 +95,27 @@ const Dashboard = ({ children, user: userProp }) => {
         setActiveMenu={handleMenuChange}
         user={user}
         isCoreOrLeader={isCoreOrLeader}
+        mobileOpen={mobileOpen}
+        setMobileOpen={setMobileOpen}
       />
       
       {/* Main Content Area */}
-      <div className="main-content">
-        <div className="content-area">
+      <div
+        className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden min-w-0 h-screen"
+        style={{ marginLeft: collapsed ? 80 : 256 }}
+      >
+        <div className="flex items-center md:hidden mb-4 px-4 pt-4">
+          <button
+            type="button"
+            onClick={() => setMobileOpen(true)}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-gray-200 bg-white text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800"
+            aria-label="Open sidebar"
+          >
+            <FaBars size={20} />
+          </button>
+        </div>
+
+        <div className="w-full max-w-7xl mx-auto p-4 sm:p-6 md:p-8 transition-all duration-300">
           {renderContent()}
         </div>
       </div>
