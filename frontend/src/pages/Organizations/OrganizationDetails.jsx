@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
 import { useAuth } from "../../context/AuthContext"; 
-import "./Organizations.css"; 
+import { FaArrowLeft, FaEdit, FaSignOutAlt, FaPlus, FaCheck, FaTimes, FaEllipsisV, FaStar, FaTrash, FaCog } from "react-icons/fa";
 
 const OrganizationDetails = ({ orgId, onBack }) => {
   const { user } = useAuth(); 
@@ -96,7 +96,6 @@ const OrganizationDetails = ({ orgId, onBack }) => {
     }
   };
 
-  // ✅ Renamed this to match your button's onClick handler
   const handleSaveProfile = async () => {
     try {
       setIsSubmitting(true);
@@ -195,7 +194,6 @@ const OrganizationDetails = ({ orgId, onBack }) => {
       setIsSubmitting(true);
       const res = await api.put(`/organizations/${orgId}/cover-photo`, { photoUrl });
       if (res.data.success) {
-        // Update local state to reflect the new cover photo immediately
         setData(prev => ({ ...prev, organization: { ...prev.organization, coverPhoto: res.data.organization.coverPhoto } }));
         alert("Cover photo updated successfully!");
       }
@@ -223,12 +221,21 @@ const OrganizationDetails = ({ orgId, onBack }) => {
     }
   };
 
-  if (loading) return <div className="organization-page page-padding"><h2 className="loading">Loading details...</h2></div>;
+  if (loading) return (
+    <div className="flex justify-center items-center h-full min-h-[400px]">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    </div>
+  );
+
   if (error || !data || !data.organization || !data.members) {
     return (
-      <div className="organization-page page-padding">
-        <button onClick={onBack} className="filter-btn back-btn-margin">&larr; Back to Directory</button>
-        <div className="no-results error-text-color"><p>{error || "Organization data could not be fetched cleanly."}</p></div>
+      <div className="w-full flex flex-col pt-6 pb-12">
+        <button onClick={onBack} className="self-start mb-6 flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors font-medium">
+          <FaArrowLeft /> Back to Directory
+        </button>
+        <div className="py-16 text-center bg-red-50 dark:bg-red-900/20 rounded-2xl border border-red-200 dark:border-red-900/50">
+          <p className="text-red-600 dark:text-red-400 font-medium">{error || "Organization data could not be fetched cleanly."}</p>
+        </div>
       </div>
     );
   }
@@ -245,82 +252,87 @@ const OrganizationDetails = ({ orgId, onBack }) => {
   const generalMembers = members ? members.filter((m) => m.role === "member") : [];
 
   return (
-    <div className="organization-page detail-view-animate">
-      <button onClick={onBack} className="filter-btn back-btn-layout">
-        &larr; Back to Directory
+    <div className="w-full flex flex-col transition-colors duration-300 pb-12 animate-in fade-in">
+      <button onClick={onBack} className="self-start mb-6 flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors font-medium">
+        <FaArrowLeft /> Back to Directory
       </button>
 
       {/* Profile Card */}
-      <div className="organization-card detail-profile-card">
-        <div className="card-column-layout">
-          <div className="card-header-row">
-            <span className={`badge ${organization.type || ""}`}>{organization.type}</span>
+      <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 shadow-sm p-6 sm:p-8 mb-8">
+        <div className="flex flex-col gap-4">
+          <div className="flex justify-between items-center">
+            <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded shadow-sm ${
+              organization.type === 'club' 
+                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' 
+                : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300'
+            }`}>
+              {organization.type}
+            </span>
             {isAuthorizedEditor && !isEditingDesc && (
               <button 
                 onClick={() => { 
                   setDescriptionInput(organization.description || "");
                   setIsEditingDesc(true); 
                   setNameInput(organization.name || "")}} 
-                className="filter-btn edit-profile-btn"
+                className="flex items-center gap-1.5 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
               >
-                ✏️ Edit Profile
+                <FaEdit /> Edit Profile
               </button>
             )}
           </div>
           
           {isEditingDesc ? (
-            <div className="textarea-container">
-              <label>Organization Name</label>
+            <div className="flex flex-col gap-3 mt-2">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Organization Name</label>
               <input 
                 type="text" 
                 value={nameInput} 
                 onChange={(e) => setNameInput(e.target.value)} 
-                className="edit-desc-textarea" 
-                style={{ marginBottom: '10px' }}
+                className="w-full p-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 outline-none" 
               />
               
-              <label>Description</label>
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">Description</label>
               <textarea 
                 value={descriptionInput} 
                 onChange={(e) => setDescriptionInput(e.target.value)} 
                 rows={4} 
-                className="edit-desc-textarea"
+                className="w-full p-3 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 outline-none resize-y"
               />
-              <div className="action-btn-gap">
-                <button onClick={handleSaveProfile} disabled={isSubmitting} className="filter-btn active small-btn-padding">Save</button>
-                <button onClick={() => setIsEditingDesc(false)} className="filter-btn small-btn-padding">Cancel</button>
+              <div className="flex gap-3 justify-end mt-2">
+                <button onClick={() => setIsEditingDesc(false)} className="bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-gray-200 px-5 py-2.5 rounded-xl font-medium transition-colors">Cancel</button>
+                <button onClick={handleSaveProfile} disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium transition-colors shadow-sm disabled:opacity-70">Save</button>
               </div>
             </div>
           ) : (
-            <>
-              <h1 className="detail-title">{organization.name}</h1>
-              <p className="detail-desc-text">{organization.description || "No description provided."}</p>
-            </>
+            <div className="mt-2">
+              <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-3">{organization.name}</h1>
+              <p className="text-base text-gray-600 dark:text-gray-300 leading-relaxed max-w-3xl whitespace-pre-wrap">{organization.description || "No description provided."}</p>
+            </div>
           )}
 
           {currentUserMembership ? (
-            <div className="membership-action-container">
+            <div className="mt-4 pt-6 border-t border-gray-100 dark:border-slate-700 flex justify-end">
               <button 
                 onClick={handleLeaveOrganization} 
                 disabled={isSubmitting} 
-                className="filter-btn leave-club-btn"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-900/20 dark:hover:bg-red-900/40 dark:text-red-400 transition-colors"
               >
-                {isSubmitting ? "Leaving..." : "🚪 Leave Organization"}
+                <FaSignOutAlt /> {isSubmitting ? "Leaving..." : "Leave Organization"}
               </button>
             </div>
           ) : (
-            <div className="membership-action-container">
+            <div className="mt-4 pt-6 border-t border-gray-100 dark:border-slate-700 flex justify-end">
               {hasPendingRequest ? (
-                <button disabled={true} className="filter-btn requested-btn">
-                  📩 Requested
+                <button disabled={true} className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium bg-yellow-50 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400 cursor-not-allowed">
+                  <FaCheck /> Requested
                 </button>
               ) : (
                 <button 
                   onClick={handleRequestJoin} 
                   disabled={isSubmitting} 
-                  className="filter-btn active long-btn-padding"
+                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium transition-colors shadow-sm"
                 >
-                  {isSubmitting ? "Submitting..." : "📩 Request to Join Organization"}
+                  <FaPlus /> {isSubmitting ? "Submitting..." : "Request to Join Organization"}
                 </button>
               )}
             </div>
@@ -330,18 +342,24 @@ const OrganizationDetails = ({ orgId, onBack }) => {
 
       {/* Pending Queue Portal */}
       {isDeputyOrLeader && pendingReqs.length > 0 && (
-        <div className="organization-card pending-queue-card">
-          <h3 className="pending-queue-title">📥 Pending Membership Requests ({pendingReqs.length})</h3>
-          <div className="card-column-gap">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-yellow-200 dark:border-yellow-900/50 shadow-sm p-6 mb-8">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            📥 Pending Membership Requests ({pendingReqs.length})
+          </h3>
+          <div className="flex flex-col gap-3">
             {pendingReqs.map((req) => (
-              <div key={req._id} className="pending-request-item">
+              <div key={req._id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-slate-750/50 border border-gray-100 dark:border-slate-700">
                 <div>
-                  <h4 className="applicant-name">{req.user?.name}</h4>
-                  <p className="applicant-id">{req.user?.studentID || "Student ID"}</p>
+                  <h4 className="font-bold text-gray-900 dark:text-gray-100">{req.user?.name}</h4>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{req.user?.studentID || "Student ID"}</p>
                 </div>
-                <div className="action-btn-gap">
-                  <button onClick={() => handleActionOnRequest(req._id, "approved")} className="filter-btn active approve-btn">Approve</button>
-                  <button onClick={() => handleActionOnRequest(req._id, "rejected")} className="filter-btn reject-btn">Reject</button>
+                <div className="flex gap-2">
+                  <button onClick={() => handleActionOnRequest(req._id, "approved")} className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition-colors text-sm">
+                    <FaCheck /> Approve
+                  </button>
+                  <button onClick={() => handleActionOnRequest(req._id, "rejected")} className="flex items-center gap-1.5 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 dark:bg-red-900/30 dark:hover:bg-red-900/50 dark:text-red-400 rounded-lg font-medium transition-colors text-sm">
+                    <FaTimes /> Reject
+                  </button>
                 </div>
               </div>
             ))}
@@ -350,58 +368,58 @@ const OrganizationDetails = ({ orgId, onBack }) => {
       )}
 
       {/* Photo Gallery Grid */}
-      <div className="gallery-section-margin">
-        <div className="gallery-header-row">
-          <h3 className="section-heading">Spotlight Photos</h3>
+      <div className="mb-10">
+        <div className="flex justify-between items-center mb-6 border-b border-gray-200 dark:border-slate-700 pb-2">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white">Spotlight Photos</h3>
           {isAuthorizedEditor && (
             <div>
-              <label htmlFor="device-file-picker" className="filter-btn active upload-lbl-btn">
-                {isSubmitting ? "Uploading..." : "➕ Upload from Device"}
+              <label htmlFor="device-file-picker" className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-gray-200 px-4 py-2 rounded-xl font-medium transition-colors cursor-pointer text-sm">
+                <FaPlus size={12} /> {isSubmitting ? "Uploading..." : "Upload Photo"}
               </label>
-              <input id="device-file-picker" type="file" accept="image/*" onChange={handleFileUpload} disabled={isSubmitting} className="hidden-file-input" />
+              <input id="device-file-picker" type="file" accept="image/*" onChange={handleFileUpload} disabled={isSubmitting} className="hidden" />
             </div>
           )}
         </div>
         {organization.photos && organization.photos.length > 0 ? (
-          <div className="gallery-grid">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {organization.photos.map((photoUrl, index) => (
-              <div key={index} className="gallery-img-frame">
-                <img src={photoUrl.startsWith("http") ? photoUrl : `http://localhost:5001${photoUrl}`} alt="Gallery item" className="gallery-img" />
+              <div key={index} className="relative aspect-video rounded-xl overflow-hidden group border border-gray-200 dark:border-slate-700 bg-gray-100 dark:bg-slate-800">
+                <img src={photoUrl.startsWith("http") ? photoUrl : `http://localhost:5001${photoUrl}`} alt="Gallery item" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
 
                 {/* 3-Dot Menu Overlay */}
                 {isAuthorizedEditor && (
-                  <div className={`photo-controls-overlay ${activePhotoMenu === index ? 'menu-open' : ''}`}>
+                  <div className={`absolute top-2 right-2 z-10 ${activePhotoMenu === index ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}>
                     <button 
                       onClick={(e) => {
-                        e.stopPropagation(); // Prevents global click from instantly closing it
+                        e.stopPropagation(); 
                         setActivePhotoMenu(activePhotoMenu === index ? null : index);
                       }}
-                      className="kebab-btn"
+                      className="bg-black/50 hover:bg-black/70 text-white p-1.5 rounded-full transition-colors backdrop-blur-sm"
                     >
-                      &#8942;
+                      <FaEllipsisV size={12} />
                     </button>
 
                     {/* Dropdown Options */}
                     {activePhotoMenu === index && (
-                      <div style={{ position: 'absolute', top: '38px', right: '0', background: 'white', border: '1px solid #ddd', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 10, width: '130px', overflow: 'hidden' }}>
+                      <div className="absolute top-8 right-0 bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-lg shadow-lg z-20 w-36 overflow-hidden animate-in fade-in zoom-in-95">
                         <button 
                           onClick={(e) => { 
                             e.stopPropagation(); 
                             handleSetCover(photoUrl); 
                             setActivePhotoMenu(null); 
                           }}
-                          style={{ display: 'block', width: '100%', padding: '10px', textAlign: 'left', border: 'none', background: 'transparent', cursor: 'pointer', borderBottom: '1px solid #eee', fontSize: '14px', color: '#333' }}
+                          className="w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-750 border-b border-gray-100 dark:border-slate-700 flex items-center gap-2 transition-colors"
                         >
-                          ⭐ Set Cover
+                          <FaStar className="text-yellow-500" /> Set Cover
                         </button>
                         <button 
                           onClick={(e) => { 
                             e.stopPropagation(); 
                             handleRemovePhoto(photoUrl); 
                           }}
-                          style={{ display: 'block', width: '100%', padding: '10px', textAlign: 'left', border: 'none', background: 'transparent', cursor: 'pointer', color: '#ef4444', fontSize: '14px' }}
+                          className="w-full text-left px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 flex items-center gap-2 transition-colors"
                         >
-                          🗑️ Remove
+                          <FaTrash /> Remove
                         </button>
                       </div>
                     )}
@@ -410,24 +428,26 @@ const OrganizationDetails = ({ orgId, onBack }) => {
               </div>
             ))}
           </div>
-        ) : ( <p className="empty-gallery-text">No photos uploaded yet.</p> )}
+        ) : ( <p className="text-gray-500 dark:text-gray-400 text-sm italic">No photos uploaded yet.</p> )}
       </div>
 
       {/* Team Structure List */}
       <div>
-        <h3 className="team-section-title">Our Team</h3>
+        <div className="flex items-center gap-4 mb-6 border-b border-gray-200 dark:border-slate-700 pb-2">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white">Our Team</h3>
+        </div>
         
         {/* Convenors and Deputies */}
         {(convenors.length > 0 || deputies.length > 0) && (
-          <div className="team-tier-container">
-            <h4 className="section-label group-label-style">Leaders</h4>
-            <div className="card-column-gap">
+          <div className="mb-8">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">Leaders</h4>
+            <div className="flex flex-col gap-3">
               {convenors.map((m) => ( 
                 <MemberItemCard 
                     key={m.userId} 
                     member={m} 
-                    badgeColor="#FEF3C7" 
-                    textColor="#92400e" 
+                    badgeColor="bg-amber-100 dark:bg-amber-900/50" 
+                    textColor="text-amber-800 dark:text-amber-300" 
                     label="Convenor" 
                     showActions={isCurrentlyConvenor} 
                     onRoleChange={handleRoleChange} 
@@ -441,8 +461,8 @@ const OrganizationDetails = ({ orgId, onBack }) => {
                 <MemberItemCard 
                     key={m.userId} 
                     member={m} 
-                    badgeColor="#e0f2fe" 
-                    textColor="#0369a1" 
+                    badgeColor="bg-sky-100 dark:bg-sky-900/50" 
+                    textColor="text-sky-800 dark:text-sky-300" 
                     label="Deputy" 
                     showActions={isCurrentlyConvenor} 
                     onRoleChange={handleRoleChange} 
@@ -458,15 +478,15 @@ const OrganizationDetails = ({ orgId, onBack }) => {
 
         {/* Core Committee */}
         {coreMembers.length > 0 && (
-          <div className="team-tier-container">
-            <h4 className="section-label group-label-style">Core Members({coreMembers.length})</h4>
-            <div className="card-column-gap">
+          <div className="mb-8">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">Core Members ({coreMembers.length})</h4>
+            <div className="flex flex-col gap-3">
               {coreMembers.map((m) => ( 
                 <MemberItemCard 
                     key={m.userId} 
                     member={m} 
-                    badgeColor="#f3e8ff" 
-                    textColor="#6b21a8" 
+                    badgeColor="bg-purple-100 dark:bg-purple-900/50" 
+                    textColor="text-purple-800 dark:text-purple-300" 
                     label="Core" 
                     showActions={isCurrentlyConvenor} 
                     onRoleChange={handleRoleChange} 
@@ -482,15 +502,15 @@ const OrganizationDetails = ({ orgId, onBack }) => {
 
         {/* General Members */}
         {generalMembers.length > 0 && (
-          <div>
-            <h4 className="section-label group-label-style">General Members ({generalMembers.length})</h4>
-            <div className="card-column-gap">
+          <div className="mb-8">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">General Members ({generalMembers.length})</h4>
+            <div className="flex flex-col gap-3">
               {generalMembers.map((m) => ( 
                 <MemberItemCard 
                     key={m.userId} 
                     member={m} 
-                    badgeColor="#f3f4f6" 
-                    textColor="#374151" 
+                    badgeColor="bg-gray-100 dark:bg-slate-700" 
+                    textColor="text-gray-700 dark:text-gray-300" 
                     label="Member" 
                     showActions={isCurrentlyConvenor} 
                     onRoleChange={handleRoleChange} 
@@ -529,54 +549,58 @@ const MemberItemCard = ({
   }, [isMenuOpen, onToggleMenu]);
 
   return (
-    <div className={`member-item-card ${isProcessing ? "processing-fade" : ""}`}>
-      <div className="member-info-block">
-        <div className="member-avatar">
+    <div className={`flex flex-col sm:flex-row justify-between sm:items-center p-4 bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 shadow-sm transition-all ${isProcessing ? "opacity-50 pointer-events-none" : ""}`}>
+      <div className="flex items-center gap-4 mb-3 sm:mb-0">
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
           {member.name ? member.name.charAt(0).toUpperCase() : "U"}
         </div>
         <div>
-          <h4 className="member-card-name">{member.name}</h4>
-          <p className="member-card-id">{member.studentID || "Student ID"}</p>
+          <h4 className="font-bold text-gray-900 dark:text-gray-100">{member.name}</h4>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{member.studentID || "Student ID"}</p>
         </div>
       </div>
-      <div className="member-action-block">
-        <span style={{ backgroundColor: badgeColor, color: textColor }} className="role-tier-badge">{label}</span>
+      
+      <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
+        <span className={`px-2.5 py-1 text-xs font-semibold rounded-md ${badgeColor} ${textColor}`}>{label}</span>
         
         {showActions && member.role !== "convenor" && (
-          <div className="role-action-wrapper" onClick={(e) => e.stopPropagation()}>
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
             <button 
-              className="manage-role-trigger" 
               disabled={isProcessing} 
               onClick={() => onToggleMenu(!isMenuOpen)} 
+              className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full transition-colors focus:outline-none"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="gear-icon-svg">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
+              <FaCog size={14} />
             </button>
+            
             {isMenuOpen && ( 
-              <div className="role-dropdown-portal">
+              <div className="absolute top-10 right-0 w-48 bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-lg shadow-lg z-20 py-1 overflow-hidden animate-in fade-in zoom-in-95">
+                <div className="px-3 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-50 dark:border-slate-700/50 mb-1">
+                  Change Role
+                </div>
                 {["convenor", "deputy", "core", "member"].map((r) => (
                   <button 
                     key={r} 
-                    className={`role-option-item ${member.role === r ? "active" : ""}`} 
+                    className={`w-full text-left px-4 py-2 text-sm flex items-center justify-between transition-colors ${member.role === r ? "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 font-medium" : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-750"}`} 
                     onClick={(e) => { 
                       e.stopPropagation(); 
                       onRoleChange(member.userId, r); 
                       onToggleMenu(false); 
                     }}
                   >
-                    {r === "core" ? "Core Member" : r === "member" ? "General Member" : r.charAt(0).toUpperCase() + r.slice(1)}
-                    {member.role === r && <div className="active-dot" />}
+                    <span>{r === "core" ? "Core Member" : r === "member" ? "General Member" : r.charAt(0).toUpperCase() + r.slice(1)}</span>
+                    {member.role === r && <FaCheck size={10} />}
                   </button>
                 ))}
                 
-                <button 
-                  className="role-option-item kick-out-option" 
-                  onClick={() => { onRemove(member.userId, member.name); onToggleMenu(false); }}
-                >
-                  Kick Out
-                </button>
+                <div className="border-t border-gray-100 dark:border-slate-700 mt-1 pt-1">
+                  <button 
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 flex items-center gap-2 transition-colors" 
+                    onClick={() => { onRemove(member.userId, member.name); onToggleMenu(false); }}
+                  >
+                    <FaTrash size={12} /> Kick Out
+                  </button>
+                </div>
               </div>
             )}
           </div>

@@ -7,23 +7,27 @@ import DiscoverEvents from "../../components/Dashboard/DiscoverEvents";
 import UpcomingSchedule from "../../components/Dashboard/UpcomingSchedule"; 
 import QuickActions from "../../components/Dashboard/QuickActions";
 import NeedsAttention from "../../components/Dashboard/NeedsAttention"; 
-import "./Home.css"; 
 
 const Home = ({ isCoreOrLeader, setActiveMenu }) => {
   const { user } = useAuth();
 
-  if (!user) return <p>Loading dashboard...</p>;
+  if (!user) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    </div>
+  );
+  
   const isSbgCore = user.role === 'sbg_core';
 
   return (
-    <div className="home-dashboard">
+    <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto">
       <WelcomeBanner user={user} />
       
       <NoticeBoard user={user} />
 
-      <div className="dashboard-split">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Left Column */}
-        <div className="dashboard-left">
+        <div className="lg:col-span-2 flex flex-col gap-6 min-w-0">
           {isSbgCore ? (
             <ActionQueue setActiveMenu={setActiveMenu} />
           ) : (
@@ -33,7 +37,7 @@ const Home = ({ isCoreOrLeader, setActiveMenu }) => {
         </div>
 
         {/* Right Column */}
-        <div className="dashboard-right">
+        <div className="flex flex-col gap-6 min-w-0">
           <QuickActions isCoreOrLeader={isCoreOrLeader} setActiveMenu={setActiveMenu} />
           {isCoreOrLeader && !isSbgCore && (
             <NeedsAttention setActiveMenu={setActiveMenu} />
