@@ -103,16 +103,24 @@ const NoticeBoard = ({ user }) => {
               className={`w-full text-left relative border-l-4 ${accent.border} ${accent.bg} rounded-xl px-5 py-4 shadow-sm hover:shadow-md transition-shadow group border border-gray-100 dark:border-slate-700/60 cursor-pointer`}
             >
               {isSbgCore && (
-                <button
+                <span
                   onClick={(event) => {
                     event.stopPropagation();
                     handleDelete(notice._id);
                   }}
-                  className="absolute top-3 right-3 text-gray-400 hover:text-red-500 transition-colors bg-white dark:bg-slate-800 rounded-full p-1.5 opacity-0 group-hover:opacity-100 shadow-sm border border-gray-100 dark:border-slate-700"
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      handleDelete(notice._id);
+                    }
+                  }}
+                  className="absolute top-3 right-3 text-gray-400 hover:text-red-500 transition-colors bg-white dark:bg-slate-800 rounded-full p-1.5 opacity-0 group-hover:opacity-100 shadow-sm border border-gray-100 dark:border-slate-700 cursor-pointer"
                   title="Delete Notice"
                 >
                   <FiTrash2 size={14} />
-                </button>
+                </span>
               )}
 
               <h4 className="font-bold text-gray-900 dark:text-gray-100 mb-2 pr-8 text-base">{notice.title}</h4>
