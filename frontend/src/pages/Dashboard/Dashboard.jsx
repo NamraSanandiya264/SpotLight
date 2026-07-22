@@ -101,8 +101,11 @@ const Dashboard = ({ children, user: userProp }) => {
       
       {/* Main Content Area */}
       <div
-        className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden min-w-0 h-screen"
-        style={{ marginLeft: collapsed ? 80 : 256 }}
+        className={
+          collapsed
+            ? "flex-1 flex flex-col overflow-y-auto overflow-x-hidden min-w-0 h-screen transition-all duration-300 md:ml-20"
+            : "flex-1 flex flex-col overflow-y-auto overflow-x-hidden min-w-0 h-screen transition-all duration-300 md:ml-64"
+        }
       >
         <div className="flex items-center md:hidden mb-4 px-4 pt-4">
           <button

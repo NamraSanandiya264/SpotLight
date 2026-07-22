@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import api from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 import { FaPlus, FaSearch, FaEllipsisV, FaEdit, FaTrash } from "react-icons/fa";
+import { resolveBackendAssetUrl } from "../../api/axios";
 
 const Organizations = ({ onSelectOrg }) => {
   const [organizations, setOrganizations] = useState([]);
@@ -165,11 +166,9 @@ const Organizations = ({ onSelectOrg }) => {
       {filteredOrganizations.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {filteredOrganizations.map((org) => {
-            const coverPhotoToUse = org.coverPhoto || org.photos?.[0]; 
-            const backendBaseURL = import.meta.env.VITE_API_URL;
-            
+            const coverPhotoToUse = org.coverPhoto || org.photos?.[0];
             const completeImgSrc = coverPhotoToUse
-              ? (coverPhotoToUse.startsWith("http") ? coverPhotoToUse : `${backendBaseURL}${coverPhotoToUse}`)
+              ? resolveBackendAssetUrl(coverPhotoToUse)
               : "https://placehold.co/400x250?text=Organization";
 
             return (

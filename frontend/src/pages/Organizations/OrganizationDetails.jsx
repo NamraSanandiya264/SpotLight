@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
 import { useAuth } from "../../context/AuthContext"; 
+import { resolveBackendAssetUrl } from "../../api/axios";
 import { FaArrowLeft, FaEdit, FaSignOutAlt, FaPlus, FaCheck, FaTimes, FaEllipsisV, FaStar, FaTrash, FaCog } from "react-icons/fa";
 
 const OrganizationDetails = ({ orgId, onBack }) => {
@@ -384,7 +385,7 @@ const OrganizationDetails = ({ orgId, onBack }) => {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {organization.photos.map((photoUrl, index) => (
               <div key={index} className="relative aspect-video rounded-xl overflow-hidden group border border-gray-200 dark:border-slate-700 bg-gray-100 dark:bg-slate-800">
-                <img src={photoUrl.startsWith("http") ? photoUrl : `${import.meta.env.VITE_API_URL}${photoUrl}`} alt="Gallery item" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                <img src={resolveBackendAssetUrl(photoUrl)} alt="Gallery item" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
 
                 {/* 3-Dot Menu Overlay */}
                 {isAuthorizedEditor && (
