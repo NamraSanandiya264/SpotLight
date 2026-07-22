@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-const apiUrl = import.meta.env.VITE_API_URL;
+const apiUrl = import.meta.env.VITE_API_URL || import.meta.env.BACKEND_URL;
 if (!apiUrl) {
-  throw new Error('VITE_API_URL is not defined. Add VITE_API_URL to frontend/.env for local development or set it in Vercel.')
+  throw new Error('VITE_API_URL or BACKEND_URL is not defined. Add VITE_API_URL to SPOTLIGHT/.env for local development or set it in Vercel.')
 }
 
 const API = axios.create({
