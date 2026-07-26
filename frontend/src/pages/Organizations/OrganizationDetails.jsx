@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 import api from "../../services/api";
 import { useAuth } from "../../context/AuthContext"; 
 import { resolveBackendAssetUrl } from "../../api/axios";
@@ -70,16 +71,23 @@ const OrganizationDetails = ({ orgId, onBack }) => {
     }
   };
 
+  const getSwalThemeOptions = () => ({
+    background: document.documentElement.classList.contains("dark") ? "#1e293b" : "#ffffff",
+    color: document.documentElement.classList.contains("dark") ? "#f8fafc" : "#000000",
+    confirmButtonColor: "#3b82f6",
+    cancelButtonColor: document.documentElement.classList.contains("dark") ? "#94a3b8" : "#64748b",
+  });
+
   const handleRequestJoin = async () => {
     try {
       setIsSubmitting(true);
       const res = await api.post(`/organizations/${orgId}/request-join`);
       if (res.data.success) {
-        alert(res.data.message);
+        await Swal.fire({ icon: "success", title: "Request Submitted", text: res.data.message, ...getSwalThemeOptions() });
         setHasPendingRequest(true); 
       }
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to submit request.");
+      await Swal.fire({ icon: "error", title: "Request Failed", text: err.response?.data?.message || "Failed to submit request.", ...getSwalThemeOptions() });
     } finally {
       setIsSubmitting(false);
     }
@@ -93,7 +101,7 @@ const OrganizationDetails = ({ orgId, onBack }) => {
         if (action === "approved") fetchOrganizationDetails();
       }
     } catch (err) {
-      alert(err.response?.data?.message || "Action failed.");
+      await Swal.fire({ icon: "error", title: "Request Action Failed", text: err.response?.data?.message || "Action failed.", ...getSwalThemeOptions() });
     }
   };
 
@@ -104,9 +112,10 @@ const OrganizationDetails = ({ orgId, onBack }) => {
       if (res.data.success) {
         setData(prev => ({ ...prev, organization: { ...prev.organization, description: res.data.organization.description , name : res.data.organization.name} }));
         setIsEditingDesc(false);
+        await Swal.fire({ icon: "success", title: "Saved", text: "Profile changes saved successfully.", ...getSwalThemeOptions() });
       }
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to save profile changes.");
+      await Swal.fire({ icon: "error", title: "Save Failed", text: err.response?.data?.message || "Failed to save profile changes.", ...getSwalThemeOptions() });
     } finally {
       setIsSubmitting(false);
     }
@@ -125,16 +134,27 @@ const OrganizationDetails = ({ orgId, onBack }) => {
       if (res.data.success) {
         setData(prev => ({ ...prev, organization: { ...prev.organization, photos: res.data.organization.photos } }));
         e.target.value = null; 
+        await Swal.fire({ icon: "success", title: "Uploaded", text: "Photo uploaded successfully.", ...getSwalThemeOptions() });
       }
     } catch (err) {
-      alert("Failed to upload image file from device.");
+      await Swal.fire({ icon: "error", title: "Upload Failed", text: "Failed to upload image file from device.", ...getSwalThemeOptions() });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleRemovePhoto = async (photoUrl) => {
-    if (!window.confirm("Are you sure you want to remove this photo from the spotlight?")) return;
+    const result = await Swal.fire({
+      title: "Remove photo?",
+      text: "Are you sure you want to remove this photo from the spotlight?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, remove it",
+      cancelButtonText: "Cancel",
+      ...getSwalThemeOptions()
+    });
+    if (!result.isConfirmed) return;
+
     try {
       setIsSubmitting(true);
       const res = await api.put(`/organizations/${orgId}/remove-photo`, { photoUrl });
@@ -147,9 +167,10 @@ const OrganizationDetails = ({ orgId, onBack }) => {
             coverPhoto: res.data.organization.coverPhoto
           } 
         }));
+        await Swal.fire({ icon: "success", title: "Removed", text: "Photo removed successfully.", ...getSwalThemeOptions() });
       }
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to remove photo.");
+      await Swal.fire({ icon: "error", title: "Remove Failed", text: err.response?.data?.message || "Failed to remove photo.", ...getSwalThemeOptions() });
     } finally {
       setIsSubmitting(false);
       setActivePhotoMenu(null);
@@ -157,13 +178,27 @@ const OrganizationDetails = ({ orgId, onBack }) => {
   };
 
   const handleRoleChange = async (targetUserId, newRole) => {
-    if (newRole === "convenor" && !window.confirm("Transfer control and demote yourself to member?")) return;
+    if (newRole === "convenor") {
+      const roleChangeConfirm = await Swal.fire({
+        title: "Transfer control?",
+        text: "Transfer control and demote yourself to member?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, transfer",
+        cancelButtonText: "Cancel",
+        ...getSwalThemeOptions()
+      });
+      if (!roleChangeConfirm.isConfirmed) return;
+    }
     try {
       setUpdatingMemberId(targetUserId);
       const res = await api.put(`/organizations/${orgId}/roles`, { targetUserId, newRole });
-      if (res.data.success) await fetchOrganizationDetails();
+      if (res.data.success) {
+        await fetchOrganizationDetails();
+        await Swal.fire({ icon: "success", title: "Updated", text: "Role assignment updated successfully.", ...getSwalThemeOptions() });
+      }
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to update role assignment.");
+      await Swal.fire({ icon: "error", title: "Update Failed", text: err.response?.data?.message || "Failed to update role assignment.", ...getSwalThemeOptions() });
     } finally {
       setUpdatingMemberId(null);
     }
@@ -174,17 +209,26 @@ const OrganizationDetails = ({ orgId, onBack }) => {
       ? "As the Convenor, you must manually assign a new Convenor through the member management system before leaving. Are you sure you want to proceed?"
       : "Are you sure you want to leave this organization?";
 
-    if (!window.confirm(confirmMessage)) return;
+    const leaveConfirm = await Swal.fire({
+      title: "Leave organization?",
+      text: confirmMessage,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, leave",
+      cancelButtonText: "Cancel",
+      ...getSwalThemeOptions()
+    });
+    if (!leaveConfirm.isConfirmed) return;
 
     try {
       setIsSubmitting(true);
       const res = await api.post(`/organizations/${orgId}/leave`);
       if (res.data.success) {
-        alert("You have successfully left the organization.");
+        await Swal.fire({ icon: "success", title: "Left Organization", text: "You have successfully left the organization.", ...getSwalThemeOptions() });
         await fetchOrganizationDetails();
       }
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to leave organization.");
+      await Swal.fire({ icon: "error", title: "Leave Failed", text: err.response?.data?.message || "Failed to leave organization.", ...getSwalThemeOptions() });
     } finally {
       setIsSubmitting(false);
     }
@@ -196,17 +240,26 @@ const OrganizationDetails = ({ orgId, onBack }) => {
       const res = await api.put(`/organizations/${orgId}/cover-photo`, { photoUrl });
       if (res.data.success) {
         setData(prev => ({ ...prev, organization: { ...prev.organization, coverPhoto: res.data.organization.coverPhoto } }));
-        alert("Cover photo updated successfully!");
+        await Swal.fire({ icon: "success", title: "Cover Updated", text: "Cover photo updated successfully!", ...getSwalThemeOptions() });
       }
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to set cover photo.");
+      await Swal.fire({ icon: "error", title: "Update Failed", text: err.response?.data?.message || "Failed to set cover photo.", ...getSwalThemeOptions() });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleRemoveMember = async (targetUserId, targetName) => {
-    if (!window.confirm(`Are you sure you want to completely remove ${targetName} from the organization?`)) {
+    const removeConfirm = await Swal.fire({
+      title: "Remove member?",
+      text: `Are you sure you want to completely remove ${targetName} from the organization?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, remove",
+      cancelButtonText: "Cancel",
+      ...getSwalThemeOptions()
+    });
+    if (!removeConfirm.isConfirmed) {
       return;
     }
     try {
@@ -214,9 +267,12 @@ const OrganizationDetails = ({ orgId, onBack }) => {
       const res = await api.delete(`/organizations/${orgId}/members`, {
         data: { targetUserId }
       });
-      if (res.data.success) await fetchOrganizationDetails();
+      if (res.data.success) {
+        await fetchOrganizationDetails();
+        await Swal.fire({ icon: "success", title: "Removed", text: `${targetName} has been removed.`, ...getSwalThemeOptions() });
+      }
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to remove member.");
+      await Swal.fire({ icon: "error", title: "Remove Failed", text: err.response?.data?.message || "Failed to remove member.", ...getSwalThemeOptions() });
     } finally {
       setUpdatingMemberId(null);
     }
@@ -349,7 +405,7 @@ const OrganizationDetails = ({ orgId, onBack }) => {
           </h3>
           <div className="flex flex-col gap-3">
             {pendingReqs.map((req) => (
-              <div key={req._id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-slate-750/50 border border-gray-100 dark:border-slate-700">
+              <div key={req._id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700">
                 <div>
                   <h4 className="font-bold text-gray-900 dark:text-gray-100">{req.user?.name}</h4>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{req.user?.studentID || "Student ID"}</p>
@@ -409,7 +465,7 @@ const OrganizationDetails = ({ orgId, onBack }) => {
                             handleSetCover(photoUrl); 
                             setActivePhotoMenu(null); 
                           }}
-                          className="w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-750 border-b border-gray-100 dark:border-slate-700 flex items-center gap-2 transition-colors"
+                          className="w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 border-b border-gray-100 dark:border-slate-700 flex items-center gap-2 transition-colors"
                         >
                           <FaStar className="text-yellow-500" /> Set Cover
                         </button>
@@ -582,7 +638,7 @@ const MemberItemCard = ({
                 {["convenor", "deputy", "core", "member"].map((r) => (
                   <button 
                     key={r} 
-                    className={`w-full text-left px-4 py-2 text-sm flex items-center justify-between transition-colors ${member.role === r ? "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 font-medium" : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-750"}`} 
+                    className={`w-full text-left px-4 py-2 text-sm flex items-center justify-between transition-colors ${member.role === r ? "bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 font-medium" : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700"}`}
                     onClick={(e) => { 
                       e.stopPropagation(); 
                       onRoleChange(member.userId, r); 

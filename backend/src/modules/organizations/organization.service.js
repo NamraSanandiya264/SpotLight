@@ -2,6 +2,7 @@ import Organization from "./organization.model.js";
 import OrganizationMember from "./orgMember.model.js";
 import JoinRequest from "./joinRequest.model.js";
 import User from "../user/user.model.js";
+import { createNotification } from "../notifications/notification.service.js";
 
 // ✅ Create Organization
 export const createOrganizationService = async (
@@ -265,6 +266,9 @@ export const updateOrganizationProfileService = async (orgId, userId, updateData
 
 // 📩 1. Create a Join Request (Any Student)
 export const createJoinRequestService = async (orgId, userId) => {
+  const org = await Organization.findById(orgId, "name");
+  if (!org) throw new Error("Organization not found.");
+
   // Check if already a member
   const isMember = await OrganizationMember.findOne({ user: userId, organization: orgId });
   if (isMember) throw new Error("You are already a member of this organization.");
@@ -273,7 +277,26 @@ export const createJoinRequestService = async (orgId, userId) => {
   const hasPending = await JoinRequest.findOne({ user: userId, organization: orgId, status: "pending" });
   if (hasPending) throw new Error("Your request to join is already pending review.");
 
-  return await JoinRequest.create({ user: userId, organization: orgId });
+  const request = await JoinRequest.create({ user: userId, organization: orgId });
+
+  const requester = await User.findById(userId, "name");
+  const convenors = await OrganizationMember.find({ organization: orgId, role: "convenor" }).populate("user", "name");
+  if (requester && requester.name && convenors.length > 0) {
+    const notificationMessage = `${requester.name} has requested to join ${org.name}.`;
+    await Promise.all(
+      convenors.map((convenor) =>
+        createNotification({
+          recipientId: convenor.user._id,
+          senderId: userId,
+          message: notificationMessage,
+          type: "CLUB_JOIN_REQUEST",
+          link: `/organizations/${orgId}`,
+        })
+      )
+    );
+  }
+
+  return request;
 };
 
 // 📋 2. Get Pending Requests (For Deputy/Convenor view)

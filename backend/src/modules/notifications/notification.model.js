@@ -22,6 +22,7 @@ const notificationSchema = new mongoose.Schema(
       enum: [
         'BOOKING_APPROVED',
         'BOOKING_REJECTED',
+        'CLUB_JOIN_REQUEST',
         'CLUB_JOIN_ACCEPTED',
         'EVENT_APPROVED',
         'EVENT_REJECTED',

@@ -144,7 +144,7 @@ const EventCalendar = () => {
         </div>
       ) : (
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-700 overflow-hidden flex-1">
-          <div className="grid grid-cols-7 border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-750">
+          <div className="grid grid-cols-7 border-b border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800">
             {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => (
               <div key={day} className="py-3 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-r last:border-r-0 border-gray-200 dark:border-slate-700">
                 {day}
@@ -174,7 +174,7 @@ const EventCalendar = () => {
                 <div 
                   key={day} 
                   className={`border-b border-r border-gray-100 dark:border-slate-700/50 p-2 flex flex-col gap-1 transition-colors relative group ${
-                    isToday ? 'bg-blue-50/50 dark:bg-blue-900/10' : 'bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-750'
+                    isToday ? 'bg-blue-50/50 dark:bg-blue-900/10' : 'bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700'
                   } ${dayEvents.length > 0 ? 'cursor-pointer' : ''}`}
                   onClick={(e) => dayEvents.length > 0 && openDayListModal(e, formattedDate, dayEvents)}
                 >
@@ -228,10 +228,9 @@ const EventCalendar = () => {
       {modalConfig.isOpen && (
         <div className="fixed inset-0 bg-gray-900/40 dark:bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4 animate-in fade-in" onClick={closeModal}>
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform scale-100 transition-transform animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center p-5 border-b border-gray-100 dark:border-slate-700">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 pr-4 truncate">{modalConfig.title}</h3>
-              <button className="text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full p-2 transition-colors shrink-0" onClick={closeModal}>
-                <FaTimes />
+            <div className="flex justify-between items-center p-5 border-b border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800">
+              <button type="button" onClick={closeModal} className="text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors focus:outline-none" aria-label="Close modal">
+                <FaTimes className="w-5 h-5" />
               </button>
             </div>
 
@@ -259,7 +258,7 @@ const EventCalendar = () => {
                       <span className="font-medium">{modalConfig.data.startTime} - {modalConfig.data.endTime}</span>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3 text-gray-700 dark:text-gray-300 mt-2 bg-gray-50 dark:bg-slate-750 p-4 rounded-xl border border-gray-100 dark:border-slate-700">
+                  <div className="flex items-start gap-3 text-gray-700 dark:text-gray-300 mt-2 bg-gray-50 dark:bg-slate-800 p-4 rounded-xl border border-gray-100 dark:border-slate-700">
                     <FaAlignLeft className="text-gray-400 mt-1 shrink-0" />
                     <span className="text-sm leading-relaxed">{modalConfig.data.description || "No additional details provided."}</span>
                   </div>
@@ -271,7 +270,7 @@ const EventCalendar = () => {
                   {modalConfig.data.map((event, index) => (
                     <div 
                       key={event._id} 
-                      className="flex flex-col gap-2 p-4 rounded-xl border border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-750 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors cursor-pointer group"
+                      className="flex flex-col gap-2 p-4 rounded-xl border border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors cursor-pointer group"
                       onClick={() => openSingleEventModal(event)} 
                     >
                       <div className="flex justify-between items-center text-xs">

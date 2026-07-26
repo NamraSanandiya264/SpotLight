@@ -40,7 +40,7 @@ const DiscoverEvents = ({ setEventsToday }) => {
       ) : (
         <div className="flex flex-col gap-3">
           {events.map((event) => (
-            <div key={event._id} className="flex flex-col sm:flex-row gap-4 p-4 rounded-xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-750 shadow-sm hover:shadow-md transition-shadow items-start sm:items-center justify-between">
+            <div key={event._id} className="flex flex-col sm:flex-row gap-4 p-4 rounded-xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm hover:shadow-md transition-shadow items-start sm:items-center justify-between">
               
               <div className="flex items-center gap-4 flex-1 min-w-0">
                 <div className="flex flex-col items-center justify-center bg-blue-50 dark:bg-blue-900/30 rounded-lg min-w-[60px] h-[60px] p-2 border border-blue-100 dark:border-blue-900/50 text-blue-700 dark:text-blue-400 shrink-0">

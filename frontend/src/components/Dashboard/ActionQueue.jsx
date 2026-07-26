@@ -89,7 +89,7 @@ const ActionQueue = ({ setActiveMenu }) => {
             const isEvent = item.purpose?.startsWith('Event:');
 
             return (
-              <div key={item._id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-750 shadow-sm hover:shadow-md transition-shadow gap-4">
+              <div key={item._id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-xl border border-gray-100 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm hover:shadow-md transition-shadow gap-4">
                 <div className="flex flex-col flex-1 min-w-0 w-full">
                   <div className="flex items-center gap-3 mb-1">
                     <span className={`text-xs font-bold px-2 py-0.5 rounded-md uppercase tracking-wider ${

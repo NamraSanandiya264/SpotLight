@@ -108,7 +108,6 @@ export const updateBookingStatusService = async (id, status, user) => {
   return booking;
 };
 
-// Add this at the bottom of booking.service.js
 export const cancelBookingService = async (id, user) => {
   const booking = await Booking.findById(id);
   

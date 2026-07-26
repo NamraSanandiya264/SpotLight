@@ -12,7 +12,15 @@ const PrivateRoute = ({ children }) => {
 
   if (loading) return <div className="loading-container"><div>Loading...</div></div>;
 
-  return user ? children : <Navigate to="/login" />;
+  return user ? children : <Navigate to="/login" replace />;
+};
+
+const PublicRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) return <div className="loading-container"><div>Loading...</div></div>;
+
+  return user ? <Navigate to="/dashboard" replace /> : children;
 };
 
 function App() {
@@ -21,11 +29,11 @@ function App() {
       <ToastContainer position="top-right" autoClose={3000} />
 
       <Routes>
-        <Route path="/" element={<Register />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<PublicRoute><Register /></PublicRoute>} />
+        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
         
         {/* ✅ Add the Forgot Password route here */}
-        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
 
         {/* Protected Dashboard Route Container */}
         <Route

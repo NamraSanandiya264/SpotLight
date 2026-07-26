@@ -476,7 +476,7 @@ const ManageEvents = () => {
                         <div className="absolute right-0 mt-2 w-36 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-gray-100 dark:border-slate-700 py-1 z-10 animate-in fade-in zoom-in-95">
                           <button 
                             onClick={() => { startEdit(event); setActiveMenuId(null); }} 
-                            className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-750 flex items-center gap-2"
+                            className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 flex items-center gap-2"
                           >
                             <FaEdit /> Edit
                           </button>
@@ -524,7 +524,7 @@ const ManageEvents = () => {
                     </button>
                     
                     {expandedDescs[event._id] && (
-                      <div className="mt-3 text-sm text-gray-600 dark:text-gray-400 leading-relaxed bg-gray-50 dark:bg-slate-750 p-3 rounded-lg border border-gray-100 dark:border-slate-700 animate-in fade-in">
+                      <div className="mt-3 text-sm text-gray-600 dark:text-gray-300 leading-relaxed bg-gray-50 dark:bg-slate-800 p-3 rounded-lg border border-gray-100 dark:border-slate-700 animate-in fade-in">
                         <p>{event.description}</p>
                       </div>
                     )}
@@ -534,7 +534,7 @@ const ManageEvents = () => {
             )})}
           </div>
         ) : (
-          <div className="py-12 text-center bg-gray-50 dark:bg-slate-750 rounded-2xl border border-dashed border-gray-200 dark:border-slate-700">
+          <div className="py-12 text-center bg-gray-50 dark:bg-slate-800 rounded-2xl border border-dashed border-gray-200 dark:border-slate-700">
             <p className="text-gray-500 dark:text-gray-400">No events registered yet under your leadership.</p>
           </div>
         )}

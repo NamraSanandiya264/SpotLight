@@ -42,6 +42,12 @@
   margin: 0 auto;
 }
 
+.dark .restricted-access-card,
+html.dark .restricted-access-card {
+  background-color: #0f172a;
+  border-color: #334155;
+}
+
 .restricted-access-card h2 {
   color: #1f2937;
   margin-bottom: 12px;
@@ -62,6 +68,13 @@
   border: 1px solid #e5e7eb;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   width: 100%;
+}
+
+.dark .event-form-block,
+html.dark .event-form-block {
+  background-color: #111827;
+  border-color: #334155;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.35);
 }
 
 /* Two-Column Flex Layout */
@@ -114,6 +127,11 @@
   font-weight: 600;
   margin-bottom: 4px;
   color: #374151;
+}
+
+.dark .form-field label,
+html.dark .form-field label {
+  color: #e2e8f0;
 }
 
 .form-field input, 
@@ -206,6 +224,13 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.dark .event-roster-card,
+html.dark .event-roster-card {
+  background-color: #111827;
+  border-color: #334155;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.35);
 }
 
 /* Card Header Layout */
@@ -435,6 +460,17 @@
   font-style: italic;
   white-space: pre-wrap;
   line-height: 1.5;
+}
+
+.dark .card-description-box,
+html.dark .card-description-box {
+  background-color: #1e293b;
+  border-left-color: #475569;
+}
+
+.dark .card-description-box p,
+html.dark .card-description-box p {
+  color: #cbd5e1;
 }
 
 .no-events-fallback {

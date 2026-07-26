@@ -66,20 +66,20 @@ const WelcomeBanner = ({ user }) => {
   };
 
   return (
-    <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 dark:from-slate-800 dark:via-slate-800 dark:to-slate-800 p-5 sm:p-6 rounded-2xl shadow-sm border border-blue-500/20 dark:border-slate-700 w-full transition-colors duration-300 overflow-visible">
+    <div className="relative flex flex-row flex-wrap items-start gap-3 sm:items-center sm:justify-between sm:gap-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 dark:from-slate-800 dark:via-slate-800 dark:to-slate-800 p-5 sm:p-6 rounded-2xl shadow-sm border border-blue-500/20 dark:border-slate-700 w-full transition-colors duration-300 overflow-visible">
       {/* Light mode decorative blobs */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute -top-6 -right-6 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
         <div className="absolute bottom-0 left-20 w-32 h-32 bg-white/5 rounded-full blur-xl"></div>
       </div>
-      <div className="relative z-10">
-        <h2 className="text-xl sm:text-2xl font-bold text-white dark:text-gray-100 tracking-tight">
+      <div className="relative z-10 min-w-0 flex-1">
+        <h2 className="text-xl sm:text-2xl font-bold text-white dark:text-gray-100 tracking-tight leading-tight break-words">
           {getGreeting()}, <span className="text-cyan-200 dark:text-emerald-300">{firstName}</span>
         </h2>
         <p className="text-blue-100 dark:text-gray-400 text-sm mt-1">Here is what's happening today.</p>
       </div>
 
-      <div ref={dropdownRef} className="relative z-20 self-start sm:self-auto">
+      <div ref={dropdownRef} className="relative z-20 self-start sm:self-auto ml-auto sm:ml-0">
         <button
           type="button"
           onClick={() => setShowDropdown(!showDropdown)}
@@ -96,7 +96,7 @@ const WelcomeBanner = ({ user }) => {
         </button>
 
         {showDropdown && (
-          <div className="absolute right-0 top-full mt-3 w-[calc(100vw-2rem)] sm:w-80 max-w-sm bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 z-[100] overflow-hidden transform origin-top-right transition-all duration-200 ease-out">
+          <div className="absolute right-0 top-full mt-3 w-[min(22rem,calc(100vw-2rem))] sm:w-80 max-w-sm bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 z-[100] overflow-hidden transform origin-top-right transition-all duration-200 ease-out">
             <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50">
               <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Notifications</h4>
             </div>

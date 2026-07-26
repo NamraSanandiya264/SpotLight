@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 import api from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
 import { FaPlus, FaSearch, FaEllipsisV, FaEdit, FaTrash } from "react-icons/fa";
@@ -75,6 +76,13 @@ const Organizations = ({ onSelectOrg }) => {
   };
 
   // 🛡️ Admin Update Handler
+  const getSwalThemeOptions = () => ({
+    background: document.documentElement.classList.contains("dark") ? "#1e293b" : "#ffffff",
+    color: document.documentElement.classList.contains("dark") ? "#f8fafc" : "#000000",
+    confirmButtonColor: "#3b82f6",
+    cancelButtonColor: document.documentElement.classList.contains("dark") ? "#94a3b8" : "#64748b",
+  });
+
   const handleAdminUpdate = async (e) => {
     e.preventDefault();
     try {
@@ -82,10 +90,10 @@ const Organizations = ({ onSelectOrg }) => {
       const payload = { ...adminFormData, numofCoreMembers: Number(adminFormData.numofCoreMembers) };
       await api.put(`/organizations/${editingOrgId}/admin`, payload);
       setShowAdminEditModal(false);
-      alert("Organization settings updated successfully.");
+      await Swal.fire({ icon: "success", title: "Updated", text: "Organization settings updated successfully.", ...getSwalThemeOptions() });
       fetchOrganizations();
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to update organization.");
+      await Swal.fire({ icon: "error", title: "Update Failed", text: err.response?.data?.message || "Failed to update organization.", ...getSwalThemeOptions() });
     } finally {
       setIsSubmitting(false);
     }
@@ -93,14 +101,24 @@ const Organizations = ({ onSelectOrg }) => {
 
   // 🛡️ Admin Delete Handler
   const handleAdminDelete = async (orgId, orgName) => {
-    if (!window.confirm(`CRITICAL WARNING: Are you sure you want to permanently delete ${orgName}? All members, photos, and data will be erased.`)) return;
+    const deleteConfirm = await Swal.fire({
+      title: "Delete organization?",
+      text: `CRITICAL WARNING: Are you sure you want to permanently delete ${orgName}? All members, photos, and data will be erased.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete it",
+      cancelButtonText: "Cancel",
+      ...getSwalThemeOptions()
+    });
+    if (!deleteConfirm.isConfirmed) return;
+
     try {
       setIsSubmitting(true);
       await api.delete(`/organizations/${orgId}`);
-      alert("Organization deleted successfully.");
+      await Swal.fire({ icon: "success", title: "Deleted", text: "Organization deleted successfully.", ...getSwalThemeOptions() });
       fetchOrganizations();
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to delete organization.");
+      await Swal.fire({ icon: "error", title: "Delete Failed", text: err.response?.data?.message || "Failed to delete organization.", ...getSwalThemeOptions() });
     } finally {
       setIsSubmitting(false);
     }
@@ -201,7 +219,7 @@ const Organizations = ({ onSelectOrg }) => {
                             setShowAdminEditModal(true);
                             setActiveAdminMenu(null); 
                           }}
-                          className="w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-750 border-b border-gray-100 dark:border-slate-700 flex items-center gap-2 transition-colors"
+                          className="w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 border-b border-gray-100 dark:border-slate-700 flex items-center gap-2 transition-colors"
                         >
                           <FaEdit /> Edit Settings
                         </button>
@@ -254,7 +272,7 @@ const Organizations = ({ onSelectOrg }) => {
           })}
         </div>
       ) : (
-        <div className="py-16 text-center bg-gray-50 dark:bg-slate-750/50 rounded-2xl border border-dashed border-gray-200 dark:border-slate-700">
+        <div className="py-16 text-center bg-gray-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-gray-200 dark:border-slate-700">
           <p className="text-gray-500 dark:text-gray-400">No organizations found matching your search criteria.</p>
         </div>
       )}

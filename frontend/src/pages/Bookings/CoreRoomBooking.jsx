@@ -167,7 +167,7 @@ const CoreRoomBooking = () => {
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-gray-50 dark:bg-slate-750 text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-slate-700 uppercase text-xs font-bold tracking-wider">
+            <thead className="bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-slate-700 uppercase text-xs font-bold tracking-wider">
               <tr>
                 <th className="px-6 py-4">Requested At</th>
                 <th className="px-6 py-4">Student</th>
@@ -183,7 +183,7 @@ const CoreRoomBooking = () => {
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-slate-700 text-gray-700 dark:text-gray-300">
               {list.map((b) => (
-                <tr key={b._id} className="hover:bg-gray-50 dark:hover:bg-slate-750 transition-colors">
+                <tr key={b._id} className="hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
                   <td className="px-6 py-4">
                     {formatRequestedTime(b.createdAt)}
                   </td>

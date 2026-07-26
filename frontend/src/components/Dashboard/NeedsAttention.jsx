@@ -60,7 +60,7 @@ const NeedsAttention = ({ setActiveMenu }) => {
       {hasTasks && (
         <div className="flex flex-col gap-3">
           {pendingJoins.map((join, index) => (
-            <div key={join.clubName ?? `join-${index}`} className="flex justify-between items-center p-4 rounded-xl bg-gray-50 dark:bg-slate-750 border border-gray-100 dark:border-slate-700 shadow-sm">
+            <div key={join.clubName ?? `join-${index}`} className="flex justify-between items-center p-4 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 shadow-sm">
               <div className="flex flex-col">
                 <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                   <FiUsers className="text-blue-600 dark:text-blue-400" /> {join.count} Pending Request(s)
@@ -78,7 +78,7 @@ const NeedsAttention = ({ setActiveMenu }) => {
           ))}
 
           {tasks.pendingEvents > 0 && (
-            <div className="flex justify-between items-center p-4 rounded-xl bg-gray-50 dark:bg-slate-750 border border-gray-100 dark:border-slate-700 shadow-sm">
+            <div className="flex justify-between items-center p-4 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 shadow-sm">
               <div className="flex flex-col">
                 <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                   <FiClock className="text-amber-500" /> {tasks.pendingEvents} Event(s)

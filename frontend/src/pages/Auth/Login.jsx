@@ -32,7 +32,7 @@ const Login = () => {
       localStorage.setItem("role", res.data.user.role);
       login(res.data.user);
       toast.success("Login successful ✅");
-      navigate("/dashboard");
+      navigate("/dashboard", { replace: true });
     } catch (error) {
       if (error.response?.data?.code === "EMAIL_NOT_VERIFIED") {
         setVerifyEmail(error.response.data.email);
@@ -64,14 +64,7 @@ const Login = () => {
           <h1 className="text-4xl font-bold text-white leading-tight mb-4">Welcome Back!</h1>
           <p className="text-blue-100 text-lg max-w-sm leading-relaxed">If you are a DAU student this is the right place to get started!</p>
         </div>
-        <div className="relative z-10 flex items-center gap-3">
-          <div className="flex -space-x-2">
-            {["A","B","C"].map((l,i) => (
-              <div key={i} className="w-8 h-8 rounded-full bg-white/20 ring-2 ring-indigo-600 flex items-center justify-center text-white text-xs font-bold">{l}</div>
-            ))}
-          </div>
-          <p className="text-blue-100 text-sm">Join hundreds of students managing campus life</p>
-        </div>
+        
       </div>
 
       {/* Right form panel */}
@@ -101,20 +94,20 @@ const Login = () => {
               )}
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Email <span className="text-red-500">*</span></label>
+                <label htmlFor="email" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Email <span className="text-red-500">*</span></label>
                 <div className="relative">
                   <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                  <input type="email" name="email" placeholder="Enter your email" value={formData.email} onChange={handleChange}
+                  <input id="email" type="email" name="email" placeholder="Enter your email" value={formData.email} onChange={handleChange}
                     className={`${inputBase} ${errors.email ? "border-red-400 dark:border-red-500" : "border-gray-200 dark:border-slate-600"}`} />
                 </div>
                 {errors.email && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.email}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Password <span className="text-red-500">*</span></label>
+                <label htmlFor="password" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Password <span className="text-red-500">*</span></label>
                 <div className="relative">
                   <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                  <input type={showPassword ? "text" : "password"} name="password" value={formData.password} onChange={handleChange} placeholder="Enter your password"
+                  <input id="password" type={showPassword ? "text" : "password"} name="password" value={formData.password} onChange={handleChange} placeholder="Enter your password"
                     className={`${inputBase} pr-12 ${errors.password ? "border-red-400 dark:border-red-500" : "border-gray-200 dark:border-slate-600"}`} />
                   <button type="button" onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
